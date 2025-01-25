@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
 import ManagerDashboard from "./pages/ManagerDashboard.jsx";
 import OwnerDashboard from "./pages/OwnerDashboard.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
 // Protect routes that require authentication
@@ -41,7 +42,7 @@ const RedirectAuthenticatedUser = ({ children }) => {
 };
 
 function App() {
-  const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
+  const { isCheckingAuth, checkAuth } = useAuthStore();
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -93,6 +94,14 @@ function App() {
           }
         />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
+        <Route
+          path="/forgot-password"
+          element={
+            <RedirectAuthenticatedUser>
+              <ForgotPasswordPage />
+            </RedirectAuthenticatedUser>
+          }
+        />
       </Routes>
       <Toaster />
     </div>
