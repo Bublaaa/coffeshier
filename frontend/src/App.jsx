@@ -8,7 +8,7 @@ import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
 import ManagerDashboard from "./pages/ManagerDashboard.jsx";
 import OwnerDashboard from "./pages/OwnerDashboard.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-
+import LoadingSpinner from "./components/LoadingSpinner.jsx";
 // Protect routes that require authentication
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -41,12 +41,13 @@ const RedirectAuthenticatedUser = ({ children }) => {
 };
 
 function App() {
-  const { isCheckAuth, checkAuth, isAuthenticated, user } = useAuthStore();
+  const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-  console.log("isAuthenticated", isAuthenticated);
-  console.log("user: ", user);
+
+  if (isCheckingAuth) return <LoadingSpinner />;
+
   return (
     <div className="min-h-screen bg-black-50  flex items-center justify-center relative overflow-hidden">
       <Routes>
