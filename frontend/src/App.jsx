@@ -8,6 +8,7 @@ import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
 import ManagerDashboard from "./pages/ManagerDashboard.jsx";
 import OwnerDashboard from "./pages/OwnerDashboard.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
 // Protect routes that require authentication
@@ -102,6 +103,16 @@ function App() {
             </RedirectAuthenticatedUser>
           }
         />
+        <Route
+          path="/reset-password/:token"
+          element={
+            <RedirectAuthenticatedUser>
+              <ResetPasswordPage />
+            </RedirectAuthenticatedUser>
+          }
+        />
+        {/* catch all routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
     </div>
