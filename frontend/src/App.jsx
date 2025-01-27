@@ -51,7 +51,7 @@ function App() {
   if (isCheckingAuth) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen w-full bg-black-50 flex  overflow-hidden">
+    <div className="min-h-screen w-full bg-white-shadow flex  overflow-hidden">
       <Routes>
         <Route
           path="/owner"
@@ -78,7 +78,7 @@ function App() {
           }
         >
           {/* Nested Routes for Dashboard */}
-          <Route path="overview" element={"Overview"} />
+          <Route path="menu" element={"Menu"} />
           <Route path="profile" element={"Profile"} />
         </Route>
         {/* <Route

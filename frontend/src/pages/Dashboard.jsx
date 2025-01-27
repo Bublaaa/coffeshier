@@ -4,6 +4,7 @@ import { formatDate } from "../utils/date.js";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import OrderCart from "../components/OrderCart.jsx";
 
 const Dashboard = () => {
   const { user, logout } = useAuthStore();
@@ -15,10 +16,9 @@ const Dashboard = () => {
       <Sidebar />
       <div className="w-full flex flex-col gap-2">
         <Navbar />
-        <div className="w-full h-full rounded-xl bg-green-100">
-          <Outlet />
-        </div>
+        <Outlet />
       </div>
+      <OrderCart />
     </div>
   );
 };
