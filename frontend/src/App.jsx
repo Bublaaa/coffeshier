@@ -11,6 +11,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
+import TestPage from "./pages/TestPage.jsx";
 // Protect routes that require authentication
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -79,7 +80,7 @@ function App() {
         >
           {/* Nested Routes for Dashboard */}
           <Route path="menu" element={"Menu"} />
-          <Route path="profile" element={"Profile"} />
+          <Route path="profile" element={<TestPage />} />
         </Route>
         {/* <Route
           path="/"

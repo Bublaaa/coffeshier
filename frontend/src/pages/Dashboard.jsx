@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { useAuthStore } from "../store/authStore";
 import { formatDate } from "../utils/date.js";
+import { useAuthStore } from "../store/authStore";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
