@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@utility scrollbar-hidden {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @theme {
   --color-accent: oklch(79.34% 0.13079966167674525 49.04396898711519);
   --color-accent-hover: oklch(72.79% 0.1795 46.14);

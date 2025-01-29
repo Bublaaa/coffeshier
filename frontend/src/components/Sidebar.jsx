@@ -38,7 +38,7 @@ const Sidebar = () => {
           {isCollapsed ? <ArrowRight /> : <ArrowLeft />}
         </button>
       </div>
-      <div className="h-full px-3 py-4 overflow-y-auto">
+      <div className="h-full pl-3 py-4 overflow-y-auto">
         <ul className="space-y-2 font-medium">
           <SideBarLink
             label={"Menu"}

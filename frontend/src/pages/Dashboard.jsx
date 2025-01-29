@@ -12,13 +12,23 @@ const Dashboard = () => {
     logout();
   };
   return (
-    <div className="w-full flex flex-row gap-2 m-2">
+    <div className="w-full flex flex-row gap-2 m-2 h-screen">
+      {/* Sidebar with fixed width */}
+
       <Sidebar />
-      <div className="w-full flex flex-col gap-2">
+
+      {/* Main Content: Flexible width */}
+      <div className="flex flex-col flex-grow gap-2 overflow-hidden">
         <Navbar />
-        <Outlet />
+        <div className="flex-grow overflow-auto">
+          <Outlet />
+        </div>
       </div>
-      <OrderCart />
+
+      {/* OrderCart with fixed width */}
+      <div className="w-96">
+        <OrderCart />
+      </div>
     </div>
   );
 };

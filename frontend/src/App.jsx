@@ -1,7 +1,9 @@
+// Library
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore.js";
 import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+// Pages
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
@@ -10,8 +12,11 @@ import OwnerDashboard from "./pages/OwnerDashboard.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import LoadingSpinner from "./components/LoadingSpinner.jsx";
 import TestPage from "./pages/TestPage.jsx";
+import MenuPage from "./pages/MenuPage.jsx";
+// Components
+import LoadingSpinner from "./components/LoadingSpinner.jsx";
+
 // Protect routes that require authentication
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -52,7 +57,7 @@ function App() {
   if (isCheckingAuth) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen w-full bg-white-shadow flex  overflow-hidden">
+    <div className="h-screen w-full bg-white-shadow flex  overflow-hidden">
       <Routes>
         <Route
           path="/owner"
@@ -78,8 +83,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {/* Nested Routes for Dashboard */}
-          <Route path="menu" element={"Menu"} />
+          <Route path="menu" element={<MenuPage />} />
           <Route path="profile" element={<TestPage />} />
         </Route>
         {/* <Route
