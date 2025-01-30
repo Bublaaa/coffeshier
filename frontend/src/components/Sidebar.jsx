@@ -12,8 +12,8 @@ const Sidebar = () => {
   return (
     <aside
       id="cta-button-sidebar"
-      className={`relative top-0 left-0 h-full transition-transform bg-white rounded-xl ${
-        isCollapsed ? "w-fit" : "w-70"
+      className={`m-5 relative top-0 left-0 transition-transform bg-white rounded-xl ${
+        isCollapsed ? "w-fit" : "w-1/6"
       }`}
       aria-label="Sidebar"
     >

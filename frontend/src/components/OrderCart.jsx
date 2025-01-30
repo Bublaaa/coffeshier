@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import SideBarLink from "./SideBarLink.jsx";
-import { Home, Utensils } from "lucide-react";
+import { Home, Trash, Utensils } from "lucide-react";
 import OrderType from "./OrderType.jsx";
 import OrderDetail from "./OrderDetail.jsx";
 import { useAuthStore } from "../store/authStore.js";
@@ -13,13 +13,19 @@ const Sidebar = () => {
     <>
       <div
         id="cta-button-sidebar"
-        className="relative top-0 left-0 w-96 h-full transition-transform -translate-x-full sm:translate-x-0 bg-white rounded-xl flex flex-col"
+        className="relative top-0 right-0 h-[calc(100vh-40px)] transition-transform -translate-x-full sm:translate-x-0 bg-white rounded-xl flex flex-col"
       >
         <div className="w-full p-4 space-y-5">
-          {/* User Info */}
-          <div className="w-full h-fit p-2 border-b border-gray-200">
-            <h2 className="text-dark font-semibold text-md">{user.name}</h2>
-            <p className="text-gray-500">{user.email}</p>
+          <div className="flex flex-row w-full justify-between items-center border-b border-gray-200">
+            {/* User Info */}
+            <div className="w-full h-fit p-2">
+              <h2 className="text-dark font-semibold text-md">{user.name}</h2>
+              <p className="text-gray-500">{user.email}</p>
+            </div>
+
+            <button className="p-2 cursor-pointer text-dark hover:text-dark-hover hover:bg-gray-100 rounded-lg">
+              <Trash />
+            </button>
           </div>
 
           {/* Cart */}
@@ -49,7 +55,7 @@ const Sidebar = () => {
         </div>
 
         {/* Order Detail (fills remaining space) */}
-        <div className="flex-1 overflow-y-auto space-y-10 px-4 scrollbar-hidden mx-4">
+        <div className="flex-1 overflow-y-auto space-y-5 scrollbar-hidden mx-4">
           <OrderDetail />
           <OrderDetail />
           <OrderDetail />
@@ -59,7 +65,7 @@ const Sidebar = () => {
         </div>
 
         {/* Order Summary & Button (placed at the bottom) */}
-        <div className="h-fit space-y-4 p-4 mt-auto">
+        <div className=" space-y-2 p-4 mt-auto">
           <div className="w-full flex justify-between items-center">
             <p className="text-md text-gray-500">Items</p>
             <p className="text-md font-bold text-dark">Price</p>

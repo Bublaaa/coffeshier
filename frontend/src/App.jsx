@@ -1,21 +1,22 @@
 // Library
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore.js";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 // Pages
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
-import ManagerDashboard from "./pages/ManagerDashboard.jsx";
-import OwnerDashboard from "./pages/OwnerDashboard.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
 import TestPage from "./pages/TestPage.jsx";
-import MenuPage from "./pages/MenuPage.jsx";
 // Components
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
+
+const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard.jsx"));
+const ManagerDashboard = lazy(() => import("./pages/ManagerDashboard.jsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
+const MenuPage = lazy(() => import("./pages/MenuPage.jsx"));
 
 // Protect routes that require authentication
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -63,7 +64,9 @@ function App() {
           path="/owner"
           element={
             <ProtectedRoute requiredRole="owner">
-              <OwnerDashboard />
+              <Suspense>
+                <OwnerDashboard />
+              </Suspense>
             </ProtectedRoute>
           }
         />
@@ -71,7 +74,9 @@ function App() {
           path="/manager"
           element={
             <ProtectedRoute requiredRole="manager">
-              <ManagerDashboard />
+              <Suspense>
+                <ManagerDashboard />
+              </Suspense>
             </ProtectedRoute>
           }
         />
@@ -79,21 +84,23 @@ function App() {
           path="/*"
           element={
             <ProtectedRoute requiredRole="employee">
-              <Dashboard />
+              <Suspense>
+                <Dashboard />
+              </Suspense>
             </ProtectedRoute>
           }
         >
-          <Route path="menu" element={<MenuPage />} />
+          <Route
+            path="menu"
+            index
+            element={
+              <Suspense>
+                <MenuPage />
+              </Suspense>
+            }
+          />
           <Route path="profile" element={<TestPage />} />
         </Route>
-        {/* <Route
-          path="/"
-          element={
-            <ProtectedRoute requiredRole="employee">
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        /> */}
 
         <Route
           path="/signup"
