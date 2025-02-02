@@ -12,6 +12,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import TestPage from "./pages/TestPage.jsx";
 // Components
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
+import MenuPageSkeleton from "./pages/skeleton/MenuPageSkeleton.jsx";
 
 const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard.jsx"));
 const ManagerDashboard = lazy(() => import("./pages/ManagerDashboard.jsx"));
@@ -81,7 +82,7 @@ function App() {
           }
         />
         <Route
-          path="/*"
+          path="/"
           element={
             <ProtectedRoute requiredRole="employee">
               <Suspense>
@@ -90,12 +91,15 @@ function App() {
             </ProtectedRoute>
           }
         >
+          {/* <Route path="/" element={<Navigate to="/menu" replace />} /> */}
+          <Route index element={<Navigate to="/menu" replace />} />
           <Route
+            exact
             path="menu"
-            index
             element={
               <Suspense>
-                <MenuPage />
+                <MenuPageSkeleton />
+                {/* <MenuPage /> */}
               </Suspense>
             }
           />
