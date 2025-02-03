@@ -2,6 +2,7 @@ import SearchInputSkeleton from "../../components/skeletons/SearchInputSkeleton"
 import CategoryCardSkeleton from "../../components/skeletons/CategoryCardSkeleton";
 import MenuCard from "../../components/MenuCard";
 import MenuCardSkeleton from "../../components/skeletons/MenuCardSkeleton";
+import OrderCartSkeleton from "../../components/skeletons/OrderCartSkeleton";
 
 const MenuPageSkeleton = () => {
   return (
@@ -17,11 +18,13 @@ const MenuPageSkeleton = () => {
           <div className="p-5 rounded-lg bg-gray-200"></div>
           <div className="h-[62vh] grid grid-cols-3 gap-5 overflow-y-auto scrollbar-hidden">
             {/* <MenuCard /> */}
-            <MenuCardSkeleton count={8} />
+            <MenuCardSkeleton count={6} />
           </div>
         </div>
       </div>
-      <div className="w-2/6">{/* <OrderCart /> */}</div>
+      <div className="w-2/6">
+        <OrderCartSkeleton />
+      </div>
     </div>
   );
 };

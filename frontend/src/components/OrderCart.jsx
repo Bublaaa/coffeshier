@@ -5,7 +5,7 @@ import OrderType from "./OrderType.jsx";
 import OrderDetail from "./OrderDetail.jsx";
 import { useAuthStore } from "../store/authStore.js";
 
-const Sidebar = () => {
+const OrderCart = () => {
   const { user } = useAuthStore();
   const [activeOrderType, setActiveOrderType] = useState("Dine In");
 
@@ -84,4 +84,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default OrderCart;
