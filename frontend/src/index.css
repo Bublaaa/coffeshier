@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+@utility scrollbar-hidden {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@theme {
+  --color-accent: oklch(79.34% 0.13079966167674525 49.04396898711519);
+  --color-accent-hover: oklch(72.79% 0.1795 46.14);
+  --color-dark: oklch(35.23% 0 0);
+  --color-dark-hover: oklch(21.78% 0 0);
+  --color-white-shadow: oklch(97.91% 0 0);
+}
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
