@@ -22,12 +22,10 @@ const Sidebar = () => {
           href="/"
           className="flex w-fit items-center space-x-3 rtl:space-x-reverse"
         >
-          <img
-            src="https://flowbite.com/docs/images/logo.svg"
-            className="h-8"
-            alt="Flowbite Logo"
-          />
-          {!isCollapsed && <h1 className="text-2xl font-semibold">Flowbite</h1>}
+          <img src="../public/Logo.svg" className="h-10" alt="Flowbite Logo" />
+          {!isCollapsed && (
+            <h1 className="text-2xl text-dark font-semibold">Puch Coffee</h1>
+          )}
         </a>
         <button
           type="button"
