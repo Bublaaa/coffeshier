@@ -11,7 +11,6 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import TestPage from "./pages/TestPage.jsx";
 // Components
-import MenuPageSkeleton from "./pages/skeleton/MenuPageSkeleton.jsx";
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
 
 const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard.jsx"));
@@ -96,7 +95,7 @@ function App() {
             path="menu"
             index
             element={
-              <Suspense fallback={<MenuPageSkeleton />}>
+              <Suspense>
                 <MenuPage />
               </Suspense>
             }
