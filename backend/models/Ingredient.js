@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const IngredientSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, // Optional link to product
+    stockQuantity: { type: Number, required: true },
     stockMovements: [
       {
         type: { type: String, enum: ["IN", "OUT"], required: true },
