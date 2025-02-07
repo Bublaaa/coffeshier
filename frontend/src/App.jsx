@@ -82,7 +82,7 @@ function App() {
           }
         />
         <Route
-          path="/*"
+          path="/"
           element={
             <ProtectedRoute requiredRole="employee">
               <Suspense>
@@ -91,6 +91,7 @@ function App() {
             </ProtectedRoute>
           }
         >
+          <Route path="/" element={<Navigate to="/menu" replace />} />
           <Route
             path="menu"
             index
