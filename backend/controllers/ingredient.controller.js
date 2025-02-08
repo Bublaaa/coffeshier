@@ -1,0 +1,168 @@
+import { Ingredient } from "../models/Ingredient.js";
+
+// Add new ingredient with 0 stock quantity & without stock movement
+export const addNewIngredient = async (req, res) => {
+  const { name, unit } = req.body;
+  try {
+    if (!name || !unit || name.trim() === "" || unit.trim() === "") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Name and Unit can't be empty!" });
+    }
+
+    const ingredientAlreadyExist = await Ingredient.findOne({
+      name: name.toLowerCase(),
+    });
+
+    if (ingredientAlreadyExist) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Ingredient is already added" });
+    }
+
+    const newIngredient = new Ingredient({
+      name: name.toLowerCase(),
+      unit: unit.toLowerCase(),
+      stockQuantity: 0,
+      stockMovements: [],
+    });
+
+    await newIngredient.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Ingredient added successfully",
+      ingredient: newIngredient,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Update ingredient data
+export const updateIngredient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, unit } = req.body;
+
+    if (!name || !unit) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and Unit are required",
+      });
+    }
+
+    // Fetch current ingredient
+    const ingredient = await Ingredient.findById(id);
+    if (!ingredient) {
+      return res.status(404).json({
+        success: false,
+        message: "Ingredient not found",
+      });
+    }
+
+    // Allowed conversions
+    const solidUnits = { kg: 1, gr: 0.001, mg: 0.000001 };
+    const liquidUnits = { li: 1, ml: 0.001 };
+
+    // Check if unit change is valid within the same type (solid or liquid)
+    const currentUnit = ingredient.unit;
+    const newUnit = unit.toLowerCase();
+
+    if (
+      (solidUnits[currentUnit] && liquidUnits[newUnit]) ||
+      (liquidUnits[currentUnit] && solidUnits[newUnit])
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot convert between solid and liquid units",
+      });
+    }
+
+    // Conversion factor
+    let conversionFactor = 1;
+    if (solidUnits[currentUnit] && solidUnits[newUnit]) {
+      conversionFactor = solidUnits[currentUnit] / solidUnits[newUnit];
+    } else if (liquidUnits[currentUnit] && liquidUnits[newUnit]) {
+      conversionFactor = liquidUnits[currentUnit] / liquidUnits[newUnit];
+    }
+
+    // Recalculate stock quantity and stock movements
+    const updatedStockQuantity = ingredient.stockQuantity * conversionFactor;
+    const updatedStockMovements = ingredient.stockMovements.map((movement) => ({
+      ...movement,
+      quantity: movement.quantity * conversionFactor,
+    }));
+
+    // Update ingredient
+    ingredient.name = name.toLowerCase();
+    ingredient.unit = newUnit;
+    ingredient.stockQuantity = updatedStockQuantity;
+    ingredient.stockMovements = updatedStockMovements;
+
+    await ingredient.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Ingredient updated successfully",
+      ingredient,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Delete ingredient
+export const deleteIngredient = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedIngredient = await Ingredient.findByIdAndDelete(id);
+
+    if (!deletedIngredient) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Ingredient not found" });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Ingredient deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getIngredients = async (req, res) => {
+  try {
+    const ingredients = await Ingredient.find().sort({ createdAt: -1 });
+    if (ingredients.length < 1) {
+      res.status(404).json({ success: false, message: "No Ingredients exist" });
+    }
+    res.status(200).json({ success: true, ingredients });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getIngredientById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const ingredient = await Ingredient.findById(id);
+
+    if (!ingredient) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Ingredient not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully retrieve ingredient data",
+      ingredient,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
