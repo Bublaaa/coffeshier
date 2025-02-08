@@ -1,13 +1,18 @@
 import { Product } from "../models/Product.js";
 import { Ingredient } from "../models/Ingredient.js";
+import { Category } from "../models/Category.js";
 
 // Get all available and not available products
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ name: 1 });
     if (products.length < 1) {
-      res.status(400).json({ success: false, message: "No products exist" });
+      return res
+        .status(404)
+        .json({ success: false, message: "No products found" });
     }
+
+    res.status(200).json({ success: true, products });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -16,11 +21,11 @@ export const getAllProducts = async (req, res) => {
 // Get available product & conditional category
 export const getProductsByCategory = async (req, res) => {
   try {
-    const { categoryId } = req.params;
+    const { categoryId } = req.body;
 
-    let query = { status: "available" };
+    let query = { status: "Available" };
     if (categoryId) {
-      query.category = categoryId;
+      query.categoryId = categoryId;
     }
 
     const products = await Product.find(query);
@@ -44,9 +49,14 @@ export const getProductsByCategory = async (req, res) => {
 
 // Get specific products
 export const getProductDetails = async (req, res) => {
-  let id = req.params;
+  let { id } = req.params;
   try {
     const product = await Product.findById(id);
+    if (!product) {
+      return res
+        .status(404)
+        .json({ message: false, message: "Product not found" });
+    }
     res.status(200).json({
       success: true,
       message: "Successfully retrieve product details",
@@ -70,10 +80,35 @@ export const addProduct = async (req, res) => {
       recipe,
     } = req.body;
 
-    if (!name || !price || !image || !stockQuantity || !categoryId) {
+    if (!name || !price || !image || !stockQuantity) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
+    }
+    const selectedCategory = await Category.findById(categoryId);
+    if (!selectedCategory) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
+    const productAlreadyExist = await Product.findOne({ name: name });
+    if (productAlreadyExist) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Product already added" });
+    }
+    // If product have Ingredients
+    if (Array.isArray(ingredients) && ingredients.length > 0) {
+      for (const ingredient of ingredients) {
+        const ingredientExist = await Ingredient.findById(
+          ingredient.ingredientId
+        );
+        if (!ingredientExist) {
+          return res
+            .status(404)
+            .json({ success: false, message: "Ingredient not found" });
+        }
+      }
     }
 
     const newProduct = new Product({
@@ -101,12 +136,88 @@ export const addProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   try {
-    const { id } = req.params; // Get product ID from request parameters
-    const updates = req.body; // Get updated data from request body
+    const { id } = req.params;
+    const {
+      name,
+      price,
+      image,
+      status,
+      stockQuantity,
+      categoryId,
+      ingredients,
+      recipe,
+    } = req.body;
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
-      new: true,
-    });
+    const productAlreadyExist = await Product.findById(id);
+    if (!productAlreadyExist) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
+
+    if (!name || !price || !image || !stockQuantity || !status) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+    const selectedCategory = await Category.findById(categoryId);
+    if (!selectedCategory) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
+
+    // If product have Ingredients
+    if (Array.isArray(ingredients) && ingredients.length > 0) {
+      for (const ingredient of ingredients) {
+        if (
+          !ingredient.ingredientId ||
+          !Array.isArray(ingredient.quantityBySize) ||
+          ingredient.quantityBySize.length === 0
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid ingredient format",
+          });
+        }
+
+        // Validate each quantityBySize entry
+        for (const sizeEntry of ingredient.quantityBySize) {
+          if (!sizeEntry.size || typeof sizeEntry.quantity !== "number") {
+            return res.status(400).json({
+              success: false,
+              message: "Invalid size format",
+            });
+          }
+        }
+
+        const ingredientExist = await Ingredient.findById(
+          ingredient.ingredientId
+        );
+        if (!ingredientExist) {
+          return res
+            .status(404)
+            .json({ success: false, message: "Ingredient not found" });
+        }
+      }
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        name: name,
+        price: price,
+        image: image,
+        status: status,
+        stockQuantity: stockQuantity,
+        categoryId: categoryId,
+        ingredients: ingredients,
+        recipe: recipe,
+      },
+      {
+        new: true,
+      }
+    );
 
     if (!updatedProduct) {
       return res
