@@ -4,6 +4,7 @@ import {
   createBuyOrder,
   createSellOrder,
   deleteBuyOrder,
+  updateBuyOrder,
 } from "../controllers/order.controller.js";
 
 const router = express.Router();
@@ -11,6 +12,7 @@ router.get("/all", getAllOrder);
 router.post("/buy", createBuyOrder);
 router.post("/sell", createSellOrder);
 
+router.put("/update-buy/:id", updateBuyOrder);
 router.delete("/delete-buy/:id", deleteBuyOrder);
 
 // router.get("/detail/:id", getProductDetails);

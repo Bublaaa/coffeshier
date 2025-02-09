@@ -124,6 +124,104 @@ export const createBuyOrder = async (req, res) => {
   }
 };
 
+export const updateBuyOrder = async (req, res) => {
+  const { id } = req.params;
+  const { userId, status, ingredients, payment } = req.body;
+
+  try {
+    const selectedOrder = await Order.findById(id);
+    if (!selectedOrder) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    // Update order details (excluding ingredients)
+    selectedOrder.userId = userId;
+    selectedOrder.status = status;
+    selectedOrder.payment = payment;
+    selectedOrder.ingredients = ingredients;
+
+    // Process each ingredient in the updated order
+    for (let orderIngredient of selectedOrder.ingredients) {
+      const stockIngredient = await Ingredient.findById(
+        orderIngredient.ingredientId
+      );
+      if (!stockIngredient) {
+        return res.status(404).json({
+          success: false,
+          message: `Ingredient with ID ${orderIngredient.ingredientId} not found`,
+        });
+      }
+
+      let newQuantity = orderIngredient.quantity;
+      let newUnit = orderIngredient.unit;
+
+      // Convert unit if necessary
+      if (newUnit !== stockIngredient.unit) {
+        try {
+          const conversion = convertQuantityByUnit(
+            orderIngredient.quantity,
+            newUnit,
+            stockIngredient.unit
+          );
+          newQuantity = conversion.quantity;
+          newUnit = stockIngredient.unit;
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: `Conversion error for ${orderIngredient.ingredientId}: ${error.message}`,
+          });
+        }
+      }
+
+      // Update order ingredient with the converted values
+      orderIngredient.quantity = newQuantity;
+      orderIngredient.unit = newUnit;
+
+      // Find stock movement for this order
+      const stockMovementIndex = stockIngredient.stockMovements.findIndex(
+        (movement) =>
+          movement.orderId.toString() === selectedOrder.id.toString()
+      );
+
+      if (stockMovementIndex !== -1) {
+        // Update existing stock movement
+        stockIngredient.stockMovements[stockMovementIndex].quantity =
+          newQuantity;
+        stockIngredient.stockMovements[stockMovementIndex].source =
+          orderIngredient.source;
+      } else {
+        // If not found, add a new stock movement entry
+        stockIngredient.stockMovements.push({
+          type: "IN",
+          orderId: selectedOrder.id,
+          quantity: newQuantity,
+          source: orderIngredient.source,
+        });
+      }
+      stockIngredient.stockQuantity = 0;
+      for (const stockMovement of stockIngredient.stockMovements) {
+        stockIngredient.stockQuantity += stockMovement.quantity;
+      }
+
+      // Save the updated ingredient
+      await stockIngredient.save();
+    }
+
+    // Save the updated order
+    await selectedOrder.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Order and stock movements updated successfully",
+      order: selectedOrder,
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 export const createSellOrder = async (req, res) => {};
 
 export const deleteBuyOrder = async (req, res) => {
