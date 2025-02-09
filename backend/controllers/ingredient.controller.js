@@ -1,5 +1,6 @@
 import { Ingredient } from "../models/Ingredient.js";
 import { Order } from "../models/Order.js";
+import convertQuantityByUnit from "../utils/convertQuantityByUnit.js";
 
 // Add new ingredient with 0 stock quantity & without stock movement
 export const addNewIngredient = async (req, res) => {
@@ -62,44 +63,24 @@ export const updateIngredient = async (req, res) => {
       });
     }
 
-    // Allowed conversions
-    const solidUnits = { kg: 1, gr: 0.001, mg: 0.000001 };
-    const liquidUnits = { li: 1, ml: 0.001 };
+    let convertedStockQuantity = 0;
 
-    // Check if unit change is valid within the same type (solid or liquid)
-    const currentUnit = ingredient.unit;
-    const newUnit = unit.toLowerCase();
+    // Convert stock movements safely
+    for (let stockMovement of ingredient.stockMovements) {
+      const conversion = convertQuantityByUnit(
+        stockMovement.quantity,
+        ingredient.unit,
+        unit
+      );
 
-    if (
-      (solidUnits[currentUnit] && liquidUnits[newUnit]) ||
-      (liquidUnits[currentUnit] && solidUnits[newUnit])
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Cannot convert between solid and liquid units",
-      });
+      stockMovement.quantity = conversion.quantity;
+      convertedStockQuantity += stockMovement.quantity;
     }
-
-    // Conversion factor
-    let conversionFactor = 1;
-    if (solidUnits[currentUnit] && solidUnits[newUnit]) {
-      conversionFactor = solidUnits[currentUnit] / solidUnits[newUnit];
-    } else if (liquidUnits[currentUnit] && liquidUnits[newUnit]) {
-      conversionFactor = liquidUnits[currentUnit] / liquidUnits[newUnit];
-    }
-
-    // Recalculate stock quantity and stock movements
-    const updatedStockQuantity = ingredient.stockQuantity * conversionFactor;
-    const updatedStockMovements = ingredient.stockMovements.map((movement) => ({
-      ...movement,
-      quantity: movement.quantity * conversionFactor,
-    }));
 
     // Update ingredient
     ingredient.name = name.toLowerCase();
-    ingredient.unit = newUnit;
-    ingredient.stockQuantity = updatedStockQuantity;
-    ingredient.stockMovements = updatedStockMovements;
+    ingredient.unit = unit;
+    ingredient.stockQuantity = convertedStockQuantity;
 
     await ingredient.save();
 
@@ -109,7 +90,7 @@ export const updateIngredient = async (req, res) => {
       ingredient,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(400).json({ success: false, message: error.message });
   }
 };
 

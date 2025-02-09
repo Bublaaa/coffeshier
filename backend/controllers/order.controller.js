@@ -1,7 +1,7 @@
 import { Order } from "../models/Order.js";
-// import { Product } from "../models/Product.js";
 import { Ingredient } from "../models/Ingredient.js";
 import { Product } from "../models/Product.js";
+import convertQuantityByUnit from "../utils/convertQuantityByUnit.js";
 
 export const getAllOrder = async (req, res) => {
   try {
@@ -83,7 +83,6 @@ export const createBuyOrder = async (req, res) => {
 
     await newOrder.save();
 
-    // Update ingredient stock and stock movements
     for (const ingredient of ingredients) {
       const selectedIngredient = await Ingredient.findById(
         ingredient.ingredientId
@@ -91,18 +90,26 @@ export const createBuyOrder = async (req, res) => {
 
       if (!selectedIngredient) continue; // Skip if ingredient doesn't exist
 
-      // Add stock movement
+      // Convert quantity based on ingredient's default unit
+      const { quantity: convertedQty, unit: convertedUnit } =
+        convertQuantityByUnit(
+          ingredient.quantity,
+          ingredient.unit,
+          selectedIngredient.unit
+        );
+
+      // Add stock movement with converted quantity
       selectedIngredient.stockMovements.push({
         type: "IN",
-        quantity: ingredient.quantity,
+        quantity: convertedQty,
+        unit: convertedUnit,
         source: "Purchase Order",
         orderId: newOrder._id,
       });
 
-      // Increase stock quantity
-      selectedIngredient.stockQuantity += ingredient.quantity;
+      // Increase stock quantity with converted value
+      selectedIngredient.stockQuantity += convertedQty;
 
-      // Save updated ingredient
       await selectedIngredient.save();
     }
 
@@ -110,6 +117,7 @@ export const createBuyOrder = async (req, res) => {
       success: true,
       message: "Buy order created successfully",
       order: newOrder,
+      ingredients,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
