@@ -15,7 +15,6 @@ const IngredientSchema = new mongoose.Schema(
         quantity: { type: Number, required: true },
         source: { type: String },
         orderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
-        timestamp: { type: Date, default: Date.now },
       },
       { timestamps: true },
     ],

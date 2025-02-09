@@ -1,4 +1,5 @@
 import { Ingredient } from "../models/Ingredient.js";
+import { Order } from "../models/Order.js";
 
 // Add new ingredient with 0 stock quantity & without stock movement
 export const addNewIngredient = async (req, res) => {
@@ -162,6 +163,51 @@ export const getIngredientById = async (req, res) => {
       message: "Successfully retrieve ingredient data",
       ingredient,
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const pruneStockDocs = async (req, res) => {
+  try {
+    // Fetch all ingredients
+    const ingredients = await Ingredient.find();
+
+    // Fetch all existing order IDs
+    const existingOrders = new Set(
+      (await Order.find({}, "_id")).map((order) => order._id.toString())
+    );
+
+    for (const ingredient of ingredients) {
+      let totalPrunedQuantity = 0;
+
+      // Filter out stock movements that reference non-existing orders
+      const validStockMovements = ingredient.stockMovements.filter(
+        (movement) => {
+          if (!movement.orderId) return true; // Keep if there's no orderId
+
+          const exists = existingOrders.has(movement.orderId.toString());
+          if (!exists) {
+            totalPrunedQuantity += movement.quantity; // Deduct from stock
+          }
+          return exists; // Keep only valid movements
+        }
+      );
+
+      // Deduct stock quantity based on pruned stock movements
+      ingredient.stockQuantity = Math.max(
+        0,
+        ingredient.stockQuantity - totalPrunedQuantity
+      );
+      ingredient.stockMovements = validStockMovements;
+
+      // Save updated ingredient document
+      await ingredient.save();
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Stock movements pruned successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

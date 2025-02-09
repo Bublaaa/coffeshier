@@ -37,13 +37,18 @@ const OrderSchema = new mongoose.Schema(
     // Purchased Ingredients
     ingredients: [
       {
+        _id: false,
         ingredientId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Ingredient",
           required: true,
         },
         quantity: { type: Number, required: true },
-        unit: { type: String, required: true },
+        unit: {
+          type: String,
+          required: true,
+          enum: ["kg", "gr", "mg", "li", "ml"],
+        },
         subtotal: { type: Number, required: true },
       },
     ],

@@ -5,6 +5,7 @@ import {
   getIngredientById,
   updateIngredient,
   deleteIngredient,
+  pruneStockDocs,
 } from "../controllers/ingredient.controller.js";
 
 const router = express.Router();
@@ -14,5 +15,7 @@ router.get("/get/:id", getIngredientById);
 router.post("/add", addNewIngredient);
 router.put("/update/:id", updateIngredient);
 router.delete("/delete/:id", deleteIngredient);
+
+router.get("/clean", pruneStockDocs);
 
 export default router;
