@@ -5,15 +5,18 @@ import {
   createSellOrder,
   deleteBuyOrder,
   updateBuyOrder,
+  getOrderById,
 } from "../controllers/order.controller.js";
 
 const router = express.Router();
 router.get("/all", getAllOrder);
-router.post("/buy", createBuyOrder);
-router.post("/sell", createSellOrder);
+router.get("/get/:id", getOrderById);
 
+router.post("/buy", createBuyOrder);
 router.put("/update-buy/:id", updateBuyOrder);
 router.delete("/delete-buy/:id", deleteBuyOrder);
+
+router.post("/sell", createSellOrder);
 
 // router.get("/detail/:id", getProductDetails);
 // router.post("/add", addProduct); // Create a product

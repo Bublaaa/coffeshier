@@ -19,6 +19,21 @@ export const getAllOrder = async (req, res) => {
   }
 };
 
+export const getOrderById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const selectedOrder = await Order.findById(id);
+    if (!selectedOrder) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+    res.status(200).json({ success: true, selectedOrder });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const createBuyOrder = async (req, res) => {
   try {
     const { userId, status, ingredients, payment } = req.body;
@@ -103,7 +118,7 @@ export const createBuyOrder = async (req, res) => {
         type: "IN",
         quantity: convertedQty,
         unit: convertedUnit,
-        source: "Purchase Order",
+        source: ingredient.source,
         orderId: newOrder._id,
       });
 
@@ -222,8 +237,6 @@ export const updateBuyOrder = async (req, res) => {
   }
 };
 
-export const createSellOrder = async (req, res) => {};
-
 export const deleteBuyOrder = async (req, res) => {
   const { id } = req.params;
   try {
@@ -268,3 +281,5 @@ export const deleteBuyOrder = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const createSellOrder = async (req, res) => {};
