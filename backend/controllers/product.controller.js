@@ -71,31 +71,39 @@ export const addProduct = async (req, res) => {
   try {
     const {
       name,
-      price,
+      basePrice,
       image,
       status,
       stockQuantity,
       categoryId,
+      sizes,
       ingredients,
       recipe,
     } = req.body;
 
-    if (!name || !price || !image || !stockQuantity) {
+    if (
+      !name ||
+      !basePrice ||
+      !image ||
+      !stockQuantity ||
+      !Array.isArray(sizes) ||
+      sizes.length < 1
+    ) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
-    }
-    const selectedCategory = await Category.findById(categoryId);
-    if (!selectedCategory) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Category not found" });
     }
     const productAlreadyExist = await Product.findOne({ name: name });
     if (productAlreadyExist) {
       return res
         .status(400)
         .json({ success: false, message: "Product already added" });
+    }
+    const selectedCategory = await Category.findById(categoryId);
+    if (!selectedCategory) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
     }
     // If product have Ingredients
     if (Array.isArray(ingredients) && ingredients.length > 0) {
@@ -113,11 +121,12 @@ export const addProduct = async (req, res) => {
 
     const newProduct = new Product({
       name,
-      price,
+      basePrice,
       image,
       status,
       stockQuantity,
       categoryId,
+      sizes,
       ingredients,
       recipe,
     });
@@ -139,11 +148,12 @@ export const updateProduct = async (req, res) => {
     const { id } = req.params;
     const {
       name,
-      price,
+      basePrice,
       image,
       status,
       stockQuantity,
       categoryId,
+      sizes,
       ingredients,
       recipe,
     } = req.body;
@@ -155,11 +165,20 @@ export const updateProduct = async (req, res) => {
         .json({ success: false, message: "Product not found" });
     }
 
-    if (!name || !price || !image || !stockQuantity || !status) {
+    if (
+      !name ||
+      !basePrice ||
+      !image ||
+      !stockQuantity ||
+      !status ||
+      !Array.isArray(sizes) ||
+      sizes.length < 1
+    ) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
+
     const selectedCategory = await Category.findById(categoryId);
     if (!selectedCategory) {
       return res
@@ -206,11 +225,12 @@ export const updateProduct = async (req, res) => {
       id,
       {
         name: name,
-        price: price,
+        basePrice: basePrice,
         image: image,
         status: status,
         stockQuantity: stockQuantity,
         categoryId: categoryId,
+        sizes: sizes,
         ingredients: ingredients,
         recipe: recipe,
       },

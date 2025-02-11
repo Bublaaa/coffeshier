@@ -34,25 +34,51 @@ export const getOrderById = async (req, res) => {
   }
 };
 
+export const deleteOrder = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const selectedOrder = await Order.findById(id);
+    if (!selectedOrder) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    // Delete related stock movements
+    await deleteStockMovementsByOrderId(id);
+
+    // Delete the order after processing ingredients
+    await Order.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Order and related stock movements deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createBuyMerchandiseOrder = async (req, res) => {};
+
 export const createBuyOrder = async (req, res) => {
   try {
     const { userId, status, ingredients, payment } = req.body;
-
     // Check for userId
-    if (!userId) {
+    if (
+      !userId ||
+      !status ||
+      !payment ||
+      !Array.isArray(ingredients) ||
+      ingredients.length === 0
+    ) {
       return res
         .status(400)
-        .json({ success: false, message: "User is not logged in" });
+        .json({ success: false, message: "All fields are required" });
     }
 
     let totalAmount = 0;
     // Check for empty ingredients
-    if (!Array.isArray(ingredients) || ingredients.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Ingredients are required" });
-    }
-
     for (const ingredient of ingredients) {
       // Validate data types
       if (
@@ -99,33 +125,14 @@ export const createBuyOrder = async (req, res) => {
     await newOrder.save();
 
     for (const ingredient of ingredients) {
-      const selectedIngredient = await Ingredient.findById(
-        ingredient.ingredientId
+      await addStockMovements(
+        ingredient.ingredientId,
+        "IN",
+        ingredient.quantity,
+        ingredient.unit,
+        ingredient.source,
+        newOrder._id
       );
-
-      if (!selectedIngredient) continue; // Skip if ingredient doesn't exist
-
-      // Convert quantity based on ingredient's default unit
-      const { quantity: convertedQty, unit: convertedUnit } =
-        convertQuantityByUnit(
-          ingredient.quantity,
-          ingredient.unit,
-          selectedIngredient.unit
-        );
-
-      // Add stock movement with converted quantity
-      selectedIngredient.stockMovements.push({
-        type: "IN",
-        quantity: convertedQty,
-        unit: convertedUnit,
-        source: ingredient.source,
-        orderId: newOrder._id,
-      });
-
-      // Increase stock quantity with converted value
-      selectedIngredient.stockQuantity += convertedQty;
-
-      await selectedIngredient.save();
     }
 
     res.status(201).json({
@@ -150,95 +157,171 @@ export const updateBuyOrder = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Order not found" });
     }
-
-    // Update order details (excluding ingredients)
+    // Update order details
     selectedOrder.userId = userId;
     selectedOrder.status = status;
     selectedOrder.payment = payment;
+
+    // Process stock updates in parallel
+    await deleteStockMovementsByOrderId(id);
+
+    await Promise.all(
+      ingredients.map((ingredient) =>
+        addStockMovements(
+          ingredient.ingredientId,
+          "IN",
+          ingredient.quantity,
+          ingredient.unit,
+          ingredient.source,
+          id
+        )
+      )
+    );
     selectedOrder.ingredients = ingredients;
-
-    // Process each ingredient in the updated order
-    for (let orderIngredient of selectedOrder.ingredients) {
-      const stockIngredient = await Ingredient.findById(
-        orderIngredient.ingredientId
-      );
-      if (!stockIngredient) {
-        return res.status(404).json({
-          success: false,
-          message: `Ingredient with ID ${orderIngredient.ingredientId} not found`,
-        });
-      }
-
-      let newQuantity = orderIngredient.quantity;
-      let newUnit = orderIngredient.unit;
-
-      // Convert unit if necessary
-      if (newUnit !== stockIngredient.unit) {
-        try {
-          const conversion = convertQuantityByUnit(
-            orderIngredient.quantity,
-            newUnit,
-            stockIngredient.unit
-          );
-          newQuantity = conversion.quantity;
-          newUnit = stockIngredient.unit;
-        } catch (error) {
-          return res.status(400).json({
-            success: false,
-            message: `Conversion error for ${orderIngredient.ingredientId}: ${error.message}`,
-          });
-        }
-      }
-
-      // Update order ingredient with the converted values
-      orderIngredient.quantity = newQuantity;
-      orderIngredient.unit = newUnit;
-
-      // Find stock movement for this order
-      const stockMovementIndex = stockIngredient.stockMovements.findIndex(
-        (movement) =>
-          movement.orderId.toString() === selectedOrder.id.toString()
-      );
-
-      if (stockMovementIndex !== -1) {
-        // Update existing stock movement
-        stockIngredient.stockMovements[stockMovementIndex].quantity =
-          newQuantity;
-        stockIngredient.stockMovements[stockMovementIndex].source =
-          orderIngredient.source;
-      } else {
-        // If not found, add a new stock movement entry
-        stockIngredient.stockMovements.push({
-          type: "IN",
-          orderId: selectedOrder.id,
-          quantity: newQuantity,
-          source: orderIngredient.source,
-        });
-      }
-      stockIngredient.stockQuantity = 0;
-      for (const stockMovement of stockIngredient.stockMovements) {
-        stockIngredient.stockQuantity += stockMovement.quantity;
-      }
-
-      // Save the updated ingredient
-      await stockIngredient.save();
+    let totalAmount = 0;
+    for (const ingredient of selectedOrder.ingredients) {
+      totalAmount += ingredient.subtotal;
     }
-
-    // Save the updated order
+    selectedOrder.totalAmount = totalAmount;
     await selectedOrder.save();
 
     return res.status(200).json({
       success: true,
-      message: "Order and stock movements updated successfully",
+      message: "Order updated successfully",
       order: selectedOrder,
     });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const deleteBuyOrder = async (req, res) => {
+export const createSellOrder = async (req, res) => {
+  const { userId, status, products, payment } = req.body;
+  try {
+    if (
+      !userId ||
+      !status ||
+      !products ||
+      !payment ||
+      !Array.isArray(products) ||
+      products.length < 1
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+    let totalAmount = 0;
+
+    for (const product of products) {
+      // Fetch the product details
+      const selectedProduct = await Product.findById(product.productId);
+      if (!selectedProduct) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
+      }
+
+      // Change the product subtotal = base price + additional price by size
+      const additionalPrice = (
+        selectedProduct.sizes.find(
+          (s) => s.size === product.customization.size
+        ) || {
+          additionalPrice: 0,
+        }
+      ).additionalPrice;
+      product.subtotal = selectedProduct.basePrice + additionalPrice;
+
+      if (typeof product.quantity !== "number" || !product.quantity) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid product quantity" });
+      }
+
+      // Add to total amount
+      totalAmount += product.subtotal * product.quantity;
+
+      // Deduct stock from the product inventory
+      selectedProduct.stockQuantity -= product.quantity;
+      await selectedProduct.save();
+    }
+
+    // Create new order
+    const newOrder = new Order({
+      userId,
+      totalAmount,
+      status: status || "pending",
+      products,
+      payment,
+    });
+
+    await newOrder.save();
+
+    for (const product of products) {
+      const selectedProduct = await Product.findById(product.productId);
+      if (!selectedProduct) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
+      }
+
+      for (let ingredient of selectedProduct.ingredients) {
+        const selectedIngredient = await Ingredient.findById(
+          ingredient.ingredientId
+        );
+
+        if (!selectedIngredient) {
+          return res
+            .status(404)
+            .json({ success: false, message: "Ingredient not found" });
+        }
+
+        const matchingSize = ingredient.quantityBySize.find(
+          (q) => q.size === product.customization.size
+        );
+
+        if (!matchingSize) {
+          return res
+            .status(404)
+            .json({ success: false, message: "No matching size available" });
+        }
+
+        const { quantity, unit } = matchingSize;
+
+        // Convert quantity
+        let convertedQuantity = convertQuantityByUnit(
+          quantity,
+          unit,
+          selectedIngredient.unit
+        ).quantity;
+
+        selectedIngredient.stockMovements.push({
+          type: "OUT",
+          quantity: convertedQuantity * product.quantity,
+          source: "Selling Products",
+          orderId: newOrder._id,
+        });
+        await selectedIngredient.save();
+        selectedIngredient.stockQuantity = calculateStockQuantity(
+          selectedIngredient.stockMovements
+        );
+        await selectedIngredient.save();
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Order created successfully",
+      order: newOrder,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateSellOrder = async (req, res) => {
   const { id } = req.params;
+  const { userId, status, products, payment } = req.body;
   try {
     const selectedOrder = await Order.findById(id);
     if (!selectedOrder) {
@@ -246,40 +329,121 @@ export const deleteBuyOrder = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Order not found" });
     }
+    selectedOrder.userId = userId;
+    selectedOrder.status = status;
+    selectedOrder.payment = payment;
+    selectedOrder.products = products;
 
-    // Iterate through each ingredient in the order
-    for (const ingredient of selectedOrder.ingredients) {
-      const ingredientDoc = await Ingredient.findById(ingredient.ingredientId);
-      if (!ingredientDoc) {
-        return res.status(404).json({
-          success: false,
-          message: "Ingredient not found",
-          ingredient,
-        });
+    for (let product of products) {
+      const selectedProduct = await Product.findById(product.productId);
+      for (const ingredient in selectedProduct.ingredients) {
+        const selectedIngredient = await Ingredient.findById(
+          ingredient.ingredientId
+        );
+        const matchingSize = ingredient.quantityBySize.find(
+          (q) => q.size === product.customization.size
+        );
+        if (!matchingSize) {
+          return res
+            .status(404)
+            .json({ success: false, message: "No matching size available" });
+        }
+
+        const { quantity, unit } = matchingSize;
+
+        // Convert quantity
+        let convertedQuantity = convertQuantityByUnit(
+          quantity,
+          unit,
+          selectedIngredient.unit
+        ).quantity;
+
+        const matchingStock = selectedIngredient.stockMovements.find(
+          (stock) => stock.orderId === id
+        );
+        if (!matchingStock) {
+          return res.status(404).json({
+            success: false,
+            message: "No matching stock movement available",
+          });
+        }
+        matchingStock.quantity = convertedQuantity;
+        await matchingStock.save();
+        selectedIngredient.stockQuantity = calculateStockQuantity(
+          selectedIngredient.stockMovements
+        );
+        await selectedIngredient.save();
       }
-
-      // Remove stock movement related to this order
-      ingredientDoc.stockMovements = ingredientDoc.stockMovements.filter(
-        (movement) => movement.orderId.toString() !== selectedOrder.id
-      );
-
-      // Deduct stockQuantity (since this order was a "buy" order)
-      ingredientDoc.stockQuantity -= ingredient.quantity;
-
-      // Save updated ingredient
-      await ingredientDoc.save();
     }
-
-    // Delete the order after processing ingredients
-    await Order.findByIdAndDelete(id);
-
-    res.status(200).json({
-      success: true,
-      message: "Order and related stock movements deleted successfully",
-    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const createSellOrder = async (req, res) => {};
+const calculateStockQuantity = (stockMovements) => {
+  const newStockQuantity = stockMovements.reduce((total, movement) => {
+    return movement.type === "IN"
+      ? total + movement.quantity
+      : total - movement.quantity;
+  }, 0);
+
+  if (newStockQuantity < 0) {
+    throw new Error("Stock quantity is not available");
+  }
+
+  return newStockQuantity;
+};
+
+const addStockMovements = async (
+  ingredientId,
+  type,
+  quantity,
+  unit,
+  source,
+  orderId
+) => {
+  const selectedIngredient = await Ingredient.findById(ingredientId);
+  if (!selectedIngredient) {
+    throw new Error(`Ingredient with ID ${ingredientId} not found`);
+  }
+
+  const convertedQuantity = convertQuantityByUnit(
+    quantity,
+    unit,
+    selectedIngredient.unit
+  ).quantity;
+
+  selectedIngredient.stockMovements.push({
+    type,
+    quantity: convertedQuantity,
+    source,
+    orderId,
+  });
+
+  // Update stock quantity
+  selectedIngredient.stockQuantity = calculateStockQuantity(
+    selectedIngredient.stockMovements
+  );
+
+  await selectedIngredient.save();
+};
+
+const deleteStockMovementsByOrderId = async (orderId) => {
+  // Remove stock movements from all ingredients with this orderId
+  const result = await Ingredient.updateMany(
+    { "stockMovements.orderId": orderId },
+    { $pull: { stockMovements: { orderId: orderId } } }
+  );
+
+  if (result.modifiedCount === 0) {
+    throw new Error(`No stock movements found for orderId: ${orderId}`);
+  }
+  const ingredients = await Ingredient.find();
+
+  for (const ingredient of ingredients) {
+    ingredient.stockQuantity = calculateStockQuantity(
+      ingredient.stockMovements
+    );
+    await ingredient.save(); // Save the updated stock quantity
+  }
+};

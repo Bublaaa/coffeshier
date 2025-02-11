@@ -3,8 +3,9 @@ import {
   getAllOrder,
   createBuyOrder,
   createSellOrder,
-  deleteBuyOrder,
+  deleteOrder,
   updateBuyOrder,
+  updateSellOrder,
   getOrderById,
 } from "../controllers/order.controller.js";
 
@@ -14,7 +15,9 @@ router.get("/get/:id", getOrderById);
 
 router.post("/buy", createBuyOrder);
 router.put("/update-buy/:id", updateBuyOrder);
-router.delete("/delete-buy/:id", deleteBuyOrder);
+router.put("/update-sell/:id", updateSellOrder);
+
+router.delete("/delete/:id", deleteOrder);
 
 router.post("/sell", createSellOrder);
 
