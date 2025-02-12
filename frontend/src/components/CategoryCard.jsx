@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useCategoryStore } from "../store/categoryStore";
 import * as LucideIcons from "lucide-react";
 
-const CategoryCardSkeleton = ({ count = 6 }) => {
+const CategoryCardSkeleton = ({ count }) => {
   return Array.from({ length: count }).map((_, index) => (
     <div className="py-4 px-7 bg-gray-300 rounded-xl" key={index}>
       <div className="p-5 mb-4 bg-gray-200 rounded-full"></div>
@@ -11,7 +11,11 @@ const CategoryCardSkeleton = ({ count = 6 }) => {
   ));
 };
 
-function CategoryCard({ activeCategory, setActiveCategory }) {
+function CategoryCard({
+  activeCategory,
+  setActiveCategory,
+  setActiveCategoryId,
+}) {
   const { categories, fetchCategories, isLoading } = useCategoryStore();
 
   useEffect(() => {
@@ -19,7 +23,7 @@ function CategoryCard({ activeCategory, setActiveCategory }) {
   }, [fetchCategories]);
 
   if (isLoading) {
-    return <CategoryCardSkeleton count={categories.length} />;
+    return <CategoryCardSkeleton count={categories.length || 6} />;
   }
 
   if (!categories || categories.length === 0) {
@@ -29,7 +33,10 @@ function CategoryCard({ activeCategory, setActiveCategory }) {
   return (
     <>
       <div
-        onClick={() => setActiveCategory("All")}
+        onClick={() => {
+          setActiveCategory("All");
+          setActiveCategoryId("");
+        }}
         className={`${
           activeCategory === "All"
             ? "text-white bg-accent hover:bg-accent-hover"
@@ -53,7 +60,10 @@ function CategoryCard({ activeCategory, setActiveCategory }) {
         return (
           <div
             key={category._id}
-            onClick={() => setActiveCategory(category.name)}
+            onClick={() => {
+              setActiveCategory(category.name);
+              setActiveCategoryId(category._id);
+            }}
             className={`${
               activeCategory === category.name
                 ? "text-white bg-accent hover:bg-accent-hover"

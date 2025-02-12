@@ -6,6 +6,7 @@ import OrderCart from "../components/OrderCart.jsx";
 
 const MenuPage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategoryId, setActiveCategoryId] = useState("");
   return (
     <div className="flex flex-row gap-5 my-5 mr-5">
       <div className="flex flex-col gap-5 w-4/6">
@@ -15,6 +16,7 @@ const MenuPage = () => {
           <CategoryCard
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
+            setActiveCategoryId={setActiveCategoryId}
           />
         </div>
         {/* Menu Card */}
@@ -23,17 +25,7 @@ const MenuPage = () => {
             {activeCategory.replace(/\b\w/g, (char) => char.toUpperCase())}
           </h1>
           <div className="h-[62vh] grid grid-cols-3 gap-5 overflow-y-auto scrollbar-hidden">
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
-            <MenuCard />
+            <MenuCard activeCategoryId={activeCategoryId} />
           </div>
         </div>
       </div>

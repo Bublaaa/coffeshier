@@ -20,9 +20,8 @@ export const getAllProducts = async (req, res) => {
 
 // Get available product & conditional category
 export const getProductsByCategory = async (req, res) => {
+  const { categoryId } = req.body;
   try {
-    const { categoryId } = req.body;
-
     let query = { status: "Available" };
     if (categoryId) {
       query.categoryId = categoryId;
