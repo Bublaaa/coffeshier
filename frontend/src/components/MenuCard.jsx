@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useProductStore } from "../store/productStore";
 
-const MenuCardSkeleton = ({ count }) => {
+const Skeleton = ({ count }) => {
   return (
     <>
       {Array(count)
@@ -41,7 +41,7 @@ function MenuCard({ activeCategoryId }) {
   }, [activeCategoryId, fetchProducts, fetchProductsByCategory]);
 
   if (isLoading) {
-    return <MenuCardSkeleton count={products?.length || 6} />;
+    return <Skeleton count={products?.length || 6} />;
   }
   if (!products || products.length < 1) {
     return <p className="text-gray-500">{error}</p>;
@@ -62,15 +62,15 @@ function MenuCard({ activeCategoryId }) {
           <div className="flex flex-col justify-between">
             <div className="flex w-full gap-2 items-center justify-between">
               <h2 className="text-dark font-bold text-lg">{product.name}</h2>
-              <h3 className="whitespace-nowrap text-accent font-bold text-2xl">
-                $ {product.basePrice}
+              <h3 className="whitespace-nowrap text-accent font-semibold text-md">
+                {product.basePrice.toLocaleString("id-ID")}
               </h3>
             </div>
             <p className="text-gray-500 max-w-full line-clamp-3">
               {product.description || product.name}
             </p>
           </div>
-          <button className="w-full h-fit py-2 text-accent border border-accent rounded-full bg-white font-bold hover:bg-gray-100 hover:border-accent-hover hover:text-accent-hover">
+          <button className="w-full h-fit py-2 text-white rounded-full bg-accent font-bold hover:bg-accent-hover">
             Add to Cart
           </button>
         </div>
