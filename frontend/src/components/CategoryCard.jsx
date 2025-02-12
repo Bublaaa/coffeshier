@@ -2,16 +2,23 @@ import { useEffect } from "react";
 import { useCategoryStore } from "../store/categoryStore";
 import * as LucideIcons from "lucide-react";
 
-const CategoryCardSkeleton = ({ count = 6 }) => {
+const Skeleton = ({ count }) => {
   return Array.from({ length: count }).map((_, index) => (
-    <div className="py-4 px-7 bg-gray-300 rounded-xl" key={index}>
+    <div
+      className="animate-[pulse_0.8s_ease-in-out_infinite] py-4 px-7 bg-gray-300 rounded-xl"
+      key={index}
+    >
       <div className="p-5 mb-4 bg-gray-200 rounded-full"></div>
       <div className="bg-gray-200 p-2 rounded-lg"></div>
     </div>
   ));
 };
 
-function CategoryCard({ activeCategory, setActiveCategory }) {
+function CategoryCard({
+  activeCategory,
+  setActiveCategory,
+  setActiveCategoryId,
+}) {
   const { categories, fetchCategories, isLoading } = useCategoryStore();
 
   useEffect(() => {
@@ -19,7 +26,7 @@ function CategoryCard({ activeCategory, setActiveCategory }) {
   }, [fetchCategories]);
 
   if (isLoading) {
-    return <CategoryCardSkeleton count={categories.length} />;
+    return <Skeleton count={categories.length || 6} />;
   }
 
   if (!categories || categories.length === 0) {
@@ -29,11 +36,14 @@ function CategoryCard({ activeCategory, setActiveCategory }) {
   return (
     <>
       <div
-        onClick={() => setActiveCategory("All")}
+        onClick={() => {
+          setActiveCategory("All");
+          setActiveCategoryId("");
+        }}
         className={`${
           activeCategory === "All"
             ? "text-white bg-accent hover:bg-accent-hover"
-            : "text-dark bg-white hover:bg-gray-300"
+            : "text-dark bg-white hover:bg-gray-200"
         } flex flex-col justify-between cursor-pointer py-4 px-7 rounded-lg`}
       >
         <LucideIcons.Blocks className="size-7 mb-4" />
@@ -53,11 +63,14 @@ function CategoryCard({ activeCategory, setActiveCategory }) {
         return (
           <div
             key={category._id}
-            onClick={() => setActiveCategory(category.name)}
+            onClick={() => {
+              setActiveCategory(category.name);
+              setActiveCategoryId(category._id);
+            }}
             className={`${
               activeCategory === category.name
                 ? "text-white bg-accent hover:bg-accent-hover"
-                : "text-dark bg-white hover:bg-gray-300"
+                : "text-dark bg-white hover:bg-gray-200"
             } flex flex-col justify-between cursor-pointer py-4 px-7 rounded-lg`}
           >
             <IconComponent className="size-7 mb-4" />

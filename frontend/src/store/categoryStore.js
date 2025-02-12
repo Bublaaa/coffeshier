@@ -17,8 +17,7 @@ export const useCategoryStore = create((set) => ({
   fetchCategories: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(`${API_URL}category/get-category`);
-
+      const response = await axios.get(`${API_URL}category/get`);
       set({ categories: response.data.categories, isLoading: false });
     } catch (error) {
       set({

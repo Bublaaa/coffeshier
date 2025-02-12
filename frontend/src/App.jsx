@@ -2,7 +2,7 @@
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore.js";
 import { useEffect, lazy, Suspense } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 // Pages
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -17,10 +17,14 @@ const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard.jsx"));
 const ManagerDashboard = lazy(() => import("./pages/ManagerDashboard.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
 const MenuPage = lazy(() => import("./pages/MenuPage.jsx"));
+const ProductPage = lazy(() => import("./pages/ProductPage.jsx"));
 
 // Protect routes that require authentication
+
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, user } = useAuthStore();
+  const location = useLocation();
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -29,12 +33,22 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (requiredRole && user.position !== requiredRole) {
-    // Redirect if the user doesn't have the required role
-    if (user.position === "employee") return <Navigate to={"/"} replace />;
-    if (user.position === "manager")
-      return <Navigate to={"/manager"} replace />;
-    if (user.position === "owner") return <Navigate to={"/owner"} replace />;
+    // Prevent unnecessary redirects if already on the correct route
+    if (user.position === "employee" && location.pathname !== "/") {
+      return <Navigate to="/" replace />;
+    }
+    if (user.position === "manager" && location.pathname !== "/manager") {
+      return <Navigate to="/manager" replace />;
+    }
+    if (
+      user.position === "owner" &&
+      location.pathname !== "/owner" &&
+      !location.pathname.startsWith("/owner/")
+    ) {
+      return <Navigate to="/owner" replace />;
+    }
   }
+
   return children;
 };
 
@@ -60,26 +74,39 @@ function App() {
   return (
     <div className="h-screen w-full bg-white-shadow flex  overflow-hidden">
       <Routes>
+        {/* Owner Routes */}
         <Route
           path="/owner"
           element={
             <ProtectedRoute requiredRole="owner">
               <Suspense>
-                <OwnerDashboard />
+                <Dashboard />
               </Suspense>
             </ProtectedRoute>
           }
-        />
+        >
+          <Route
+            path="product"
+            element={
+              <Suspense>
+                <ProductPage />
+              </Suspense>
+            }
+          />
+        </Route>
+
+        {/* Employee Routes */}
         <Route
           path="/manager"
           element={
             <ProtectedRoute requiredRole="manager">
               <Suspense>
-                <ManagerDashboard />
+                <Dashboard />
               </Suspense>
             </ProtectedRoute>
           }
-        />
+        ></Route>
+        {/* Employee Routes */}
         <Route
           path="/"
           element={

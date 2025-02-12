@@ -4,7 +4,7 @@ import { useState } from "react";
 import Navbar from "../components/Navbar.jsx";
 import OrderCart from "../components/OrderCart.jsx";
 
-const MenuPage = () => {
+const ProductPage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeCategoryId, setActiveCategoryId] = useState("");
   return (
@@ -35,4 +35,4 @@ const MenuPage = () => {
     </div>
   );
 };
-export default MenuPage;
+export default ProductPage;

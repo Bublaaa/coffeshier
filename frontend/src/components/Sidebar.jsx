@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import SideBarLink from "./SideBarLink.jsx";
-import { Home, Utensils, ArrowLeft, ArrowRight } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
-const Sidebar = () => {
+const Sidebar = ({ links }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {
@@ -33,23 +33,23 @@ const Sidebar = () => {
           onClick={toggleSidebar}
         >
           <span className="sr-only">Toggle sidebar</span>
-          {isCollapsed ? <ArrowRight /> : <ArrowLeft />}
+          {isCollapsed ? <LucideIcons.ArrowRight /> : <LucideIcons.ArrowLeft />}
         </button>
       </div>
       <div className="h-full pl-3 py-4 overflow-y-auto">
         <ul className="space-y-2 font-medium">
-          <SideBarLink
-            label={"Menu"}
-            icon={Utensils}
-            href={"/menu"}
-            isCollapsed={isCollapsed}
-          />
-          <SideBarLink
-            label={"Profile"}
-            icon={Home}
-            href={"/profile"}
-            isCollapsed={isCollapsed}
-          />
+          {links.map(({ label, icon, href }) => {
+            const IconComponent = LucideIcons[icon] || LucideIcons.Menu;
+            return (
+              <SideBarLink
+                key={label}
+                label={label}
+                icon={IconComponent}
+                href={href}
+                isCollapsed={isCollapsed}
+              />
+            );
+          })}
         </ul>
       </div>
     </aside>

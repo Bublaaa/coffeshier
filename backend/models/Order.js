@@ -13,15 +13,17 @@ const OrderSchema = new mongoose.Schema(
       enum: ["pending", "paid", "shipped", "canceled"],
       default: "pending",
     },
-    items: [
+    // Ordered Products
+    products: [
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
           required: true,
-        }, // Reference
+        },
+        quantity: { type: Number, required: true },
+        subtotal: { type: Number, required: true },
         customization: {
-          // NEW: Future-proof for custom orders
           size: {
             type: String,
             enum: ["regular", "large"],
@@ -29,7 +31,24 @@ const OrderSchema = new mongoose.Schema(
           },
           note: { type: String },
         },
+      },
+    ],
+
+    // Purchased Ingredients
+    ingredients: [
+      {
+        _id: false,
+        ingredientId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Ingredient",
+          required: true,
+        },
         quantity: { type: Number, required: true },
+        unit: {
+          type: String,
+          required: true,
+          enum: ["kg", "gr", "mg", "li", "ml"],
+        },
         subtotal: { type: Number, required: true },
       },
     ],
