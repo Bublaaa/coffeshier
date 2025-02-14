@@ -15,12 +15,36 @@ export const useProductStore = create((set) => ({
   isLoading: false,
   message: null,
 
+  handleError: (error) => {
+    const errorMessage =
+      error.response?.data?.message || "Error fetching products";
+    set({
+      error: errorMessage || "Error fetching products",
+      isLoading: false,
+    });
+    toast.error(errorMessage);
+  },
   fetchProducts: async () => {
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get(`${API_URL}product/all`);
       console.log(response.data.products);
       set({ products: response.data.products, isLoading: false });
+    } catch (error) {
+      handleError(error);
+    }
+  },
+  fetchMerchandises: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}product/all`);
+      const filteredProducts = response.data.products.filter(
+        (product) =>
+          Array.isArray(product.ingredients) && product.ingredients.length > 0
+      );
+      console.log(filteredProducts);
+
+      set({ products: filteredProducts, isLoading: false });
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error fetching products";
