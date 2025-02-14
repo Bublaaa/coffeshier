@@ -19,7 +19,7 @@ export const useProductStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get(`${API_URL}product/all`);
-
+      console.log(response.data.products);
       set({ products: response.data.products, isLoading: false });
     } catch (error) {
       const errorMessage =
