@@ -37,7 +37,7 @@ const ProductPage = () => {
 
   const menuTabContent = ({ activeTab }) => {
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col bg-white rounded-xl overflow-hidden">
         <div className="flex flex-row h-fit gap-5 items-center">
           <button className="w-fit rounded-lg bg-accent p-3 text-white hover:bg-accent-hover">
             <LucideIcons.Plus />
@@ -84,6 +84,7 @@ const ProductPage = () => {
           activeTab={activeTab}
           ingredients={ingredients}
           orders={orders}
+          isLoadingIngredients={isLoadingIngredients}
         />
       ),
     },
@@ -94,9 +95,6 @@ const ProductPage = () => {
     fetchProducts();
     fetchOrders();
   }, [fetchIngredients, fetchProducts, fetchOrders]);
-
-  if (isLoadingProducts) {
-  }
 
   return (
     <div className="flex flex-row gap-5 my-5 mr-5">
