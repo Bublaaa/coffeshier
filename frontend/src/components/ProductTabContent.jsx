@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as LucideIcons from "lucide-react";
 import { placeholder } from "../assets/index.js";
 import Modal from "../components/Modal.jsx";
+import Input from "./Input";
 
 const Skeleton = ({ count }) => {
   return (
@@ -55,18 +56,25 @@ const ProductCard = ({ product }) => {
   );
 };
 
-const AddIngredientForm = () => (
+const AddProductForm = () => (
   <form className="flex flex-col gap-3">
-    <input
-      type="text"
-      placeholder="Ingredient Name"
-      className="border p-2 rounded-md"
+    <Input type="text" label="Product Name" placeholder="e.g. Burnt Toast" />
+    <Input type="number" label="Base Price" placeholder="e.g. 20.000,-" />
+    <Input
+      inputType="dropdown"
+      label="Status"
+      options={[
+        { value: "Available", label: "Available" },
+        { value: "Not Available", label: "Not Available" },
+      ]}
     />
-    <input
-      type="number"
-      placeholder="Quantity"
-      className="border p-2 rounded-md"
+    <Input type="number" label="Initial Stock" placeholder="e.g. 200" />
+    <Input
+      type="textArea"
+      label="Description"
+      placeholder="e.g. Araara coffee beans blend"
     />
+
     <button className="bg-accent text-white p-2 rounded-md">
       Add Ingredient
     </button>
@@ -91,7 +99,6 @@ const ProductTabContent = ({
   };
 
   const handleProductClick = (event) => {
-    // Find the closest element with `data-id` (ensures click came from a product card)
     const card = event.target.closest("[data-id]");
     if (!card) return;
 
@@ -107,7 +114,7 @@ const ProductTabContent = ({
       <div className="flex flex-row h-fit gap-5 pb-5 items-center">
         <button
           className="w-fit rounded-lg bg-accent p-3 text-white hover:bg-accent-hover"
-          onClick={() => openModal("Add Ingredient", <AddIngredientForm />)}
+          onClick={() => openModal("Add Ingredient", <AddProductForm />)}
         >
           <LucideIcons.Plus />
         </button>
