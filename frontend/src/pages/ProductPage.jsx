@@ -1,4 +1,3 @@
-import MenuCard from "../components/MenuCard.jsx";
 import { useState, useEffect } from "react";
 import { useIngredientStore } from "../store/ingredientStore.js";
 import { useProductStore } from "../store/productStore.js";
@@ -6,9 +5,10 @@ import { useOrderStore } from "../store/orderStore.js";
 
 import * as LucideIcons from "lucide-react";
 import IngredientTabContent from "../components/IngredientTabContent.jsx";
+import ProductTabContent from "../components/ProductTabContent.jsx";
 
 const ProductPage = () => {
-  const [activeTab, setActiveTab] = useState("Menu");
+  const [activeTab, setActiveTab] = useState("Product");
   // const [activeCategoryId, setActiveCategoryId] = useState("");
   // Fetching state from ingredient store
   const {
@@ -35,21 +35,6 @@ const ProductPage = () => {
     error: orderError,
   } = useOrderStore();
 
-  const menuTabContent = ({ activeTab }) => {
-    return (
-      <div className="flex flex-col bg-white rounded-xl overflow-hidden">
-        <div className="flex flex-row h-fit gap-5 items-center">
-          <button className="w-fit rounded-lg bg-accent p-3 text-white hover:bg-accent-hover">
-            <LucideIcons.Plus />
-          </button>
-          <h1 className="text-dark font-bold text-3xl">
-            {activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}
-          </h1>
-        </div>
-        <MenuCard />
-      </div>
-    );
-  };
   const merchandiseTabContent = ({ activeTab }) => {
     return (
       <div className="flex flex-row h-fit gap-5 items-center">
@@ -64,10 +49,17 @@ const ProductPage = () => {
   };
   const tabs = [
     {
-      id: "menu",
-      label: "Menu",
+      id: "product",
+      label: "Product",
       icon: "Blocks",
-      content: (props) => menuTabContent(props),
+      content: (props) => (
+        <ProductTabContent
+          activeTab={activeTab}
+          products={products}
+          orders={orders}
+          isLoadingProducts={isLoadingProducts}
+        />
+      ),
     },
     {
       id: "merchandise",
@@ -85,6 +77,7 @@ const ProductPage = () => {
           ingredients={ingredients}
           orders={orders}
           isLoadingIngredients={isLoadingIngredients}
+          isLoadingProducts={isLoadingProducts}
         />
       ),
     },

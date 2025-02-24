@@ -3,7 +3,7 @@ import SideBarLink from "./SideBarLink.jsx";
 import * as LucideIcons from "lucide-react";
 
 const Sidebar = ({ links }) => {
-  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
+  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 1024);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);

@@ -115,6 +115,38 @@ export const deleteIngredient = async (req, res) => {
   }
 };
 
+export const getIngredientsAggregation = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default limit 10
+    const skip = (page - 1) * limit;
+
+    // Aggregation Pipeline
+    const results = await Ingredient.aggregate([
+      { $match: { stockQuantity: { $gt: 0 } } }, // Filter example: stockQuantity > 0
+      { $sort: { createdAt: -1 } }, // Sort newest first
+      { $skip: skip }, // Skip documents for pagination
+      { $limit: limit }, // Limit documents per page
+    ]);
+
+    // Get total count (for total pages calculation)
+    const totalCount = await Ingredient.countDocuments({
+      stockQuantity: { $gt: 0 },
+    });
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.json({
+      page,
+      totalPages,
+      totalCount,
+      limit,
+      data: results,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getIngredients = async (req, res) => {
   try {
     const ingredients = await Ingredient.find().sort({ createdAt: -1 });
