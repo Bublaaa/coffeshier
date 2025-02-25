@@ -56,6 +56,7 @@ const ProductPage = () => {
         <ProductTabContent
           activeTab={activeTab}
           products={products}
+          ingredients={ingredients}
           orders={orders}
           isLoadingProducts={isLoadingProducts}
         />

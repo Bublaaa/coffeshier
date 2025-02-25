@@ -30,6 +30,7 @@ const Button = ({
 }) => {
   return (
     <button
+      type="button"
       className={clsx(
         "flex items-center justify-center gap-2 rounded-lg transition focus:outline-none focus:ring-4",
         buttonVariants[buttonType], // ✅ Use variant styles
@@ -47,3 +48,31 @@ const Button = ({
 };
 
 export default Button;
+
+// MARK: - How to use
+{
+  /* 
+<Button buttonType="primary" buttonSize="large">
+  Primary Button
+</Button>
+
+<Button
+  buttonType="secondary"
+  buttonSize="medium"
+  icon={LucideIcons.Plus}
+>
+  Add Item
+</Button>
+
+<Button buttonType="disabled" buttonSize="small">
+  Disabled
+</Button>
+
+<Button
+  buttonType="primary"
+  buttonSize="large"
+  icon={LucideIcons.CheckCircle}
+>
+  Confirm
+</Button> */
+}

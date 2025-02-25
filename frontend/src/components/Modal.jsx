@@ -18,6 +18,7 @@ const Modal = ({ isOpen, onClose, title, body }) => {
         <div className="flex justify-between items-center border-b border-gray-300 pb-3">
           <h2 className="text-xl text-dark font-semibold">{title}</h2>
           <button
+            type="Button"
             onClick={onClose}
             className="text-gray-500 hover:text-red-400 cursor-pointer bg-transparent hover:bg-red-100 p-2 rounded-lg"
           >

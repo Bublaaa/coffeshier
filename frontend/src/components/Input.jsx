@@ -24,16 +24,29 @@ const TextareaInput = (props) => (
   />
 );
 
-const CheckboxInput = ({ label, ...props }) => (
-  <label className="flex items-center gap-2 cursor-pointer">
-    <input
-      {...props}
-      type="checkbox"
-      className="w-5 h-5 text-accent cursor-pointer accent-accent"
-    />
-    <span className="text-gray-700">{label}</span>
-  </label>
-);
+const CheckboxInput = ({ options, ...props }) => {
+  return (
+    <div className="flex flex-wrap gap-5">
+      {options.map((option, index) => (
+        <div key={index}>
+          <input
+            id={index}
+            {...props}
+            type="checkbox"
+            value={option.value}
+            className="w-5 h-5 text-accent cursor-pointer accent-accent hidden peer"
+          />
+          <label
+            htmlFor={index}
+            className="flex w-fit px-3 py-2 items-center cursor-pointer peer-checked:border-2 hover:bg-gray-100 peer-checked:border-accent border border-gray-200 rounded-lg bg-white"
+          >
+            <span className="text-gray-700">{option.label}</span>
+          </label>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const DropdownInput = ({
   options,
@@ -97,7 +110,7 @@ const Input = ({ inputType = "text", label, icon, options = [], ...props }) => {
   const inputComponents = {
     text: <TextInput icon={icon} {...props} />,
     textarea: <TextareaInput {...props} />,
-    checkbox: <CheckboxInput label={label} {...props} />,
+    checkbox: <CheckboxInput label={label} options={options} {...props} />,
     dropdown: (
       <DropdownInput
         options={options}
@@ -129,3 +142,29 @@ const Input = ({ inputType = "text", label, icon, options = [], ...props }) => {
 };
 
 export default Input;
+
+// MARK: - How to use
+{
+  /* 
+  <Input type="number" label="Base Price" placeholder="e.g. 20.000,-" />
+      <Input
+        inputType="dropdown"
+        label="Status"
+        options={[
+          { value: "Available", label: "Available" },
+          { value: "Not Available", label: "Not Available" },
+        ]}
+      />
+      <Input type="number" label="Initial Stock" placeholder="e.g. 200" />
+      <Input
+        inputType="textarea"
+        label="Description"
+        placeholder="e.g. Araara coffee beans blend"
+      />
+      <Input
+        inputType="file"
+        label="Product Image"
+        placeholder="e.g. Araara coffee beans blend"
+      /> 
+      */
+}
