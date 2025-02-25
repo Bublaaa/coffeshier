@@ -2,7 +2,8 @@ import { useState } from "react";
 import * as LucideIcons from "lucide-react";
 import { placeholder } from "../assets/index.js";
 import Modal from "../components/Modal.jsx";
-import Input from "./Input";
+import Input from "./Input.jsx";
+import Button from "./Button.jsx";
 
 const Skeleton = ({ count }) => {
   return (
@@ -49,6 +50,29 @@ const ProductCard = ({ product }) => {
           {product.description || product.name}
         </p>
       </div>
+      <Button buttonType="primary" buttonSize="large">
+        Primary Button
+      </Button>
+
+      <Button
+        buttonType="secondary"
+        buttonSize="medium"
+        icon={LucideIcons.Plus}
+      >
+        Add Item
+      </Button>
+
+      <Button buttonType="disabled" buttonSize="small">
+        Disabled
+      </Button>
+
+      <Button
+        buttonType="primary"
+        buttonSize="large"
+        icon={LucideIcons.CheckCircle}
+      >
+        Confirm
+      </Button>
       <button className="w-full mt-auto h-fit py-2 text-white rounded-full bg-accent font-bold hover:bg-accent-hover">
         Edit
       </button>
@@ -70,14 +94,17 @@ const AddProductForm = () => (
     />
     <Input type="number" label="Initial Stock" placeholder="e.g. 200" />
     <Input
-      type="textArea"
+      inputType="textarea"
       label="Description"
       placeholder="e.g. Araara coffee beans blend"
     />
+    <Input
+      inputType="file"
+      label="Product Image"
+      placeholder="e.g. Araara coffee beans blend"
+    />
 
-    <button className="bg-accent text-white p-2 rounded-md">
-      Add Ingredient
-    </button>
+    <button className="bg-accent text-white p-2 rounded-md">Add Product</button>
   </form>
 );
 
@@ -114,7 +141,7 @@ const ProductTabContent = ({
       <div className="flex flex-row h-fit gap-5 pb-5 items-center">
         <button
           className="w-fit rounded-lg bg-accent p-3 text-white hover:bg-accent-hover"
-          onClick={() => openModal("Add Ingredient", <AddProductForm />)}
+          onClick={() => openModal("Add Product", <AddProductForm />)}
         >
           <LucideIcons.Plus />
         </button>
