@@ -1,6 +1,6 @@
 import { useState, Suspense, lazy } from "react";
 import * as LucideIcons from "lucide-react";
-import Input from "./Input";
+import { Input } from "./Input";
 import { formatDate } from "../utils/date";
 
 // Lazy load the nested stock movement table

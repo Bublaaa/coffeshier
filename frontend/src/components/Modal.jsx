@@ -13,7 +13,7 @@ const Modal = ({ isOpen, onClose, title, body }) => {
       onClick={handleOverlayClick}
       className="fixed inset-0 flex items-end justify-end bg-white/10 backdrop-blur-sm z-50"
     >
-      <div className="bg-white shadow-lg rounded-lg p-6 md:w-2/3 w-full  max-h-full overflow-auto m-5">
+      <div className="bg-white shadow-lg rounded-lg p-6 md:w-1/3 w-full  max-h-full overflow-auto m-5">
         {/* Modal Header */}
         <div className="flex justify-between items-center border-b border-gray-300 pb-3">
           <h2 className="text-xl text-dark font-semibold">{title}</h2>

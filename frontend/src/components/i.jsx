@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronRight, Upload } from "lucide-react";
 
 // Text Input
-export const Input = ({ icon: Icon, label, ...props }) => (
+export const TextInput = ({ icon: Icon, label, ...props }) => (
   <div className="relative w-full">
     {label && (
       <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -73,43 +73,24 @@ export const DropdownInput = ({
   options,
   value,
   label,
-  name,
   onChange,
   placeholder = "Select an option",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(
-    value || options[0]?.value
-  );
 
-  useEffect(() => {
-    if (value !== undefined) {
-      setSelectedValue(value);
-    }
-  }, [value]);
-
-  const handleSelect = (newValue) => {
-    setSelectedValue(newValue);
+  const handleSelect = (selectedValue) => {
+    onChange?.(selectedValue);
     setIsOpen(false);
-    if (onChange) {
-      onChange(name, newValue); // Notify parent
-    }
   };
 
   return (
     <div className="relative w-full">
-      {label && (
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          {label}
-        </label>
-      )}
       <button
         type="button"
         className="w-full flex-nowrap text-left bg-white border border-gray-300 rounded-lg px-3 py-3 focus:border-accent focus:ring-4 focus:ring-accent/40 focus:outline-none flex items-center justify-between"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => setIsOpen(!isOpen)}
       >
-        {options.find((opt) => opt.value === selectedValue)?.label ||
-          placeholder}
+        {options.find((opt) => opt.value === value)?.label || placeholder}
         <ChevronRight
           className={`ml-2 transition-transform ${isOpen ? "rotate-90" : ""}`}
         />
@@ -120,7 +101,7 @@ export const DropdownInput = ({
           {options.map((option) => (
             <li
               key={option.value}
-              className={"px-4 py-3 cursor-pointer hover:bg-gray-100"}
+              className="px-4 py-3 cursor-pointer hover:bg-gray-100"
               onClick={() => handleSelect(option.value)}
             >
               {option.label}

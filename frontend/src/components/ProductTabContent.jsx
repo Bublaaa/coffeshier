@@ -2,7 +2,13 @@ import { useState } from "react";
 import * as LucideIcons from "lucide-react";
 import { placeholder } from "../assets/index.js";
 import Modal from "../components/Modal.jsx";
-import Input from "./Input.jsx";
+import {
+  Input,
+  TextareaInput,
+  DropdownInput,
+  CheckboxInput,
+  FileInput,
+} from "./Input.jsx";
 import Button from "./Button.jsx";
 
 const Skeleton = ({ count }) => {
@@ -62,139 +68,168 @@ const ProductCard = ({ product }) => {
 };
 
 const AddMenuForm = ({ ingredients }) => {
-  const [ingredientList, setIngredientList] = useState([
-    { id: Date.now(), selectedId: "" },
-  ]);
+  const [step, setStep] = useState(1);
+  const [menuData, setMenuData] = useState({
+    name: "",
+    price: "",
+    status: "Available",
+    stock: "",
+    description: "",
+    image: null,
+    ingredientsList: [{ count: 1, selectedId: "" }],
+  });
 
-  const handleAddIngredientClick = () => {
-    setIngredientList((prev) => [...prev, { id: Date.now(), selectedId: "" }]);
+  const nextStep = () => setStep((prev) => prev + 1);
+  const prevStep = () => setStep((prev) => prev - 1);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setMenuData((prev) => ({ ...prev, [name]: value }));
+    console.log(menuData);
   };
 
-  const handleRemoveIngredientClick = (id) => {
-    setIngredientList((prev) => prev.filter((ing) => ing.id !== id));
+  const handleFileChange = (e) => {
+    console.log(e);
+    setMenuData((prev) => ({ ...prev, image: e.target.files[0] }));
+  };
+
+  const handleAddIngredientClick = () => {
+    setMenuData((prev) => ({
+      ...prev,
+      ingredientsList: [...prev.ingredientsList, { count: 1, selectedId: "" }],
+    }));
+  };
+
+  const handleRemoveIngredient = (index) => {
+    setMenuData((prev) => {
+      const newList = prev.ingredientsList.filter((_, i) => i !== index);
+      return { ...prev, ingredientsList: newList };
+    });
   };
 
   const handleIngredientChange = (index, selectedId) => {
-    console.log(`🔹 Selected Ingredient ID for index ${index}:`, selectedId);
+    setMenuData((prev) => {
+      const newList = prev.ingredientsList.map((ing, i) =>
+        i === index ? { ...ing, selectedId } : ing
+      );
+      return { ...prev, ingredientsList: newList };
+    });
+  };
 
-    setIngredientList((prev) =>
-      prev.map((ing, i) => (i === index ? { ...ing, selectedId } : ing))
-    );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Final Data:", menuData);
   };
 
   return (
-    <form className="flex flex-col md:flex-row gap-3">
-      {/* Menu Detail */}
-      <div className="w-full flex flex-col gap-3">
-        <Input
-          type="text"
-          label="Product Name"
-          placeholder="e.g. Burnt Toast"
-        />
-        <Input
-          type="number"
-          min="5000"
-          label="Base Price"
-          placeholder="e.g. 20.000,-"
-        />
-        <Input
-          inputType="dropdown"
-          label="Status"
-          options={[
-            { value: "Available", label: "Available" },
-            { value: "Not Available", label: "Not Available" },
-          ]}
-        />
-        <Input
-          type="number"
-          min="1"
-          max="100"
-          label="Initial Stock"
-          placeholder="e.g. 200"
-        />
-        <Input
-          inputType="textarea"
-          label="Description"
-          placeholder="e.g. Araara coffee beans blend"
-        />
-        <Input inputType="file" label="Product Image" />
-        <Button buttonType="secondary" buttonSize="medium">
-          Add as Draft
-        </Button>
-        <Button buttonType="primary" buttonSize="medium">
-          Add
-        </Button>
-      </div>
-
-      {/* Ingredients Section */}
-      <div className="w-full flex flex-col gap-3">
-        <div className="flex flex-row w-full justify-between items-center">
-          <h2 className="text-lg text-dark font-semibold">Recipe</h2>
-          <Button
-            icon={LucideIcons.Plus}
-            buttonSize="medium"
-            buttonType="primary"
-            onClick={handleAddIngredientClick}
+    <form className="flex flex-col md:flex-row gap-3" onSubmit={handleSubmit}>
+      {step === 1 && (
+        <div className="w-full flex flex-col gap-3">
+          <Input
+            type="text"
+            placeholder="e.g. Burnt Toast"
+            label="Product Name"
+            name="name"
+            onChange={handleInputChange}
           />
+          <Input
+            type="number"
+            placeholder="e.g. 10.000"
+            min="5000"
+            label="Base Price"
+            name="price"
+            onChange={handleInputChange}
+          />
+          <DropdownInput
+            label="Status"
+            name="status"
+            value={menuData.status}
+            options={[
+              { value: "Available", label: "Available" },
+              { value: "Not Available", label: "Not Available" },
+            ]}
+            onChange={handleInputChange}
+          />
+          <Input
+            type="number"
+            placeholder="e.g. 100"
+            min="1"
+            max="100"
+            label="Initial Stock"
+            name="stock"
+            onChange={handleInputChange}
+          />
+          <TextareaInput
+            label="Description"
+            placeholder="e.g. Burnt to perfection for exact 29 minutes"
+            name="description"
+            onChange={handleInputChange}
+          />
+          <FileInput label="Product Image" onChange={handleFileChange} />
+          <Button
+            type="button"
+            buttonType="primary"
+            buttonSize="large"
+            onClick={nextStep}
+          >
+            Next
+          </Button>
         </div>
+      )}
 
-        {ingredientList.map((ing, index) => {
-          // 🛠️ Ensure `_id` is always a string for comparison
-          const selectedIngredient = ingredients.find(
-            (ingredient) => String(ingredient._id) === String(ing.selectedId)
-          );
+      {step === 2 && (
+        <div className="w-full flex flex-col gap-3">
+          <div className="flex flex-row w-full justify-between items-center">
+            <h2 className="text-lg text-dark font-semibold">Recipe</h2>
+            <Button
+              icon={LucideIcons.Plus}
+              buttonSize="medium"
+              buttonType="primary"
+              onClick={handleAddIngredientClick}
+            />
+          </div>
 
-          console.log(
-            `🔍 Selected Ingredient Object for index ${index}:`,
-            selectedIngredient
-          );
-          console.log(`🔹 Ingredients List:`, ingredients);
-
-          return (
-            <div key={ing.id} className="flex flex-row items-end gap-3">
-              {/* Ingredient Name */}
+          {menuData.ingredientsList.map((ing, index) => (
+            <div key={index} className="flex flex-row items-end gap-3">
               <Input
-                inputType="dropdown"
                 label="Ingredient"
                 options={ingredients.map((ingredient) => ({
-                  value: String(ingredient._id), // Ensure it's a string
+                  value: String(ingredient._id),
                   label: ingredient.name,
                 }))}
-                value={String(ing.selectedId)} // Ensure it's a string
-                onChange={(e) => handleIngredientChange(index, e.target.value)}
+                value={ing.selectedId}
+                onChange={(value) => handleIngredientChange(index, value)}
               />
-
-              {/* Ingredient Quantity */}
-              <Input
-                type="number"
-                min="1"
-                max="100"
-                label="Quantity"
-                placeholder="e.g. 200"
-              />
-
-              {/* Ingredient Unit */}
+              <Input type="number" min="1" max="100" label="Quantity" />
               <h2 className="text-gray-700">
-                {selectedIngredient
-                  ? selectedIngredient.unit
-                  : "Select Ingredient"}
+                {ingredients.find((ingr) => ingr._id === ing.selectedId)
+                  ?.unit || "Select Ingredient"}
               </h2>
-
-              {/* Delete Ingredient Button */}
               <button
-                onClick={() => handleRemoveIngredientClick(ing.id)}
-                className="text-gray-500 hover:text-red-400 cursor-pointer bg-transparent hover:bg-red-100 p-2 rounded-lg"
+                type="button"
+                className="text-gray-500 hover:text-red-400 bg-transparent hover:bg-red-100 p-2 rounded-lg"
+                onClick={() => handleRemoveIngredient(index)}
               >
                 <LucideIcons.X />
               </button>
             </div>
-          );
-        })}
-      </div>
+          ))}
+          <Button
+            type="button"
+            buttonType="secondary"
+            buttonSize="large"
+            onClick={prevStep}
+          >
+            Back
+          </Button>
+          <Button type="submit" buttonType="primary" buttonSize="large">
+            Submit
+          </Button>
+        </div>
+      )}
     </form>
   );
 };
-
 const ProductTabContent = ({
   activeTab,
   ingredients,
