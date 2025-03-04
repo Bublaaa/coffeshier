@@ -70,7 +70,7 @@ function App() {
   if (isCheckingAuth) return <LoadingSpinner />;
 
   return (
-    <div className="h-screen w-full bg-white-shadow flex  overflow-hidden">
+    <div className="h-screen w-full bg-white-shadow flex items-center justify-center overflow-hidden">
       <Routes>
         {/* Owner Routes */}
         <Route

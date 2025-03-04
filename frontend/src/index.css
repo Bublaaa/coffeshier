@@ -13,6 +13,32 @@
   --color-dark-hover: hsl(0 0 10);
   --color-white-shadow: hsl(0 0 97);
 }
+
+@layer base {
+  h1 {
+    @apply md:text-4xl text-3xl  text-dark leading-tight;
+  }
+
+  h2 {
+    @apply md:text-3xl text-2xl font-semibold text-dark leading-snug;
+  }
+
+  h3 {
+    @apply md:text-2xl text-xl text-dark leading-normal;
+  }
+
+  h4 {
+    @apply md:text-xl text-lg font-medium text-dark leading-relaxed;
+  }
+
+  p {
+    @apply md:text-base text-sm text-dark leading-loose;
+  }
+
+  a {
+    @apply text-accent font-medium transition-colors duration-200 hover:text-accent-hover;
+  }
+}
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

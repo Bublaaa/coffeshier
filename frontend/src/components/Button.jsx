@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 
 // ✅ Button Variants
 const buttonVariants = {
@@ -29,21 +30,23 @@ const Button = ({
   ...props
 }) => {
   return (
-    <button
+    <motion.button
       type="button"
       className={clsx(
-        "flex items-center justify-center gap-2 rounded-lg transition focus:outline-none focus:ring-4",
+        "flex items-center justify-center gap-2 rounded-lg transition  duration-200 focus:outline-none focus:ring-4",
         buttonVariants[buttonType], // ✅ Use variant styles
         buttonSizes[buttonSize], // ✅ Use size styles
         className
       )}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       onClick={!disabled ? onClick : undefined}
       disabled={disabled}
       {...props}
     >
       {Icon && <Icon className="size-5" />}
       {children}
-    </button>
+    </motion.button>
   );
 };
 

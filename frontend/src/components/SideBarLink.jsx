@@ -16,7 +16,7 @@ const SideBarLink = ({ label, icon: Icon, href, isCollapsed }) => {
         }
       >
         <Icon className="w-5 h-5 transition duration-75 mr-3" />
-        {!isCollapsed && <span className="text-sm font-medium">{label}</span>}
+        {!isCollapsed && <h6 className=" text-sm font-medium">{label}</h6>}
       </NavLink>
 
       {!isCollapsed && location.pathname === href && (
