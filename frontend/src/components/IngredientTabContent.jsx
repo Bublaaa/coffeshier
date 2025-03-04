@@ -1,5 +1,6 @@
 import { useState, Suspense, lazy } from "react";
 import * as LucideIcons from "lucide-react";
+import Button from "./Button.jsx";
 import { Input } from "./Input";
 import { formatDate } from "../utils/date";
 
@@ -37,18 +38,17 @@ const IngredientTabContent = ({
   return (
     <div className="flex flex-col">
       {/* Header Section */}
-      <div className="flex justify-between items-center pb-5">
-        <div className="flex items-center gap-5">
+      <div className="flex justify-between items-center pb-2 md:pb-5">
+        <div className="flex items-center md:gap-5 gap-2">
           {/* Add Ingredient Button */}
-          <button className="rounded-lg bg-accent p-3 text-white hover:bg-accent-hover">
+          <Button className="mx-1 " buttonType="primary" buttonSize="icon">
             <LucideIcons.Plus />
-          </button>
-          <h1 className="text-dark font-bold text-3xl">
-            {activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}
-          </h1>
+          </Button>
+          <h2>{activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}</h2>
         </div>
         {/* Search Ingredient */}
         <Input
+          className="w-fit"
           icon={LucideIcons.Search}
           type="text"
           placeholder="Search by name"
@@ -75,7 +75,6 @@ const IngredientTabContent = ({
         <div>
           {ingredients.map((ingredient) => {
             const isCollapsed = collapsedRows[ingredient._id] || false;
-
             return (
               <div key={ingredient._id}>
                 {/* Ingredient Row */}

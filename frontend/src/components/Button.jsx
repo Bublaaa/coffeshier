@@ -13,9 +13,10 @@ const buttonVariants = {
 
 // ✅ Button Sizes
 const buttonSizes = {
-  small: "px-3 py-2 text-sm max-w-sm",
-  medium: "px-4 py-2 text-base max-w-md",
-  large: "px-6 py-3 text-lg max-w-lg",
+  icon: "md:px-4 px-2 md:py-4 py-2",
+  small: "md:px-3 px-1.5 md:py-2 py-1 text-sm max-w-sm",
+  medium: "md:px-4 px-2 md:py-2 py-1 text-base max-w-md",
+  large: "md:px-6 px-3 md:py-3 py-1.5 text-lg max-w-lg",
 };
 
 // ✅ Reusable Button Component

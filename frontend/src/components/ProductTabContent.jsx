@@ -261,18 +261,18 @@ const ProductTabContent = ({
   };
   return (
     <div className="flex flex-col">
-      <div className="flex flex-row h-fit gap-5 pb-5 items-center">
-        <button
-          className="w-fit rounded-lg bg-accent p-3 text-white hover:bg-accent-hover"
+      <div className="flex flex-row h-fit md:gap-5 gap-2 md:pb-5 pb-2 items-center">
+        <Button
+          className="mx-1 "
+          buttonType="primary"
+          buttonSize="icon"
           onClick={() =>
             openModal("Add New Menu", <AddMenuForm ingredients={ingredients} />)
           }
         >
           <LucideIcons.Plus />
-        </button>
-        <h1 className="text-dark font-bold text-3xl">
-          {activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}
-        </h1>
+        </Button>
+        <h2>{activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}</h2>
       </div>
       <Modal
         isOpen={isModalOpen}

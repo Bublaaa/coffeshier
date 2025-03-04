@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { formatDate } from "../utils/date.js";
 import { useAuthStore } from "../store/authStore";
 import { Outlet } from "react-router-dom";
-import Sidebar from "../components/Sidebar.jsx";
+import Sidebar from "../components/Sidebar/Sidebar.jsx";
 import sidebarLinks from "../constants/sidebarLinks.js";
 
 const Dashboard = () => {

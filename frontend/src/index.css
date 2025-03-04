@@ -16,7 +16,7 @@
 
 @layer base {
   h1 {
-    @apply md:text-4xl text-3xl  text-dark leading-tight;
+    @apply md:text-4xl text-3xl  text-dark font-bold leading-tight;
   }
 
   h2 {

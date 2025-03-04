@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useIngredientStore } from "../store/ingredientStore.js";
 import { useProductStore } from "../store/productStore.js";
 import { useOrderStore } from "../store/orderStore.js";
+import { motion } from "framer-motion";
+import Button from "../components/Button.jsx";
 
 import * as LucideIcons from "lucide-react";
 import IngredientTabContent from "../components/IngredientTabContent.jsx";
@@ -37,13 +39,11 @@ const ProductPage = () => {
 
   const merchandiseTabContent = ({ activeTab }) => {
     return (
-      <div className="flex flex-row h-fit gap-5 items-center">
-        <button className="w-fit rounded-lg bg-accent p-3 text-white hover:bg-accent-hover">
+      <div className="flex flex-row h-fit md:gap-5 gap-2 items-center">
+        <Button className="mx-1 " buttonType="primary" buttonSize="icon">
           <LucideIcons.Plus />
-        </button>
-        <h1 className="text-dark font-bold text-3xl">
-          {activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}
-        </h1>
+        </Button>
+        <h2>{activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}</h2>
       </div>
     );
   };
@@ -91,24 +91,27 @@ const ProductPage = () => {
   }, [fetchIngredients, fetchProducts, fetchOrders]);
 
   return (
-    <div className="flex flex-row gap-5 my-5 mr-5">
-      <div className="flex flex-col gap-5 w-full">
+    <div className="flex flex-row md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300">
+      <div className="flex flex-col md:gap-5 gap-2 w-full">
         {/* Tabs */}
-        <div className="flex flex-row h-fit overflow-x-auto gap-5 scrollbar-hidden">
-          {tabs.map((tab) => {
+        <div className="flex flex-row h-fit overflow-x-auto md:gap-5 gap-2  scrollbar-hidden">
+          {tabs.map((tab, index) => {
             const IconComponent =
               LucideIcons[tab.icon] || LucideIcons.GlassWater;
             return (
-              <div
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: index / 3 }}
                 key={tab.id}
                 onClick={() => setActiveTab(tab.label)}
                 className={`${
                   activeTab === tab.label
                     ? "text-white bg-accent hover:bg-accent-hover"
                     : "text-dark bg-white hover:bg-gray-200"
-                } flex flex-col justify-between cursor-pointer py-4 px-5 rounded-lg`}
+                } flex flex-col justify-between cursor-pointer md:py-4 py-2 md:px-5 px-4 rounded-lg group`}
               >
-                <IconComponent className="size-7 mb-4" />
+                <IconComponent className="md:size-7 size-5 md:mb-4 mb-2 transition-transform duration-300 group-hover:scale-110" />
                 <p
                   className={`${
                     activeTab === tab.label
@@ -118,7 +121,7 @@ const ProductPage = () => {
                 >
                   {tab.label}
                 </p>
-              </div>
+              </motion.div>
             );
           })}
         </div>

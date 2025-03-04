@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import SideBarLink from "./SideBarLink.jsx";
+import SideBarLink from "./Sidebar/SideBarLink.jsx";
 import { Home, Trash, Utensils } from "lucide-react";
 import OrderType from "./OrderType.jsx";
 import OrderDetail from "./OrderDetail.jsx";

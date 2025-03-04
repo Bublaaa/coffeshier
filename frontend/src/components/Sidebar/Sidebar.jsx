@@ -25,7 +25,7 @@ const Sidebar = ({ links }) => {
       }`}
       aria-label="Sidebar"
     >
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-3 md:p-4">
         <a href="/" className="flex w-fit items-center space-x-3">
           <img src="../public/Logo.svg" className="h-10" alt="Flowbite Logo" />
           {!isCollapsed && (
@@ -35,7 +35,7 @@ const Sidebar = ({ links }) => {
         {/* Toggle button hidden on small screens */}
         <button
           type="button"
-          className="md:block hidden absolute -right-5 top-1/2 transform -translate-y-1/2 p-2 text-sm text-white bg-accent rounded-full hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="md:block hidden absolute -right-5 top-1/2 transform -translate-y-1/2 p-2 text-sm text-white bg-accent rounded-full hover:bg-accent-hover focus:outline-none focus:ring-4 focus:ring-accent/40 cursor-pointer"
           onClick={toggleSidebar}
         >
           <span className="sr-only">Toggle sidebar</span>
