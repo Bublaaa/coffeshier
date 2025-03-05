@@ -16,8 +16,7 @@ export const useProductStore = create((set) => ({
   message: null,
 
   handleError: (error) => {
-    const errorMessage =
-      error.response?.data?.message || "Error fetching products";
+    const errorMessage = error.message || "Error fetching products";
     set({
       error: errorMessage || "Error fetching products",
       isLoading: false,
@@ -28,9 +27,10 @@ export const useProductStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get(`${API_URL}product/all`);
-      console.log(response.data.products);
-      set({ products: response.data.products, isLoading: false });
+      // console.log(response.data.products);
+      set({ products: response.data.products || [], isLoading: false });
     } catch (error) {
+      set({ isLoading: false, error: error.message });
       handleError(error);
     }
   },

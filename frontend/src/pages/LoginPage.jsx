@@ -21,7 +21,7 @@ const LoginPage = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-md w-full bg-white bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden"
+      className="max-w-md w-full bg-white backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden"
     >
       <div className="p-8">
         <h2 className="mb-6 text-center bg-clip-text">Welcome Back</h2>
@@ -34,6 +34,7 @@ const LoginPage = () => {
             onChange={(e) => setEmail(e.target.value)}
           />
           <Input
+            className="w-full"
             icon={Lock}
             type="password"
             placeholder="Password"
@@ -64,26 +65,12 @@ const LoginPage = () => {
               "Login"
             )}
           </Button>
-          {/* <motion.button
-            className="transition duration-200"
-            buttonType="primary"
-            buttonSize="medium"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Loader className="w-6h-6 animate-spin mx-auto" />
-            ) : (
-              "Login"
-            )}
-          </motion.button> */}
         </form>
       </div>
-      <div className="px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center">
+      <div className="px-8 py-4 bg-white-shadow  flex justify-center">
         <p className="text-sm text-gray-400">
           Don't have an account? {""}
-          <Link to={"/signup"} className="text-green-400 hover:underline">
+          <Link to={"/signup"} className="text-accent hover:underline">
             Sign Up
           </Link>
         </p>

@@ -3,7 +3,7 @@ import React from "react";
 const StockMovement = ({ ingredient, orders }) => {
   return (
     <div className="flex flex-row text-gray-500 w-full bg-white py-3 -mt-3 rounded-lg ">
-      <div className="pl-18 pr-3 w-full">
+      <div className=" pr-3 w-full">
         <p className="px-3 font-semibold">Orders</p>
         <div>
           {ingredient.stockMovements.map((stock, index) => {
@@ -31,7 +31,7 @@ const StockMovement = ({ ingredient, orders }) => {
                 <div className="flex flex-row min-w-2xs pl-4 pr-4 py-1 gap-7">
                   <p>Order #{matchOrder?._id.slice(-5)}</p>
                   <p
-                    className={`text-lg font-semibold ${
+                    className={`font-semibold ${
                       matchOrder?.status === "paid"
                         ? "text-green-400"
                         : "text-red-400"

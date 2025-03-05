@@ -52,15 +52,7 @@ const ProductPage = () => {
       id: "product",
       label: "Product",
       icon: "Blocks",
-      content: (props) => (
-        <ProductTabContent
-          activeTab={activeTab}
-          products={products}
-          ingredients={ingredients}
-          orders={orders}
-          isLoadingProducts={isLoadingProducts}
-        />
-      ),
+      content: (props) => <ProductTabContent activeTab={activeTab} />,
     },
     {
       id: "merchandise",

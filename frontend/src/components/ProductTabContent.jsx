@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as LucideIcons from "lucide-react";
-import { placeholder } from "../assets/index.js";
 import Modal from "../components/Modal.jsx";
+import ProductCard from "./ProductCard.jsx";
+import { useProductStore } from "../store/productStore.js";
+import { useIngredientStore } from "../store/ingredientStore.js";
 import {
   Input,
   TextareaInput,
@@ -10,62 +12,6 @@ import {
   FileInput,
 } from "./Input.jsx";
 import Button from "./Button.jsx";
-
-const Skeleton = ({ count }) => {
-  return (
-    <>
-      {Array(count)
-        .fill(0)
-        .map((_, index) => (
-          <div
-            className="animate-[pulse_0.8s_ease-in-out_infinite] flex flex-col max-w-xs h-full gap-2 bg-gray-300 p-3 rounded-xl"
-            key={index}
-          >
-            <div className="w-full h-40 rounded-lg bg-gray-200"></div>
-            <div className="flex flex-col gap-2">
-              <div className="flex w-full gap-2 items-center justify-between">
-                <div className="bg-gray-200 p-4 rounded-lg w-full"></div>
-                <div className="bg-gray-200 p-4 rounded-lg w-[20px]"></div>
-              </div>
-              <div className="bg-gray-200 p-2 rounded-lg w-full"></div>
-              <div className="bg-gray-200 p-2 rounded-lg w-full"></div>
-              <div className="bg-gray-200 p-2 rounded-lg w-full"></div>
-            </div>
-            <button className="w-full py-5 rounded-full bg-gray-200"></button>
-          </div>
-        ))}
-    </>
-  );
-};
-const ProductCard = ({ product }) => {
-  return (
-    <div className="flex flex-col max-w-xs h-fit gap-2 bg-white cursor-pointer p-3 rounded-xl">
-      <img
-        src={product.image || placeholder}
-        alt={product.name || "Placeholder"}
-        className="w-full h-auto object-cover rounded-lg"
-      />
-      <div className="flex flex-col justify-between">
-        <div className="flex w-full gap-2 items-center justify-between">
-          <h2 className="text-dark font-bold text-lg">{product.name}</h2>
-          <h3 className="whitespace-nowrap text-accent font-semibold text-md">
-            {product.basePrice.toLocaleString("id-ID")}
-          </h3>
-        </div>
-        <p className="text-gray-500 max-w-full line-clamp-3">
-          {product.description || product.name}
-        </p>
-      </div>
-      <Button
-        buttonType="primary"
-        buttonSize="medium"
-        icon={LucideIcons.Pencil}
-      >
-        Edit
-      </Button>
-    </div>
-  );
-};
 
 const AddMenuForm = ({ ingredients }) => {
   const [step, setStep] = useState(1);
@@ -230,17 +176,28 @@ const AddMenuForm = ({ ingredients }) => {
     </form>
   );
 };
-const ProductTabContent = ({
-  activeTab,
-  ingredients,
-  orders,
-  products,
-  isLoadingProducts,
-}) => {
+const ProductTabContent = ({ activeTab }) => {
+  const {
+    ingredients,
+    fetchIngredients,
+    isLoading: isLoadingIngredients,
+    error: ingredientError,
+  } = useIngredientStore();
+  const {
+    products,
+    fetchProducts,
+    isLoading: isLoadingProducts,
+    error: productError,
+  } = useProductStore();
+
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalBody, setModalBody] = useState(null);
   const [modalTitle, setModalTitle] = useState("");
+  useEffect(() => {
+    fetchIngredients();
+    fetchProducts();
+  }, [fetchIngredients, fetchProducts]);
 
   const openModal = (title, body) => {
     setModalTitle(title);
@@ -259,6 +216,7 @@ const ProductTabContent = ({
       setSelectedProduct(product);
     }
   };
+
   return (
     <div className="flex flex-col">
       <div className="flex flex-row h-fit md:gap-5 gap-2 md:pb-5 pb-2 items-center">
@@ -281,18 +239,24 @@ const ProductTabContent = ({
         body={modalBody}
       />
       <div
-        className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-5 overflow-y-auto scrollbar-hidden"
+        className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 md:gap-5 gap-2 p-2 overflow-y-auto scrollbar-hidden"
         onClick={handleProductClick}
       >
-        {isLoadingProducts ? (
-          <Skeleton count={4} />
-        ) : (
+        {/* <div key={product._id} > */}
+        {products?.length > 0 ? (
           products.map((product) => (
-            <div key={product._id} data-id={product._id}>
-              <ProductCard product={product} />
-            </div>
+            <ProductCard
+              product={product}
+              buttonLabel={"Edit"}
+              isLoading={isLoadingProducts}
+              key={product._id}
+              data-id={product._id}
+            ></ProductCard>
           ))
+        ) : (
+          <p>No products available</p>
         )}
+        {/* </div> */}
       </div>
       {selectedProduct && (
         <Modal onClose={() => setSelectedProduct(null)}>

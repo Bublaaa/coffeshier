@@ -55,16 +55,9 @@ const IngredientTabContent = ({
         />
       </div>
 
-      <div className="w-full overflow-x-auto">
+      <div className="w-fit overflow-x-auto scrollbar-hidden">
         {/* Table Header */}
         <div className="flex flex-row bg-accent rounded-lg text-white font-semibold items-center">
-          <div className="px-6 py-3">
-            <input
-              id="checkbox-all-search"
-              type="checkbox"
-              className="w-5 h-5 mt-1 focus:ring-accent"
-            />
-          </div>
           <div className="min-w-xs px-3 py-3">Ingredient Name</div>
           <div className="min-w-3xs px-3 py-3">Quantity</div>
           <div className="min-w-3xs px-3 py-3">Last Order</div>
@@ -82,17 +75,12 @@ const IngredientTabContent = ({
                   className="flex flex-row items-center my-1 bg-white rounded-lg cursor-pointer"
                   onClick={() => toggleCollapse(ingredient._id)}
                 >
-                  <div className="px-6 py-3">
-                    <input
-                      id={ingredient._id}
-                      type="checkbox"
-                      className="w-4 h-4 mt-1"
-                    />
-                  </div>
-                  <div className="px-3 py-3 min-w-xs font-medium text-gray-900">
-                    {ingredient.name.replace(/\b\w/g, (char) =>
-                      char.toUpperCase()
-                    )}
+                  <div className="px-3 py-3 md:min-w-xs ">
+                    <p>
+                      {ingredient.name.replace(/\b\w/g, (char) =>
+                        char.toUpperCase()
+                      )}
+                    </p>
                   </div>
                   <div className="min-w-3xs px-3 py-3">
                     {ingredient.stockQuantity} {ingredient.unit}

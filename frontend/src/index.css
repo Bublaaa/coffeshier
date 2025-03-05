@@ -16,23 +16,31 @@
 
 @layer base {
   h1 {
-    @apply md:text-4xl text-3xl  text-dark font-bold leading-tight;
+    @apply md:text-5xl text-4xl font-bold text-dark leading-tight whitespace-nowrap;
   }
 
   h2 {
-    @apply md:text-3xl text-2xl font-semibold text-dark leading-snug;
+    @apply md:text-4xl text-3xl font-bold text-dark leading-snug;
   }
 
   h3 {
-    @apply md:text-2xl text-xl text-dark leading-normal;
+    @apply md:text-3xl text-2xl font-bold text-dark leading-normal;
   }
 
   h4 {
-    @apply md:text-xl text-lg font-medium text-dark leading-relaxed;
+    @apply md:text-2xl text-xl font-bold text-dark leading-relaxed;
+  }
+
+  h5 {
+    @apply md:text-xl text-lg font-bold text-dark leading-relaxed;
+  }
+
+  h6 {
+    @apply md:text-lg text-base font-bold text-dark leading-relaxed;
   }
 
   p {
-    @apply md:text-base text-sm text-dark leading-loose;
+    @apply md:text-base text-sm text-dark;
   }
 
   a {

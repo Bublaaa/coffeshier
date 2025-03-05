@@ -3,7 +3,7 @@ import { ChevronRight, Upload } from "lucide-react";
 
 // Text Input
 export const Input = ({ icon: Icon, label, ...props }) => (
-  <div className="relative w-fit">
+  <div className="relative">
     {label && (
       <label className="block text-sm font-medium text-gray-600 mb-1">
         {label}
