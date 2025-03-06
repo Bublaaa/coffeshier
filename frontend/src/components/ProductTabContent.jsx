@@ -4,13 +4,7 @@ import Modal from "../components/Modal.jsx";
 import ProductCard from "./ProductCard.jsx";
 import { useProductStore } from "../store/productStore.js";
 import { useIngredientStore } from "../store/ingredientStore.js";
-import {
-  Input,
-  TextareaInput,
-  DropdownInput,
-  CheckboxInput,
-  FileInput,
-} from "./Input.jsx";
+import { Input, TextareaInput, DropdownInput, FileInput } from "./Input.jsx";
 import Button from "./Button.jsx";
 
 const AddMenuForm = ({ ingredients }) => {
@@ -18,7 +12,7 @@ const AddMenuForm = ({ ingredients }) => {
   const [menuData, setMenuData] = useState({
     name: "",
     price: "",
-    status: "Available",
+    status: "Not Available",
     stock: "",
     description: "",
     image: null,
@@ -54,6 +48,7 @@ const AddMenuForm = ({ ingredients }) => {
   };
 
   const handleIngredientChange = (index, selectedId) => {
+    console.log(index, selectedId);
     setMenuData((prev) => {
       const newList = prev.ingredientsList.map((ing, i) =>
         i === index ? { ...ing, selectedId } : ing
@@ -69,6 +64,7 @@ const AddMenuForm = ({ ingredients }) => {
 
   return (
     <form className="flex flex-col md:flex-row gap-3" onSubmit={handleSubmit}>
+      {/* Menu Detail */}
       {step === 1 && (
         <div className="w-full flex flex-col gap-3">
           <Input
@@ -122,11 +118,10 @@ const AddMenuForm = ({ ingredients }) => {
           </Button>
         </div>
       )}
-
+      {/* Recipe & Direction */}
       {step === 2 && (
         <div className="w-full flex flex-col gap-3">
           <div className="flex flex-row w-full justify-between items-center">
-            <h2 className="text-lg text-dark font-semibold">Recipe</h2>
             <Button
               icon={LucideIcons.Plus}
               buttonSize="medium"
@@ -137,20 +132,21 @@ const AddMenuForm = ({ ingredients }) => {
 
           {menuData.ingredientsList.map((ing, index) => (
             <div key={index} className="flex flex-row items-end gap-3">
-              <Input
+              <DropdownInput
                 label="Ingredient"
                 options={ingredients.map((ingredient) => ({
                   value: String(ingredient._id),
                   label: ingredient.name,
                 }))}
                 value={ing.selectedId}
-                onChange={(value) => handleIngredientChange(index, value)}
+                onChange={(e) => handleIngredientChange(index, e.target.value)}
               />
+
               <Input type="number" min="1" max="100" label="Quantity" />
-              <h2 className="text-gray-700">
+              <p>
                 {ingredients.find((ingr) => ingr._id === ing.selectedId)
                   ?.unit || "Select Ingredient"}
-              </h2>
+              </p>
               <button
                 type="button"
                 className="text-gray-500 hover:text-red-400 bg-transparent hover:bg-red-100 p-2 rounded-lg"
@@ -197,7 +193,7 @@ const ProductTabContent = ({ activeTab }) => {
   useEffect(() => {
     fetchIngredients();
     fetchProducts();
-  }, [fetchIngredients, fetchProducts]);
+  }, []);
 
   const openModal = (title, body) => {
     setModalTitle(title);
@@ -248,9 +244,9 @@ const ProductTabContent = ({ activeTab }) => {
             <ProductCard
               product={product}
               buttonLabel={"Edit"}
-              isLoading={isLoadingProducts}
               key={product._id}
               data-id={product._id}
+              isLoading={isLoadingProducts}
             ></ProductCard>
           ))
         ) : (
@@ -260,7 +256,7 @@ const ProductTabContent = ({ activeTab }) => {
       </div>
       {selectedProduct && (
         <Modal onClose={() => setSelectedProduct(null)}>
-          <h2 className="text-lg font-bold">{selectedProduct.name}</h2>
+          <h2>{selectedProduct.name}</h2>
           <p>{selectedProduct.description}</p>
           <img src={selectedProduct.image} alt={selectedProduct.name} />
         </Modal>

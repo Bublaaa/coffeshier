@@ -15,25 +15,40 @@ export const useProductStore = create((set) => ({
   isLoading: false,
   message: null,
 
-  handleError: (error) => {
-    const errorMessage = error.message || "Error fetching products";
-    set({
-      error: errorMessage || "Error fetching products",
-      isLoading: false,
-    });
-    toast.error(errorMessage);
-  },
+  handleError: (error) => {},
+
   fetchProducts: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, message: null });
+
     try {
+      console.log("Fetching products...");
       const response = await axios.get(`${API_URL}product/all`);
-      // console.log(response.data.products);
-      set({ products: response.data.products || [], isLoading: false });
+      console.log("Products received:", response.data.products);
+
+      const successMessage = "Success";
+      set({
+        products: [...response.data.products], // ✅ Ensure a new array is created
+        isLoading: false,
+        message: successMessage,
+      });
+
+      console.log("State updated. Showing toast...");
+      toast.success(successMessage); // ✅ Ensure toast is called
     } catch (error) {
-      set({ isLoading: false, error: error.message });
-      handleError(error);
+      console.log("Error fetching products:", error);
+
+      const errorMessage =
+        error.response?.data?.message || "Error fetching products";
+
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+
+      toast.error(errorMessage);
     }
   },
+
   fetchMerchandises: async () => {
     set({ isLoading: true, error: null });
     try {
