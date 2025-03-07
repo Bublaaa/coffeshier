@@ -15,64 +15,59 @@ export const useProductStore = create((set) => ({
   isLoading: false,
   message: null,
 
-  handleError: (error) => {},
-
   fetchProducts: async () => {
     set({ isLoading: true, error: null, message: null });
 
     try {
-      console.log("Fetching products...");
       const response = await axios.get(`${API_URL}product/all`);
-      console.log("Products received:", response.data.products);
-
-      const successMessage = "Success";
+      const successMessage = "Success fetch products";
       set({
-        products: [...response.data.products], // ✅ Ensure a new array is created
+        products: [...response.data.products],
         isLoading: false,
         message: successMessage,
       });
 
-      console.log("State updated. Showing toast...");
-      toast.success(successMessage); // ✅ Ensure toast is called
+      toast.success(successMessage);
     } catch (error) {
-      console.log("Error fetching products:", error);
-
       const errorMessage =
         error.response?.data?.message || "Error fetching products";
-
       set({
         error: errorMessage,
         isLoading: false,
       });
-
       toast.error(errorMessage);
     }
   },
 
   fetchMerchandises: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, message: null });
     try {
       const response = await axios.get(`${API_URL}product/all`);
-      const filteredProducts = response.data.products.filter(
+      const successMessage = "Success fetch merchandises";
+      const merchandises = response.data.products.filter(
         (product) =>
           Array.isArray(product.ingredients) && product.ingredients.length > 0
       );
-      console.log(filteredProducts);
+      console.log(merchandises);
 
-      set({ products: filteredProducts, isLoading: false });
+      set({
+        products: merchandises,
+        isLoading: false,
+        message: successMessage,
+      });
+      toast.success(successMessage);
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Error fetching products";
+        error.response?.data?.message || "Error fetching merchandise";
       set({
-        error: errorMessage || "Error fetching products",
+        error: errorMessage,
         isLoading: false,
       });
       toast.error(errorMessage);
     }
   },
   fetchProductsByCategory: async (categoryId) => {
-    set({ isLoading: true, error: null, products: [] });
-
+    set({ isLoading: true, error: null, products: [], message: null });
     try {
       const response = await axios.post(`${API_URL}product/category`, {
         categoryId,

@@ -3,6 +3,7 @@ import * as LucideIcons from "lucide-react";
 import Button from "./Button.jsx";
 import { Input } from "./Input";
 import { formatDate } from "../utils/date";
+import { motion } from "framer-motion";
 
 // Lazy load the nested stock movement table
 const StockMovement = lazy(() => import("./StockMovement.jsx"));
@@ -55,49 +56,60 @@ const IngredientTabContent = ({
         />
       </div>
 
-      <div className="w-fit overflow-x-auto scrollbar-hidden">
+      <div className="w-full overflow-x-auto overflow-y-auto scrollbar-hidden">
         {/* Table Header */}
-        <div className="flex flex-row bg-accent rounded-lg text-white font-semibold items-center">
-          <div className="min-w-xs px-3 py-3">Ingredient Name</div>
-          <div className="min-w-3xs px-3 py-3">Quantity</div>
-          <div className="min-w-3xs px-3 py-3">Last Order</div>
-          <div className="px-3 py-3 w-12"></div>
-        </div>
-
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 1 }}
+          transition={{ duration: 0.5 }}
+          className="transition-all ease-in-out grid md:grid-cols-4 grid-cols-3 w-full bg-accent items-center font-semibold p-4 rounded-lg justify-between "
+        >
+          <div className="w-full">
+            <p className="text-white">Ingredient Name</p>
+          </div>
+          <div className="">
+            <p className="text-white">Quantity</p>
+          </div>
+          <div className="hidden md:block">
+            <p className="text-white">Last Order</p>
+          </div>
+        </motion.div>
         {/* Ingredient Rows */}
-        <div>
-          {ingredients.map((ingredient) => {
+        <div className="w-full space-y-2 mt-2">
+          {ingredients.map((ingredient, index) => {
             const isCollapsed = collapsedRows[ingredient._id] || false;
             return (
-              <div key={ingredient._id}>
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: index / 4 }}
+                key={ingredient._id}
+                className="bg-white rounded-lg "
+              >
                 {/* Ingredient Row */}
                 <div
-                  className="flex flex-row items-center my-1 bg-white rounded-lg cursor-pointer"
+                  className="grid grid-cols-3 md:grid-cols-4 gap-4 w-full px-4 py-3 hover:bg-gray-100 transition cursor-pointer items-center"
                   onClick={() => toggleCollapse(ingredient._id)}
                 >
-                  <div className="px-3 py-3 md:min-w-xs ">
-                    <p>
-                      {ingredient.name.replace(/\b\w/g, (char) =>
-                        char.toUpperCase()
-                      )}
-                    </p>
-                  </div>
-                  <div className="min-w-3xs px-3 py-3">
+                  <p className="truncate">
+                    {ingredient.name.replace(/\b\w/g, (char) =>
+                      char.toUpperCase()
+                    )}
+                  </p>
+                  <p className="text-gray-600  font-semibold">
                     {ingredient.stockQuantity} {ingredient.unit}
-                  </div>
-                  <div className="min-w-3xs px-3 py-3">
+                  </p>
+                  <p className="text-gray-500 hidden md:block">
                     {formatDate(ingredient.updatedAt)}
-                  </div>
-                  <div className="px-3 py-3 ml-auto">
-                    <LucideIcons.ChevronRight
-                      className={`transition-transform ${
-                        isCollapsed ? "rotate-90" : ""
-                      }`}
-                    />
-                  </div>
+                  </p>
+                  <LucideIcons.ChevronRight
+                    className={`ml-auto transition-transform duration-300 ${
+                      isCollapsed ? "rotate-90" : ""
+                    }`}
+                  />
                 </div>
 
-                {/* Nested Stock Movements Row */}
+                {/* Stock Movements Row */}
                 {isCollapsed && (
                   <Suspense
                     fallback={
@@ -109,7 +121,7 @@ const IngredientTabContent = ({
                     <StockMovement ingredient={ingredient} orders={orders} />
                   </Suspense>
                 )}
-              </div>
+              </motion.div>
             );
           })}
         </div>

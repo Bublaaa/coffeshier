@@ -16,16 +16,21 @@ export const useIngredientStore = create((set) => ({
   message: null,
 
   fetchIngredients: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, message: null });
     try {
       const response = await axios.get(`${API_URL}ingredient/get`);
-      console.log(response.data.ingredients);
-      set({ ingredients: response.data.ingredients, isLoading: false });
+      const successMessage = "Success fetch ingredients";
+      set({
+        ingredients: response.data.ingredients,
+        isLoading: false,
+        message: successMessage,
+      });
+      toast.success(successMessage);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error fetching ingredients";
       set({
-        error: errorMessage || "Error fetching ingredients",
+        error: errorMessage,
         isLoading: false,
       });
       toast.error(errorMessage);

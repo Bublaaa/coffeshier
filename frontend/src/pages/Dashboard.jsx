@@ -16,7 +16,7 @@ const Dashboard = () => {
   return (
     <div className="w-full flex flex-row h-screen">
       <Sidebar links={links} />
-      <div className="flex-grow overflow-auto w-5/6">
+      <div className="flex-grow overflow-auto w-5/6 scrollbar-hidden">
         <Outlet />
       </div>
     </div>

@@ -172,28 +172,17 @@ const AddMenuForm = ({ ingredients }) => {
     </form>
   );
 };
-const ProductTabContent = ({ activeTab }) => {
-  const {
-    ingredients,
-    fetchIngredients,
-    isLoading: isLoadingIngredients,
-    error: ingredientError,
-  } = useIngredientStore();
-  const {
-    products,
-    fetchProducts,
-    isLoading: isLoadingProducts,
-    error: productError,
-  } = useProductStore();
-
+const ProductTabContent = ({
+  activeTab,
+  ingredients,
+  products,
+  isLoadingProducts,
+  isLoadingIngredients,
+}) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalBody, setModalBody] = useState(null);
   const [modalTitle, setModalTitle] = useState("");
-  useEffect(() => {
-    fetchIngredients();
-    fetchProducts();
-  }, []);
 
   const openModal = (title, body) => {
     setModalTitle(title);
@@ -235,7 +224,7 @@ const ProductTabContent = ({ activeTab }) => {
         body={modalBody}
       />
       <div
-        className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 md:gap-5 gap-2 p-2 overflow-y-auto scrollbar-hidden"
+        className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-5 gap-2 p-2 overflow-y-auto scrollbar-hidden"
         onClick={handleProductClick}
       >
         {/* <div key={product._id} > */}

@@ -32,7 +32,7 @@ const ProductCard = ({ product, buttonLabel, isLoading }) => {
         scale: 1.05,
         transition: { duration: 0.2, ease: "easeInOut" },
       }}
-      className="transition-all ease-in-out group flex flex-col max-w-xs h-fit gap-2 bg-white cursor-pointer p-3 rounded-xl"
+      className="transition-all ease-in-out group flex flex-col w-fit h-fit gap-2 bg-white cursor-pointer p-3 rounded-xl"
     >
       <div className="overflow-hidden rounded-lg">
         <img
@@ -42,13 +42,13 @@ const ProductCard = ({ product, buttonLabel, isLoading }) => {
         />
       </div>
       <div className="flex flex-col justify-between">
-        <div className="flex w-full gap-2 items-center justify-between">
+        <div className="flex w-fit gap-2 items-center justify-between">
           <h6 className="whitespace-nowrap">{product.name || "No Name"}</h6>
-          <h5 className="whitespace-nowrap text-accent">
+          <p className="whitespace-nowrap text-accent font-bold">
             {product.basePrice
               ? product.basePrice.toLocaleString("id-ID")
               : "0"}
-          </h5>
+          </p>
         </div>
         <p className="text-gray-500 max-w-full line-clamp-3">
           {product.description || "No description available"}
