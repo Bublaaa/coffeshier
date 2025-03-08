@@ -61,4 +61,27 @@ export const useIngredientStore = create((set) => ({
       toast.error(errorMessage);
     }
   },
+
+  deleteIngredient: async (ingredientId) => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      const response = await axios.delete(
+        `${API_URL}ingredient/delete/${ingredientId}`
+      );
+      const successMessage = "Success delete ingredient";
+      set({
+        isLoading: false,
+        message: response.data.message,
+      });
+      toast.success(successMessage);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error delete ingredient";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      toast.error(errorMessage);
+    }
+  },
 }));

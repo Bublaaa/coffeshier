@@ -3,6 +3,9 @@ import { MoveUpRight, MoveDownRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 const StockMovement = ({ ingredient, orders }) => {
+  const hasMatchingOrder = ingredient.stockMovements.some((stock) =>
+    orders.some((order) => order._id === stock.orderId)
+  );
   return (
     <motion.div
       initial={{ opacity: 0, y: -2 }}
@@ -11,7 +14,9 @@ const StockMovement = ({ ingredient, orders }) => {
       className="flex flex-row text-white w-full transition-all ease-in-out"
     >
       <div className="p-3 border border-t-gray-200 rounded-b-lg w-full">
-        <p className="px-2 font-semibold">Orders</p>
+        <p className="px-2 font-semibold">
+          {hasMatchingOrder ? "Orders" : "No order yet"}
+        </p>
         <div>
           {ingredient.stockMovements.map((stock, index) => {
             const matchOrder = orders.find(
@@ -44,9 +49,9 @@ const StockMovement = ({ ingredient, orders }) => {
                     }`}
                   >
                     {stock.type === "IN" ? (
-                      <MoveUpRight className="text-green-300" />
+                      <MoveUpRight className="w-fit text-green-300 size-5" />
                     ) : (
-                      <MoveDownRight className="text-red-300" />
+                      <MoveDownRight className="text-red-300 size-5" />
                     )}
                     <p>{stock.quantity}</p>
                     <p className="pl-1">{ingredient.unit}</p>

@@ -17,6 +17,52 @@ const Skeleton = ({ count }) => (
   </div>
 );
 
+const DeleteIngredientForm = ({ ingredient, onClose }) => {
+  const { deleteIngredient, fetchIngredients } = useIngredientStore();
+  const [confirmationText, setConfirmationText] = useState("");
+
+  const handleDeleteIngredient = async (ingredientId) => {
+    await deleteIngredient(ingredientId);
+    fetchIngredients();
+  };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setConfirmationText(value);
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (confirmationText != ingredient.name) {
+      toast.error("Confirmation is incorrect");
+      return;
+    }
+    handleDeleteIngredient(ingredient._id);
+    onClose();
+  };
+  return (
+    <form
+      className="flex flex-col gap-3 overflow-y-auto p-2 scrollbar-hidden"
+      onSubmit={handleSubmit}
+    >
+      <div className="w-full flex flex-col gap-3">
+        <p>
+          Please retype <span className="font-semibold">{ingredient.name}</span>{" "}
+          to continue deletion.
+        </p>
+        <Input
+          type="text"
+          label="Confirmation"
+          name="confirmation"
+          onChange={handleInputChange}
+        />
+      </div>
+      <Button type="submit" buttonType="danger" buttonSize="large">
+        Confirm
+        <LucideIcons.Trash2Icon />
+      </Button>
+    </form>
+  );
+};
+
 const AddIngredientForm = ({ onClose }) => {
   const { addNewIngredient, fetchIngredients } = useIngredientStore();
   const handleAddIngredient = async (name, unit) => {
@@ -112,6 +158,23 @@ const IngredientTabContent = ({
     setSearchTerm(e.target.value);
   };
 
+  const handleIngredientActions = (e) => {
+    // Check if the delete button was clicked
+    const deleteButton = e.target.closest(".delete-ingredient-btn");
+    if (deleteButton) {
+      const ingredientId = deleteButton.dataset.id;
+      const ingredientName = deleteButton.dataset.name;
+
+      openModal(
+        "Delete Ingredient",
+        <DeleteIngredientForm
+          ingredient={{ _id: ingredientId, name: ingredientName }}
+          onClose={() => setModalOpen(false)}
+        />
+      );
+    }
+  };
+
   const filteredIngredients = Array.isArray(ingredients)
     ? ingredients.filter((ingredient) =>
         ingredient.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -125,7 +188,7 @@ const IngredientTabContent = ({
   return (
     <div className="flex flex-col">
       {/* Header Section */}
-      <div className="flex justify-between items-center p-1 pb-2 md:pb-5">
+      <div className="flex justify-between gap-2 items-center p-1 pb-2 md:pb-5">
         <div className="flex items-center md:gap-5 gap-2">
           {/* Add Ingredient Button */}
           <Button
@@ -166,7 +229,7 @@ const IngredientTabContent = ({
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 1 }}
           transition={{ duration: 0.5 }}
-          className="transition-all ease-in-out grid md:grid-cols-4 grid-cols-3 w-full bg-accent items-center font-semibold p-4 rounded-lg justify-between "
+          className="transition-all ease-in-out grid md:grid-cols-5 grid-cols-4 w-full bg-accent items-center font-semibold p-4 rounded-lg justify-between "
         >
           <div className="w-full">
             <p className="text-white">Ingredient Name</p>
@@ -180,7 +243,10 @@ const IngredientTabContent = ({
         </motion.div>
 
         {/* Ingredient Rows */}
-        <div className="w-full space-y-2 mt-2">
+        <div
+          className="w-full space-y-2 mt-2"
+          onClick={(e) => handleIngredientActions(e)}
+        >
           {filteredIngredients.length > 0 ? (
             filteredIngredients.map((ingredient, index) => {
               const isCollapsed = collapsedRows[ingredient._id] || false;
@@ -194,7 +260,7 @@ const IngredientTabContent = ({
                 >
                   {/* Ingredient Row */}
                   <div
-                    className="grid grid-cols-3 md:grid-cols-4 gap-4 w-full px-4 py-3 hover:bg-gray-100 transition cursor-pointer items-center"
+                    className="grid grid-cols-4 md:grid-cols-5 gap-4 w-full px-4 py-3 hover:bg-gray-100 rounded-lg hover:border border-accent hover:border-2 transition cursor-pointer items-center"
                     onClick={() => toggleCollapse(ingredient._id)}
                   >
                     <p className="truncate">
@@ -208,6 +274,20 @@ const IngredientTabContent = ({
                     <p className="text-gray-500 hidden md:block">
                       {formatDate(ingredient.updatedAt)}
                     </p>
+                    <div className="flex flex-row md:gap-5 gap-2 items-center">
+                      <Button buttonType="secondary" buttonSize="icon">
+                        <LucideIcons.Pen className="size-5" />
+                      </Button>
+                      <Button
+                        buttonType="danger"
+                        buttonSize="icon"
+                        className="delete-ingredient-btn"
+                        data-id={ingredient._id}
+                        data-name={ingredient.name}
+                      >
+                        <LucideIcons.Trash className="size-5" />
+                      </Button>
+                    </div>
                     <LucideIcons.ChevronRight
                       className={`ml-auto transition-transform duration-300 ${
                         isCollapsed ? "rotate-90" : ""
