@@ -38,18 +38,24 @@ export const useIngredientStore = create((set) => ({
   },
 
   addNewIngredient: async (name, unit) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, message: null });
     try {
       const response = await axios.post(`${API_URL}ingredient/add`, {
         name,
         unit,
       });
-      set({ ingredients: response.data.ingredient, isLoading: false });
+      const successMessage = "Success add new ingredient";
+      set({
+        ingredients: response.data.ingredient,
+        isLoading: false,
+        message: successMessage,
+      });
+      toast.success(successMessage);
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Error fetching ingredients";
+        error.response?.data?.message || "Error adding new ingredients";
       set({
-        error: errorMessage || "Error fetching ingredients",
+        error: errorMessage,
         isLoading: false,
       });
       toast.error(errorMessage);

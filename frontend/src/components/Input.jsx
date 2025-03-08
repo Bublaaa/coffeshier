@@ -92,7 +92,7 @@ export const DropdownInput = ({
     setSelectedValue(newValue);
     setIsOpen(false);
     if (onChange) {
-      onChange(name, newValue); // Notify parent
+      onChange({ target: { name, value: newValue } }); // Notify parent
     }
   };
 

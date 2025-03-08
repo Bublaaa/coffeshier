@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import * as LucideIcons from "lucide-react";
 import Modal from "../components/Modal.jsx";
 import ProductCard from "./ProductCard.jsx";
-import { useProductStore } from "../store/productStore.js";
-import { useIngredientStore } from "../store/ingredientStore.js";
 import { Input, TextareaInput, DropdownInput, FileInput } from "./Input.jsx";
 import Button from "./Button.jsx";
 
