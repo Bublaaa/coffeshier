@@ -11,8 +11,13 @@ const StockMovement = lazy(() => import("./StockMovement.jsx"));
 
 const Skeleton = ({ count }) => (
   <div className="animate-[pulse_0.8s_ease-in-out_infinite] flex gap-5 flex-col">
+    <div className="grid grid-cols-3 gap-5">
+      <div className="bg-gray-300 py-6 rounded-lg"></div>
+      <div className="bg-gray-300 py-6 rounded-lg"></div>
+      <div className="bg-gray-300 py-6 rounded-lg"></div>
+    </div>
     {Array.from({ length: count }, (_, index) => (
-      <div key={index} className="w-full bg-gray-300 py-5 rounded-lg"></div>
+      <div key={index} className="w-full bg-gray-300 py-7 rounded-lg"></div>
     ))}
   </div>
 );
@@ -69,7 +74,6 @@ const AddIngredientForm = ({ onClose }) => {
     await addNewIngredient(name, unit);
     fetchIngredients();
   };
-
   const [ingredientData, setIngredientData] = useState({
     name: "",
     unit: "",
@@ -118,9 +122,9 @@ const AddIngredientForm = ({ onClose }) => {
         type="submit"
         buttonType="primary"
         buttonSize="large"
+        icon={LucideIcons.Plus}
       >
         Add
-        <LucideIcons.Plus />
       </Button>
     </form>
   );
@@ -274,7 +278,7 @@ const IngredientTabContent = ({
   };
 
   if (isLoadingIngredients || isLoadingProducts) {
-    return <Skeleton count={ingredients.length || 5} />;
+    return <Skeleton count={ingredients.length + 1 || 5} />;
   }
 
   return (
@@ -283,9 +287,10 @@ const IngredientTabContent = ({
       <div className="flex justify-between gap-2 items-center p-1 pb-2 md:pb-5">
         {/* Add Ingredient Button */}
         <Button
-          className="mx-1 "
+          className="mx-1 text-start"
           buttonType="primary"
           buttonSize="icon"
+          icon={LucideIcons.Plus}
           onClick={() =>
             openModal(
               "Add New Ingredient",
@@ -293,48 +298,48 @@ const IngredientTabContent = ({
             )
           }
         >
-          {" "}
-          Add Ingredient
-          <LucideIcons.Plus />
+          <p className="hidden md:block text-white p-1">Add Ingredient</p>
         </Button>
         {/* Pagination Controls */}
-        <div className="flex justify-center gap-4 items-center">
+        <div className="flex justify-center md:gap-5 gap-2 items-center">
           <Button
-            buttonType="secondary"
+            buttonType={currentPage === 1 ? "disabled" : "secondary"}
             buttonSize="icon"
             onClick={handlePrevPage}
-            disabled={currentPage === 1}
-          >
-            <LucideIcons.ChevronLeft />
-          </Button>
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
+            icon={LucideIcons.ChevronLeft}
+          ></Button>
+          <p>
+            {currentPage}/{totalPages}
+          </p>
           <Button
-            buttonType="secondary"
+            buttonType={currentPage === totalPages ? "disabled" : "secondary"}
             buttonSize="icon"
             onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            <LucideIcons.ChevronRight />
-          </Button>
+            icon={LucideIcons.ChevronRight}
+          ></Button>
         </div>
         {/* Search Ingredient */}
-        <Input
-          className="w-fit"
-          icon={LucideIcons.Search}
-          type="text"
-          placeholder="Search by name"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-        <Button
-          buttonSize="icon"
-          buttonType="primary"
-          onClick={() => handleSearch({ searchQuery: searchText })}
-        >
-          <LucideIcons.Search />
-        </Button>
+        <div className="flex flex-row gap-2 items-center">
+          <Input
+            className="w-fit"
+            type="text"
+            placeholder="Search by name"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch({ searchQuery: searchText });
+              }
+            }}
+          />
+          <Button
+            buttonSize="icon"
+            buttonType="primary"
+            onClick={() => handleSearch({ searchQuery: searchText })}
+          >
+            <LucideIcons.Search />
+          </Button>
+        </div>
       </div>
       <Modal
         isOpen={isModalOpen}

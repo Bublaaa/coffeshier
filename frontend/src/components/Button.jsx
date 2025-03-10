@@ -15,7 +15,7 @@ const buttonVariants = {
 
 //  Button Sizes
 const buttonSizes = {
-  icon: "md:px-2 px-1 md:py-2 py-1",
+  icon: "p-2",
   small: "md:px-3 px-1.5 md:py-2 py-1 text-sm max-w-sm",
   medium: "md:px-4 px-2 md:py-2 py-1 text-base max-w-md",
   large: "md:px-6 px-3 md:py-3 py-1.5 text-lg max-w-lg",
@@ -36,7 +36,7 @@ const Button = ({
     <motion.button
       type="button"
       className={clsx(
-        "flex items-center justify-center gap-2 rounded-lg transition  duration-200 focus:outline-none focus:ring-4",
+        "flex items-center justify-center gap-2 rounded-lg transition  duration-200",
         buttonVariants[buttonType], //  Use variant styles
         buttonSizes[buttonSize], //  Use size styles
         className
