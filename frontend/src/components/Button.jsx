@@ -10,7 +10,7 @@ const buttonVariants = {
     "bg-white font-medium text-dark hover:text-accent focus:outline-none focus:ring-4 focus:ring-gray-100 border border-gray-200 cursor-pointer",
   danger:
     "bg-red-300 font-medium text-white hover:text-red-400 focus:outline-none focus:ring-4 focus:ring-red-100 border border-red-200 cursor-pointer",
-  disabled: "bg-gray-300 font-medium  text-gray-500 cursor-not-allowed",
+  disabled: "bg-gray-300 font-medium  text-gray-400 cursor-not-allowed",
 };
 
 //  Button Sizes

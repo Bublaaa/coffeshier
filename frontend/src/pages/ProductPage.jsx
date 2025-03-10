@@ -12,6 +12,7 @@ import ProductTabContent from "../components/ProductTabContent.jsx";
 const ProductPage = () => {
   const [activeTab, setActiveTab] = useState("Product");
 
+  // Fetching state from ingredient store
   const {
     ingredients,
     fetchIngredients,
@@ -20,33 +21,33 @@ const ProductPage = () => {
     totalPages,
   } = useIngredientStore();
 
-  const handleSearch = ({ searchQuery }) => {
-    fetchIngredients(1, searchQuery);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) fetchIngredients(currentPage + 1, 5);
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) fetchIngredients(currentPage - 1, 5);
-  };
-
   // Fetching state from product store
   const {
     products,
     fetchProducts,
     fetchProductsByCategory,
-    isLoading: isLoadingProducts, // Rename
-    error: productError, // Rename
+    isLoading: isLoadingProducts,
+    error: productError,
   } = useProductStore();
 
+  // Fetching state from order store
   const {
     orders,
     fetchOrders,
     isLoading: isLoadingOrders,
     error: orderError,
   } = useOrderStore();
+
+  // Ingredient Tab Function
+  const handleSearch = ({ searchQuery }) => {
+    fetchIngredients(1, searchQuery);
+  };
+  const handleNextPage = () => {
+    if (currentPage < totalPages) fetchIngredients(currentPage + 1, 5);
+  };
+  const handlePrevPage = () => {
+    if (currentPage > 1) fetchIngredients(currentPage - 1, 5);
+  };
 
   const merchandiseTabContent = ({ activeTab }) => {
     return (
@@ -63,12 +64,11 @@ const ProductPage = () => {
       id: "product",
       label: "Product",
       icon: "Blocks",
-      content: (props) => (
+      content: () => (
         <ProductTabContent
           activeTab={activeTab}
           ingredients={ingredients}
           products={products}
-          isLoadingIngredients={isLoadingIngredients}
           isLoadingProducts={isLoadingProducts}
         />
       ),
@@ -83,7 +83,7 @@ const ProductPage = () => {
       id: "ingredient",
       label: "Ingredient",
       icon: "CookingPot",
-      content: (props) => (
+      content: () => (
         <IngredientTabContent
           activeTab={activeTab}
           ingredients={ingredients}

@@ -23,7 +23,7 @@ export const useIngredientStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get(`${API_URL}ingredient/get`, {
-        params: { page, limit: 5, search: searchQuery },
+        params: { page, limit: 8, search: searchQuery },
       });
 
       set({

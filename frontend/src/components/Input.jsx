@@ -16,9 +16,10 @@ export const Input = ({ icon: Icon, label, ...props }) => (
     )}
     <input
       {...props}
-      className={`w-full border border-gray-300 rounded-lg md:p-3 p-2 bg-white text-dark placeholder-gray-400 focus:border-accent focus:ring-4 focus:ring-accent/40 focus:outline-none transition ${
-        Icon ? "pl-10" : ""
-      }`}
+      className={`w-full border border-gray-300 rounded-lg md:p-3 p-2 bg-white text-dark placeholder:text-sm 
+        md:placeholder:text-base placeholder-gray-400 focus:border-accent focus:ring-4 focus:ring-accent/40 focus:outline-none transition ${
+          Icon ? "pl-10" : ""
+        }`}
     />
   </div>
 );
@@ -39,34 +40,44 @@ export const TextareaInput = ({ label, ...props }) => (
 );
 
 // CheckBox
-export const CheckboxInput = ({ options, label, ...props }) => (
-  <div className="relative w-full">
-    {label && (
-      <label className="block text-sm font-medium text-gray-600 mb-1">
-        {label}
-      </label>
-    )}
-    <div className="flex flex-wrap gap-5">
-      {options.map((option, index) => (
-        <div key={index}>
-          <input
-            id={`checkbox-${index}`}
-            {...props}
-            type="checkbox"
-            value={option.value}
-            className="w-5 h-5 text-accent cursor-pointer accent-accent hidden peer"
-          />
-          <label
-            htmlFor={`checkbox-${index}`}
-            className="flex w-fit px-3 py-2 items-center cursor-pointer peer-checked:border-2 hover:bg-gray-100 peer-checked:border-accent border border-gray-200 rounded-lg bg-white"
-          >
-            <span className="text-gray-700">{option.label}</span>
-          </label>
-        </div>
-      ))}
+export const CheckboxInput = ({
+  options,
+  name,
+  initialValue = [],
+  label,
+  ...props
+}) => {
+  return (
+    <div className="relative w-full">
+      {label && (
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          {label}
+        </label>
+      )}
+      <div className="flex flex-wrap gap-5">
+        {options.map((option, index) => (
+          <div key={index}>
+            <input
+              name={name}
+              id={`checkbox-${index}`}
+              type="checkbox"
+              value={option.value}
+              checked={initialValue.includes(option.value)}
+              className="w-5 h-5 text-accent cursor-pointer accent-accent hidden peer"
+              {...props}
+            />
+            <label
+              htmlFor={`checkbox-${index}`}
+              className="flex w-fit px-3 py-2 items-center cursor-pointer peer-checked:border-2 hover:bg-gray-100 peer-checked:border-accent border border-gray-200 rounded-lg bg-white"
+            >
+              <span className="text-gray-700">{option.label}</span>
+            </label>
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Dropdown
 export const DropdownInput = ({

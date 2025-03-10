@@ -2,10 +2,16 @@ import { useState } from "react";
 import * as LucideIcons from "lucide-react";
 import Modal from "../components/Modal.jsx";
 import ProductCard from "./ProductCard.jsx";
-import { Input, TextareaInput, DropdownInput, FileInput } from "./Input.jsx";
+import {
+  Input,
+  TextareaInput,
+  DropdownInput,
+  FileInput,
+  CheckboxInput,
+} from "./Input.jsx";
 import Button from "./Button.jsx";
 
-const AddMenuForm = ({ ingredients }) => {
+const AddMenuForm = ({ ingredients, onClose }) => {
   const [step, setStep] = useState(1);
   const [menuData, setMenuData] = useState({
     name: "",
@@ -13,12 +19,51 @@ const AddMenuForm = ({ ingredients }) => {
     status: "Not Available",
     stock: "",
     description: "",
+    sizes: [{ size: "regular", additionalPrice: 0 }],
     image: null,
     ingredientsList: [{ count: 1, selectedId: "" }],
   });
 
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
+
+  // Event listener for size
+  // Handle checkbox selection
+  const handleSizeChange = (size) => {
+    console.log(menuData.sizes);
+    setMenuData((prev) => {
+      const exists = prev.sizes.some((s) => s.size == size.target.value);
+      // console.log("menu data" + menuData.sizes);
+
+      if (exists) {
+        // Uncheck: Remove the size
+        return {
+          ...prev,
+          sizes: prev.sizes.filter((s) => s.size !== size.target.value),
+        };
+      } else {
+        // Check: Add the size with default additionalPrice (0)
+        return {
+          ...prev,
+          sizes: [
+            ...prev.sizes,
+            { size: size.target.value, additionalPrice: 0 },
+          ],
+        };
+      }
+    });
+  };
+
+  // Handle additional price change
+  const handleAdditionalPriceChange = (size, value) => {
+    console.log(size, value);
+    setMenuData((prev) => ({
+      ...prev,
+      sizes: prev.sizes.map((s) =>
+        s.size == size ? { ...s, additionalPrice: Number(value) } : s
+      ),
+    }));
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -107,17 +152,59 @@ const AddMenuForm = ({ ingredients }) => {
           />
           <FileInput label="Product Image" onChange={handleFileChange} />
           <Button
+            className="w-fit ml-auto"
             type="button"
             buttonType="primary"
-            buttonSize="large"
             onClick={nextStep}
           >
             Next
           </Button>
         </div>
       )}
-      {/* Recipe & Direction */}
+      {/* Menu Available Sizes */}
       {step === 2 && (
+        <div className="w-full flex flex-col gap-3">
+          <CheckboxInput
+            label="Size"
+            name="size"
+            initialValue={menuData.sizes.map((s) => s.size)}
+            options={[
+              { value: "regular", label: "Regular" },
+              { value: "large", label: "Large" },
+              { value: "extra large", label: "Extra Large" },
+            ]}
+            onChange={handleSizeChange}
+          />
+          {/* Additional Price Inputs */}
+          {menuData.sizes
+            .filter((s) => s.size !== "regular")
+            .map((s) => (
+              <div key={s.size}>
+                <Input
+                  type="number"
+                  placeholder="e.g. 5000"
+                  required={true}
+                  min="1"
+                  max="100000"
+                  label={`Additional Price for ${s.size}`}
+                  onChange={(e) =>
+                    handleAdditionalPriceChange(s.size, e.target.value)
+                  }
+                />
+              </div>
+            ))}
+          <div className="flex flex-row w-full md:gap-5 gap-2 items-center justify-end">
+            <Button type="button" buttonType="secondary" onClick={prevStep}>
+              Back
+            </Button>
+            <Button type="button" buttonType="primary" onClick={nextStep}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+      {/* Recipe & Direction */}
+      {step === 3 && (
         <div className="w-full flex flex-col gap-3">
           <div className="flex flex-row w-full justify-between items-center">
             <Button
@@ -175,7 +262,6 @@ const ProductTabContent = ({
   ingredients,
   products,
   isLoadingProducts,
-  isLoadingIngredients,
 }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);

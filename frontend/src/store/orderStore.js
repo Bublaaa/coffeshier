@@ -15,23 +15,20 @@ export const useOrderStore = create((set) => ({
   isLoading: false,
   message: null,
 
-  handleError: (error) => {
-    const errorMessage =
-      error.response?.data?.message || "Error fetching orders";
-    set({
-      error: errorMessage || "Error fetching orders",
-      isLoading: false,
-    });
-    toast.error(errorMessage);
-  },
   fetchOrders: async () => {
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get(`${API_URL}order/all`);
-      console.log(response.data.orders);
+      // console.log(response.data.orders);
       set({ orders: response.data.orders, isLoading: false });
     } catch (error) {
-      handleError(error);
+      const errorMessage =
+        error.response?.data?.message || "Error fetching orders";
+      set({
+        error: errorMessage || "Error fetching orders",
+        isLoading: false,
+      });
+      toast.error(errorMessage);
     }
   },
 }));

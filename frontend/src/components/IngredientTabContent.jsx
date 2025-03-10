@@ -11,7 +11,7 @@ const StockMovement = lazy(() => import("./StockMovement.jsx"));
 
 const Skeleton = ({ count }) => (
   <div className="animate-[pulse_0.8s_ease-in-out_infinite] flex gap-5 flex-col">
-    <div className="grid grid-cols-3 gap-5">
+    <div className="grid grid-cols-3 md:gap-5 gap-2">
       <div className="bg-gray-300 py-6 rounded-lg"></div>
       <div className="bg-gray-300 py-6 rounded-lg"></div>
       <div className="bg-gray-300 py-6 rounded-lg"></div>
@@ -284,10 +284,10 @@ const IngredientTabContent = ({
   return (
     <div className="flex flex-col">
       {/* Header Section */}
-      <div className="flex justify-between gap-2 items-center p-1 pb-2 md:pb-5">
+      <div className="flex justify-between gap-2 items-center pb-2 md:pb-5">
         {/* Add Ingredient Button */}
         <Button
-          className="mx-1 text-start"
+          className="text-start mx-1"
           buttonType="primary"
           buttonSize="icon"
           icon={LucideIcons.Plus}
