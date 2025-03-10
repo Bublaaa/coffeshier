@@ -11,15 +11,26 @@ import ProductTabContent from "../components/ProductTabContent.jsx";
 
 const ProductPage = () => {
   const [activeTab, setActiveTab] = useState("Product");
-  // const [activeCategoryId, setActiveCategoryId] = useState("");
-  // Fetching state from ingredient store
+
   const {
     ingredients,
     fetchIngredients,
-    addIngredient,
-    isLoading: isLoadingIngredients, // Rename to avoid conflict
-    error: ingredientError, // Rename
+    isLoading: isLoadingIngredients,
+    currentPage,
+    totalPages,
   } = useIngredientStore();
+
+  const handleSearch = ({ searchQuery }) => {
+    fetchIngredients(1, searchQuery);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) fetchIngredients(currentPage + 1, 5);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) fetchIngredients(currentPage - 1, 5);
+  };
 
   // Fetching state from product store
   const {
@@ -79,16 +90,21 @@ const ProductPage = () => {
           orders={orders}
           isLoadingIngredients={isLoadingIngredients}
           isLoadingProducts={isLoadingProducts}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          handleNextPage={handleNextPage}
+          handlePrevPage={handlePrevPage}
+          handleSearch={handleSearch}
         />
       ),
     },
   ];
 
   useEffect(() => {
-    fetchIngredients();
+    fetchIngredients(currentPage, "");
     fetchProducts();
     fetchOrders();
-  }, [fetchIngredients, fetchProducts, fetchOrders]);
+  }, [currentPage, fetchProducts, fetchOrders]);
 
   return (
     <div className="flex flex-row md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300">

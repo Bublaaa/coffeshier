@@ -103,7 +103,6 @@ const AddIngredientForm = ({ onClose }) => {
         <DropdownInput
           label="Unit"
           name="unit"
-          value
           options={[
             { value: "ml", label: "Milliliter" },
             { value: "li", label: "Liter" },
@@ -127,15 +126,102 @@ const AddIngredientForm = ({ onClose }) => {
   );
 };
 
+const EditIngredientForm = ({ ingredient, onClose }) => {
+  const { updateIngredient, fetchIngredients } = useIngredientStore();
+  const [ingredientData, setIngredientData] = useState({
+    id: "",
+    name: "",
+    unit: "",
+  });
+  useEffect(() => {
+    if (ingredient) {
+      setIngredientData({
+        id: ingredient.id || "",
+        name: ingredient.name || "",
+        unit: ingredient.unit || "",
+      });
+    }
+  }, []);
+
+  const handleEditIngredient = async (ingredientId, name, unit) => {
+    await updateIngredient(ingredientId, name, unit);
+    fetchIngredients();
+  };
+
+  const handleSubmit = (e) => {
+    if (!ingredientData.id || !ingredientData.name || !ingredientData.unit) {
+      e.preventDefault();
+      toast.error("All fields are required");
+    }
+    handleEditIngredient(
+      ingredientData.id,
+      ingredientData.name,
+      ingredientData.unit
+    );
+    onClose();
+  };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setIngredientData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+    console.log(ingredientData);
+  };
+  return (
+    <form
+      className="flex flex-col md:flex-row gap-3 overflow-y-auto p-2 scrollbar-hidden"
+      onSubmit={handleSubmit}
+    >
+      <div className="w-full flex flex-col gap-3 pb-5">
+        <Input
+          type="text"
+          placeholder="e.g. Tear Drop"
+          label="Ingredient Name"
+          value={ingredientData.name}
+          name="name"
+          onChange={handleInputChange}
+        />
+        <DropdownInput
+          label="Unit"
+          name="unit"
+          value={ingredientData.unit}
+          options={[
+            { value: "ml", label: "Milliliter" },
+            { value: "li", label: "Liter" },
+            { value: "kg", label: "Kilogram" },
+            { value: "gr", label: "Gram" },
+            { value: "mg", label: "Milligram" },
+          ]}
+          onChange={handleInputChange}
+        />
+      </div>
+      <Button
+        className="h-fit mt-auto mb-5"
+        type="submit"
+        buttonType="primary"
+        buttonSize="large"
+      >
+        Save
+        <LucideIcons.Save />
+      </Button>
+    </form>
+  );
+};
+
 const IngredientTabContent = ({
-  activeTab,
   ingredients = [],
   orders,
   isLoadingIngredients,
   isLoadingProducts,
+  currentPage,
+  totalPages,
+  handleNextPage,
+  handlePrevPage,
+  handleSearch,
 }) => {
   const [collapsedRows, setCollapsedRows] = useState({});
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalBody, setModalBody] = useState(null);
@@ -154,13 +240,9 @@ const IngredientTabContent = ({
     }));
   };
 
-  const handleInputChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
   const handleIngredientActions = (e) => {
-    // Check if the delete button was clicked
     const deleteButton = e.target.closest(".delete-ingredient-btn");
+    const editButton = e.target.closest(".edit-ingredient-btn");
     if (deleteButton) {
       const ingredientId = deleteButton.dataset.id;
       const ingredientName = deleteButton.dataset.name;
@@ -173,13 +255,23 @@ const IngredientTabContent = ({
         />
       );
     }
+    if (editButton) {
+      const ingredientId = editButton.dataset.id;
+      const ingredientName = editButton.dataset.name;
+      const ingredientUnit = editButton.dataset.unit;
+      openModal(
+        "Update Ingredient",
+        <EditIngredientForm
+          ingredient={{
+            id: ingredientId,
+            name: ingredientName,
+            unit: ingredientUnit,
+          }}
+          onClose={() => setModalOpen(false)}
+        />
+      );
+    }
   };
-
-  const filteredIngredients = Array.isArray(ingredients)
-    ? ingredients.filter((ingredient) =>
-        ingredient.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : [];
 
   if (isLoadingIngredients || isLoadingProducts) {
     return <Skeleton count={ingredients.length || 5} />;
@@ -189,40 +281,67 @@ const IngredientTabContent = ({
     <div className="flex flex-col">
       {/* Header Section */}
       <div className="flex justify-between gap-2 items-center p-1 pb-2 md:pb-5">
-        <div className="flex items-center md:gap-5 gap-2">
-          {/* Add Ingredient Button */}
+        {/* Add Ingredient Button */}
+        <Button
+          className="mx-1 "
+          buttonType="primary"
+          buttonSize="icon"
+          onClick={() =>
+            openModal(
+              "Add New Ingredient",
+              <AddIngredientForm onClose={() => setModalOpen(false)} />
+            )
+          }
+        >
+          {" "}
+          Add Ingredient
+          <LucideIcons.Plus />
+        </Button>
+        {/* Pagination Controls */}
+        <div className="flex justify-center gap-4 items-center">
           <Button
-            className="mx-1 "
-            buttonType="primary"
+            buttonType="secondary"
             buttonSize="icon"
-            onClick={() =>
-              openModal(
-                "Add New Ingredient",
-                <AddIngredientForm onClose={() => setModalOpen(false)} />
-              )
-            }
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
           >
-            <LucideIcons.Plus />
+            <LucideIcons.ChevronLeft />
           </Button>
-          <h3>{activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}</h3>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            buttonType="secondary"
+            buttonSize="icon"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            <LucideIcons.ChevronRight />
+          </Button>
         </div>
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => setModalOpen(false)}
-          title={modalTitle}
-          body={modalBody}
-        />
         {/* Search Ingredient */}
         <Input
           className="w-fit"
           icon={LucideIcons.Search}
           type="text"
           placeholder="Search by name"
-          value={searchTerm}
-          onChange={handleInputChange}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
         />
+        <Button
+          buttonSize="icon"
+          buttonType="primary"
+          onClick={() => handleSearch({ searchQuery: searchText })}
+        >
+          <LucideIcons.Search />
+        </Button>
       </div>
-
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        body={modalBody}
+      />
       <div className="w-full overflow-x-auto overflow-y-auto scrollbar-hidden">
         {/* Table Header */}
         <motion.div
@@ -247,8 +366,8 @@ const IngredientTabContent = ({
           className="w-full space-y-2 mt-2"
           onClick={(e) => handleIngredientActions(e)}
         >
-          {filteredIngredients.length > 0 ? (
-            filteredIngredients.map((ingredient, index) => {
+          {ingredients.length > 0 ? (
+            ingredients.map((ingredient, index) => {
               const isCollapsed = collapsedRows[ingredient._id] || false;
               return (
                 <motion.div
@@ -275,7 +394,14 @@ const IngredientTabContent = ({
                       {formatDate(ingredient.updatedAt)}
                     </p>
                     <div className="flex flex-row md:gap-5 gap-2 items-center">
-                      <Button buttonType="secondary" buttonSize="icon">
+                      <Button
+                        buttonType="secondary"
+                        buttonSize="icon"
+                        className="edit-ingredient-btn"
+                        data-id={ingredient._id}
+                        data-name={ingredient.name}
+                        data-unit={ingredient.unit}
+                      >
                         <LucideIcons.Pen className="size-5" />
                       </Button>
                       <Button

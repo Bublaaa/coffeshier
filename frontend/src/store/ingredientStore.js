@@ -15,25 +15,31 @@ export const useIngredientStore = create((set) => ({
   isLoading: false,
   message: null,
 
-  fetchIngredients: async () => {
-    set({ isLoading: true, error: null, message: null });
+  totalPages: 0,
+  currentPage: 1,
+  totalItems: 0,
+
+  fetchIngredients: async (page = 1, searchQuery = "") => {
+    set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(`${API_URL}ingredient/get`);
-      const successMessage = "Success fetch ingredients";
+      const response = await axios.get(`${API_URL}ingredient/get`, {
+        params: { page, limit: 5, search: searchQuery },
+      });
+
       set({
         ingredients: response.data.ingredients,
+        totalPages: response.data.totalPages,
+        currentPage: response.data.currentPage,
+        totalItems: response.data.totalItems,
         isLoading: false,
-        message: successMessage,
+        message: "Success fetch ingredients",
       });
-      toast.success(successMessage);
+      toast.success("Success fetch ingredients");
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Error fetching ingredients";
       set({
-        error: errorMessage,
+        error: error.response?.data?.message || "Error fetching ingredients",
         isLoading: false,
       });
-      toast.error(errorMessage);
     }
   },
 
@@ -45,6 +51,34 @@ export const useIngredientStore = create((set) => ({
         unit,
       });
       const successMessage = "Success add new ingredient";
+      set({
+        ingredients: response.data.ingredient,
+        isLoading: false,
+        message: successMessage,
+      });
+      toast.success(successMessage);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error adding new ingredients";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      toast.error(errorMessage);
+    }
+  },
+
+  updateIngredient: async (ingredientId, name, unit) => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      const response = await axios.put(
+        `${API_URL}ingredient/update/${ingredientId}`,
+        {
+          name,
+          unit,
+        }
+      );
+      const successMessage = "Ingredient updated successfully";
       set({
         ingredients: response.data.ingredient,
         isLoading: false,

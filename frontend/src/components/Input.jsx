@@ -16,7 +16,7 @@ export const Input = ({ icon: Icon, label, ...props }) => (
     )}
     <input
       {...props}
-      className={`w-full border border-gray-300 rounded-lg md:px-3 px-2 md:py-3 py-2 bg-white text-dark placeholder-gray-400 focus:border-accent focus:ring-4 focus:ring-accent/40 focus:outline-none transition ${
+      className={`w-full border border-gray-300 rounded-lg md:px-3 md:py-3 bg-white text-dark placeholder-gray-400 focus:border-accent focus:ring-4 focus:ring-accent/40 focus:outline-none transition ${
         Icon ? "pl-10" : ""
       }`}
     />
