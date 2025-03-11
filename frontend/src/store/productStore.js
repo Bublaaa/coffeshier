@@ -77,9 +77,31 @@ export const useProductStore = create((set) => ({
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error fetching products";
-
       set({ error: errorMessage, isLoading: false, products: [] });
+      toast.error(errorMessage);
+    }
+  },
 
+  addNewMenu: async (menuData) => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      const response = await axios.post(`${API_URL}product/add`, {
+        name: menuData.name,
+        basePrice: menuData.basePrice,
+        image: menuData.image,
+        status: menuData.status,
+        stockQuantity: menuData.stockQuantity,
+        categoryId: menuData.categoryId,
+        sizes: menuData.sizes,
+        ingredients: menuData.ingredients,
+        recipe: menuData.recipe,
+      });
+      set({ products: response.data.products, isLoading: false });
+      toast.success("Success add new menu");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error fetching products";
+      set({ error: errorMessage, isLoading: false, products: [] });
       toast.error(errorMessage);
     }
   },

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as LucideIcons from "lucide-react";
 import Modal from "../components/Modal.jsx";
 import ProductCard from "./ProductCard.jsx";
+import { useProductStore } from "../store/productStore.js";
+import { useCategoryStore } from "../store/categoryStore.js";
 import {
   Input,
   TextareaInput,
@@ -10,39 +12,84 @@ import {
   CheckboxInput,
 } from "./Input.jsx";
 import Button from "./Button.jsx";
+import toast from "react-hot-toast";
 
-const AddMenuForm = ({ ingredients, onClose }) => {
+const AddMenuForm = ({ categories, ingredients, onClose }) => {
+  const { addNewMenu, fetchProducts } = useProductStore();
   const [step, setStep] = useState(1);
   const [menuData, setMenuData] = useState({
     name: "",
-    price: "",
+    basePrice: "",
+    categoryId: "",
     status: "Not Available",
-    stock: "",
+    initialStock: "",
     description: "",
     sizes: [{ size: "regular", additionalPrice: 0 }],
     image: null,
     ingredientsList: [{ count: 1, selectedId: "" }],
+    directions: "",
   });
+  const [errors, setErrors] = useState({});
+  const validateStep = () => {
+    let newErrors = {};
+    if (step === 1) {
+      if (!menuData.name.trim()) newErrors.name = "Name is required.";
+      if (!menuData.basePrice.trim())
+        newErrors.basePrice = "Base Price is required.";
+      if (!menuData.categoryId.trim())
+        newErrors.categoryId = "Category is required.";
+      if (!menuData.initialStock.trim())
+        newErrors.initialStock = "Initial Stock is required.";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Please fill in all required fields.");
+      return false;
+    }
+    return true;
+  };
 
-  const nextStep = () => setStep((prev) => prev + 1);
+  const nextStep = () => {
+    if (validateStep()) {
+      setStep((prev) => prev + 1);
+    }
+  };
   const prevStep = () => setStep((prev) => prev - 1);
 
-  // Event listener for size
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(menuData);
+    if (
+      menuData.ingredientsList.some(
+        (ingredient) => ingredient.selectedId !== ""
+      )
+    ) {
+      toast.error("Ingredient data is not completed");
+    }
+  };
+
+  // Step 1 functions
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setMenuData((prev) => ({ ...prev, [name]: value }));
+    console.log(menuData);
+  };
+
+  const handleFileChange = (e) => {
+    setMenuData((prev) => ({ ...prev, image: e.target.files[0] }));
+  };
+
+  // Step 2 functions
   // Handle checkbox selection
   const handleSizeChange = (size) => {
-    console.log(menuData.sizes);
     setMenuData((prev) => {
       const exists = prev.sizes.some((s) => s.size == size.target.value);
-      // console.log("menu data" + menuData.sizes);
-
       if (exists) {
-        // Uncheck: Remove the size
         return {
           ...prev,
           sizes: prev.sizes.filter((s) => s.size !== size.target.value),
         };
       } else {
-        // Check: Add the size with default additionalPrice (0)
         return {
           ...prev,
           sizes: [
@@ -53,10 +100,8 @@ const AddMenuForm = ({ ingredients, onClose }) => {
       }
     });
   };
-
   // Handle additional price change
   const handleAdditionalPriceChange = (size, value) => {
-    console.log(size, value);
     setMenuData((prev) => ({
       ...prev,
       sizes: prev.sizes.map((s) =>
@@ -65,24 +110,13 @@ const AddMenuForm = ({ ingredients, onClose }) => {
     }));
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setMenuData((prev) => ({ ...prev, [name]: value }));
-    console.log(menuData);
-  };
-
-  const handleFileChange = (e) => {
-    console.log(e);
-    setMenuData((prev) => ({ ...prev, image: e.target.files[0] }));
-  };
-
+  // Step 3 functions
   const handleAddIngredientClick = () => {
     setMenuData((prev) => ({
       ...prev,
       ingredientsList: [...prev.ingredientsList, { count: 1, selectedId: "" }],
     }));
   };
-
   const handleRemoveIngredient = (index) => {
     setMenuData((prev) => {
       const newList = prev.ingredientsList.filter((_, i) => i !== index);
@@ -91,18 +125,12 @@ const AddMenuForm = ({ ingredients, onClose }) => {
   };
 
   const handleIngredientChange = (index, selectedId) => {
-    console.log(index, selectedId);
     setMenuData((prev) => {
       const newList = prev.ingredientsList.map((ing, i) =>
         i === index ? { ...ing, selectedId } : ing
       );
       return { ...prev, ingredientsList: newList };
     });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Final Data:", menuData);
   };
 
   return (
@@ -116,14 +144,27 @@ const AddMenuForm = ({ ingredients, onClose }) => {
             label="Product Name"
             name="name"
             onChange={handleInputChange}
+            error={errors.name}
           />
           <Input
             type="number"
             placeholder="e.g. 10.000"
             min="5000"
             label="Base Price"
-            name="price"
+            name="basePrice"
             onChange={handleInputChange}
+            error={errors.basePrice}
+          />
+          <DropdownInput
+            label="Category"
+            name="categoryId"
+            value={menuData.categoryId}
+            options={categories.map((category) => ({
+              value: category._id,
+              label: category.name,
+            }))}
+            onChange={handleInputChange}
+            error={errors.categoryId}
           />
           <DropdownInput
             label="Status"
@@ -141,8 +182,9 @@ const AddMenuForm = ({ ingredients, onClose }) => {
             min="1"
             max="100"
             label="Initial Stock"
-            name="stock"
+            name="initialStock"
             onChange={handleInputChange}
+            error={errors.initialStock}
           />
           <TextareaInput
             label="Description"
@@ -207,57 +249,79 @@ const AddMenuForm = ({ ingredients, onClose }) => {
       {step === 3 && (
         <div className="w-full flex flex-col gap-3">
           <div className="flex flex-row w-full justify-between items-center">
+            <h6>Ingredients & Direction</h6>
             <Button
-              icon={LucideIcons.Plus}
               buttonSize="medium"
               buttonType="primary"
               onClick={handleAddIngredientClick}
-            />
+            >
+              Add
+              <LucideIcons.Plus />
+            </Button>
           </div>
-
+          <div className="grid grid-cols-2 items-center w-full text-center">
+            <p>Ingredient</p>
+            <p>Quantity</p>
+          </div>
           {menuData.ingredientsList.map((ing, index) => (
-            <div key={index} className="flex flex-row items-end gap-3">
-              <DropdownInput
-                label="Ingredient"
-                options={ingredients.map((ingredient) => ({
-                  value: String(ingredient._id),
-                  label: ingredient.name,
-                }))}
-                value={ing.selectedId}
-                onChange={(e) => handleIngredientChange(index, e.target.value)}
-              />
-
-              <Input type="number" min="1" max="100" label="Quantity" />
-              <p>
-                {ingredients.find((ingr) => ingr._id === ing.selectedId)
-                  ?.unit || "Select Ingredient"}
-              </p>
-              <button
-                type="button"
-                className="text-gray-500 hover:text-red-400 bg-transparent hover:bg-red-100 p-2 rounded-lg"
+            <div key={index} className="flex flex-row gap-2 items-end">
+              <Button
+                className="w-fit mb-2"
+                buttonSize="icon"
+                buttonType="danger"
                 onClick={() => handleRemoveIngredient(index)}
-              >
-                <LucideIcons.X />
-              </button>
+                icon={LucideIcons.Trash}
+              />
+              <div className="grid grid-cols-2 gap-2 items-center w-full">
+                <DropdownInput
+                  className="w-1/2"
+                  options={ingredients.map((ingredient) => ({
+                    value: String(ingredient._id),
+                    label: ingredient.name,
+                  }))}
+                  value={ing.selectedId}
+                  onChange={(e) =>
+                    handleIngredientChange(index, e.target.value)
+                  }
+                />
+
+                <Input
+                  className="w-1/2"
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="e.g. 100"
+                />
+              </div>
+              <p className="mb-3 font-semibold">
+                {ingredients.find((ingr) => ingr._id === ing.selectedId)
+                  ?.unit || ""}
+              </p>
             </div>
           ))}
-          <Button
-            type="button"
-            buttonType="secondary"
-            buttonSize="large"
-            onClick={prevStep}
-          >
-            Back
-          </Button>
-          <Button type="submit" buttonType="primary" buttonSize="large">
-            Submit
-          </Button>
+          <TextareaInput
+            label="Directions"
+            placeholder="e.g. Put perfectly fine bread on toaster for 29 minutes"
+            name="directions"
+            rows="5"
+            onChange={handleInputChange}
+          />
+          <div className="flex flex-row w-full md:gap-5 gap-2 items-center justify-end">
+            <Button type="button" buttonType="secondary" onClick={prevStep}>
+              Back
+            </Button>
+            <Button type="submit" buttonType="primary">
+              Save
+            </Button>
+          </div>
         </div>
       )}
     </form>
   );
 };
+
 const ProductTabContent = ({
+  categories,
   activeTab,
   ingredients,
   products,
@@ -294,7 +358,10 @@ const ProductTabContent = ({
           buttonType="primary"
           buttonSize="icon"
           onClick={() =>
-            openModal("Add New Menu", <AddMenuForm ingredients={ingredients} />)
+            openModal(
+              "Add New Menu",
+              <AddMenuForm categories={categories} ingredients={ingredients} />
+            )
           }
         >
           <LucideIcons.Plus />

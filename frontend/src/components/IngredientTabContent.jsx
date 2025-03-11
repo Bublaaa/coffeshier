@@ -1,12 +1,12 @@
 import { useState, Suspense, lazy, useEffect } from "react";
-import * as LucideIcons from "lucide-react";
-import Button from "./Button.jsx";
 import { Input, DropdownInput } from "./Input";
 import { formatDate } from "../utils/date";
 import { motion } from "framer-motion";
-import Modal from "./Modal.jsx";
 import { useIngredientStore } from "../store/ingredientStore.js";
+import Button from "./Button.jsx";
+import Modal from "./Modal.jsx";
 import toast from "react-hot-toast";
+import * as LucideIcons from "lucide-react";
 const StockMovement = lazy(() => import("./StockMovement.jsx"));
 
 const Skeleton = ({ count }) => (
@@ -69,6 +69,7 @@ const DeleteIngredientForm = ({ ingredient, onClose }) => {
 };
 
 const AddIngredientForm = ({ onClose }) => {
+  const [error, setError] = useState("");
   const { addNewIngredient, fetchIngredients } = useIngredientStore();
   const handleAddIngredient = async (name, unit) => {
     await addNewIngredient(name, unit);
@@ -78,14 +79,24 @@ const AddIngredientForm = ({ onClose }) => {
     name: "",
     unit: "",
   });
-  const handleSubmit = (e) => {
-    if (!ingredientData.name || !ingredientData.unit) {
-      e.preventDefault();
-      toast.error("Ingredient name and unit are required.");
-      return;
+  const validateForm = () => {
+    let newErrors = {};
+    if (!ingredientData.name) newErrors.name = "Name is required";
+    if (!ingredientData.unit) newErrors.unit = "Unit is required";
+
+    setError(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Please fill in all required fields.");
+      return false;
     }
-    handleAddIngredient(ingredientData.name, ingredientData.unit);
-    onClose();
+    return true;
+  };
+  const handleSubmit = (e) => {
+    if (validateForm()) {
+      handleAddIngredient(ingredientData.name, ingredientData.unit);
+      onClose();
+    }
+    e.preventDefault();
   };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -103,10 +114,12 @@ const AddIngredientForm = ({ onClose }) => {
           label="Ingredient Name"
           name="name"
           onChange={handleInputChange}
+          error={error.name}
         />
         <DropdownInput
           label="Unit"
           name="unit"
+          value={ingredientData.unit}
           options={[
             { value: "ml", label: "Milliliter" },
             { value: "li", label: "Liter" },
@@ -115,6 +128,7 @@ const AddIngredientForm = ({ onClose }) => {
             { value: "mg", label: "Milligram" },
           ]}
           onChange={handleInputChange}
+          error={error.unit}
         />
       </div>
       <Button
@@ -319,7 +333,7 @@ const IngredientTabContent = ({
           ></Button>
         </div>
         {/* Search Ingredient */}
-        <div className="flex flex-row gap-2 items-center">
+        <div className="flex flex-row gap-2 items-center mt-1">
           <Input
             className="w-fit"
             type="text"

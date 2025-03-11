@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const API_URL =
   import.meta.env.MODE === "development"
@@ -19,11 +20,15 @@ export const useCategoryStore = create((set) => ({
     try {
       const response = await axios.get(`${API_URL}category/get`);
       set({ categories: response.data.categories, isLoading: false });
+      toast.success("Fetch categories successful");
     } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error fetching categories";
       set({
-        error: error.response?.data?.message || "Error fetching categories",
+        error: errorMessage,
         isLoading: false,
       });
+      toast.error(errorMessage);
     }
   },
 }));

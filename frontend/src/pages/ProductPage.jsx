@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useIngredientStore } from "../store/ingredientStore.js";
 import { useProductStore } from "../store/productStore.js";
 import { useOrderStore } from "../store/orderStore.js";
+import { useCategoryStore } from "../store/categoryStore.js";
 import { motion } from "framer-motion";
 import Button from "../components/Button.jsx";
 
@@ -38,6 +39,14 @@ const ProductPage = () => {
     error: orderError,
   } = useOrderStore();
 
+  // Fetching state from category store
+  const {
+    categories,
+    fetchCategories,
+    isLoading: isLoadingCategory,
+    error: categoryError,
+  } = useCategoryStore();
+
   // Ingredient Tab Function
   const handleSearch = ({ searchQuery }) => {
     fetchIngredients(1, searchQuery);
@@ -66,6 +75,7 @@ const ProductPage = () => {
       icon: "Blocks",
       content: () => (
         <ProductTabContent
+          categories={categories}
           activeTab={activeTab}
           ingredients={ingredients}
           products={products}
@@ -104,6 +114,7 @@ const ProductPage = () => {
     fetchIngredients(currentPage, "");
     fetchProducts();
     fetchOrders();
+    fetchCategories();
   }, [currentPage, fetchProducts, fetchOrders]);
 
   return (
