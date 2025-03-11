@@ -3,13 +3,13 @@ import * as LucideIcons from "lucide-react";
 import Modal from "../components/Modal.jsx";
 import ProductCard from "./ProductCard.jsx";
 import { useProductStore } from "../store/productStore.js";
-import { useCategoryStore } from "../store/categoryStore.js";
 import {
   Input,
   TextareaInput,
   DropdownInput,
   FileInput,
   CheckboxInput,
+  MenuImageInput,
 } from "./Input.jsx";
 import Button from "./Button.jsx";
 import toast from "react-hot-toast";
@@ -19,10 +19,10 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const [step, setStep] = useState(1);
   const [menuData, setMenuData] = useState({
     name: "",
-    basePrice: "",
+    basePrice: 0,
     categoryId: "",
     status: "Not Available",
-    initialStock: "",
+    initialStock: 0,
     description: "",
     sizes: [{ size: "regular", additionalPrice: 0 }],
     image: null,
@@ -32,20 +32,33 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const [errors, setErrors] = useState({});
   const validateStep = () => {
     let newErrors = {};
+
     if (step === 1) {
-      if (!menuData.name.trim()) newErrors.name = "Name is required.";
-      if (!menuData.basePrice.trim())
-        newErrors.basePrice = "Base Price is required.";
-      if (!menuData.categoryId.trim())
+      if (!String(menuData.name || "").trim())
+        newErrors.name = "Name is required.";
+      if (Number(menuData.basePrice) < 5000) {
+        newErrors.basePrice = "Base Price cannot be lower than 5000";
+      }
+      if (!String(menuData.categoryId || "").trim()) {
         newErrors.categoryId = "Category is required.";
-      if (!menuData.initialStock.trim())
+      }
+
+      if (!String(menuData.initialStock || "").trim()) {
         newErrors.initialStock = "Initial Stock is required.";
+      }
+
+      if (Number(menuData.initialStock) > 100) {
+        newErrors.initialStock = "Maximal stock is 100.";
+      }
     }
+
     setErrors(newErrors);
+
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields.");
       return false;
     }
+
     return true;
   };
 
@@ -138,34 +151,46 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
       {/* Menu Detail */}
       {step === 1 && (
         <div className="w-full flex flex-col gap-3">
-          <Input
-            type="text"
-            placeholder="e.g. Burnt Toast"
-            label="Product Name"
-            name="name"
-            onChange={handleInputChange}
-            error={errors.name}
-          />
+          <div className="grid md:grid-cols-2 grid-cols-1 gap-3 items-center">
+            <MenuImageInput
+              label="Product Image"
+              onFileChange={(file) => console.log("Uploaded File:", file)}
+            />
+            <div className="flex flex-col gap-3">
+              <Input
+                className="w-full"
+                type="text"
+                placeholder="e.g. Burnt Toast"
+                label="Product Name"
+                name="name"
+                value={menuData.name}
+                onChange={handleInputChange}
+                error={errors.name}
+              />
+              <DropdownInput
+                label="Category"
+                name="categoryId"
+                value={menuData.categoryId}
+                options={categories.map((category) => ({
+                  value: category._id,
+                  label: category.name,
+                }))}
+                onChange={handleInputChange}
+                error={errors.categoryId}
+              />
+            </div>
+          </div>
           <Input
             type="number"
             placeholder="e.g. 10.000"
             min="5000"
             label="Base Price"
             name="basePrice"
+            value={menuData.basePrice}
             onChange={handleInputChange}
             error={errors.basePrice}
           />
-          <DropdownInput
-            label="Category"
-            name="categoryId"
-            value={menuData.categoryId}
-            options={categories.map((category) => ({
-              value: category._id,
-              label: category.name,
-            }))}
-            onChange={handleInputChange}
-            error={errors.categoryId}
-          />
+
           <DropdownInput
             label="Status"
             name="status"
@@ -181,6 +206,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
             placeholder="e.g. 100"
             min="1"
             max="100"
+            value={menuData.initialStock}
             label="Initial Stock"
             name="initialStock"
             onChange={handleInputChange}
@@ -190,9 +216,10 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
             label="Description"
             placeholder="e.g. Burnt to perfection for exact 29 minutes"
             name="description"
+            value={menuData.description}
             onChange={handleInputChange}
           />
-          <FileInput label="Product Image" onChange={handleFileChange} />
+
           <Button
             className="w-fit ml-auto"
             type="button"
