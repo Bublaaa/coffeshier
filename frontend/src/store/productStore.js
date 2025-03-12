@@ -83,6 +83,7 @@ export const useProductStore = create((set) => ({
   },
 
   addNewMenu: async (menuData) => {
+    console.log(menuData.initialStock);
     set({ isLoading: true, error: null, message: null });
     try {
       const response = await axios.post(`${API_URL}product/add`, {
@@ -90,7 +91,8 @@ export const useProductStore = create((set) => ({
         basePrice: menuData.basePrice,
         image: menuData.image,
         status: menuData.status,
-        stockQuantity: menuData.stockQuantity,
+        description: menuData.description,
+        stockQuantity: menuData.initialStock,
         categoryId: menuData.categoryId,
         sizes: menuData.sizes,
         ingredients: menuData.ingredients,

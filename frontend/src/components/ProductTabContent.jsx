@@ -27,43 +27,37 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     sizes: [{ size: "regular", additionalPrice: 0 }],
     image: null,
     ingredientsList: [{ count: 1, selectedId: "" }],
-    directions: "",
+    recipe: "",
   });
   const [errors, setErrors] = useState({});
   const validateStep = () => {
     let newErrors = {};
-    // Validate step 1 form
     if (step === 1) {
-      if (!String(menuData.name || "").trim())
-        newErrors.name = "Name is required.";
-      if (Number(menuData.basePrice) < 5000) {
-        newErrors.basePrice = "Base price can't lower than 5000";
-      }
-      if (!String(menuData.categoryId || "").trim()) {
-        newErrors.categoryId = "Category is required.";
-      }
-
-      if (!String(menuData.initialStock || "").trim()) {
-        newErrors.initialStock = "Initial Stock is required.";
-      }
-
-      if (Number(menuData.initialStock) > 100) {
-        newErrors.initialStock = "Maximal stock is 100.";
-      }
+      newErrors = {
+        ...(menuData.name.trim() ? {} : { name: "Name is required." }),
+        ...(menuData.basePrice < 5000
+          ? { basePrice: "Base price can't be lower than 5000." }
+          : {}),
+        ...(menuData.categoryId.trim()
+          ? {}
+          : { categoryId: "Category is required." }),
+        ...(menuData.initialStock.trim()
+          ? {}
+          : { initialStock: "Initial Stock is required." }),
+        ...(menuData.initialStock > 100
+          ? { initialStock: "Maximal stock is 100." }
+          : {}),
+      };
     } else if (step === 2) {
-      menuData.sizes.map((size) => {
+      menuData.sizes.forEach((size) => {
         if (size.size !== "regular" && !size.additionalPrice) {
-          if (size === "large")
-            newErrors.large = "Additional Price is required";
-          if (size === "extra large")
-            newErrors.extraLarge = "Additional Price is required";
+          newErrors[size.size] = "Additional Price is required";
         }
       });
     }
 
     setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
+    if (Object.keys(newErrors).length) {
       toast.error("Please fill in all required fields.");
       return false;
     }
@@ -79,7 +73,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const prevStep = () => setStep((prev) => prev - 1);
 
   const handleSubmit = (e) => {
-    console.log(menuData);
+    e.preventDefault();
     // if (
     //   menuData.ingredientsList.some(
     //     (ingredient) => ingredient.selectedId !== ""
@@ -106,21 +100,13 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   // Handle checkbox selection
   const handleSizeChange = (size) => {
     setMenuData((prev) => {
-      const exists = prev.sizes.some((s) => s.size == size.target.value);
-      if (exists) {
-        return {
-          ...prev,
-          sizes: prev.sizes.filter((s) => s.size !== size.target.value),
-        };
-      } else {
-        return {
-          ...prev,
-          sizes: [
-            ...prev.sizes,
-            { size: size.target.value, additionalPrice: 0 },
-          ],
-        };
-      }
+      const isSelected = prev.sizes.some((s) => s.size === size.target.value);
+      return {
+        ...prev,
+        sizes: isSelected
+          ? prev.sizes.filter((s) => s.size !== size.target.value)
+          : [...prev.sizes, { size: size.target.value, additionalPrice: 0 }],
+      };
     });
   };
   // Handle additional price change
@@ -265,6 +251,10 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
                   min="1"
                   max="100000"
                   label={`Additional Price for ${s.size.toUpperCase()}`}
+                  value={
+                    menuData.sizes.find((size) => size.size === s.size)
+                      ?.additionalPrice || ""
+                  }
                   onChange={(e) =>
                     handleAdditionalPriceChange(s.size, e.target.value)
                   }
@@ -345,7 +335,8 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
           <TextareaInput
             label="Directions"
             placeholder="e.g. Put perfectly fine bread on toaster for 29 minutes"
-            name="directions"
+            name="recipe"
+            value={menuData.recipe}
             rows="5"
             onChange={handleInputChange}
           />
