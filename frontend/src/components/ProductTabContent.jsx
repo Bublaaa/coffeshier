@@ -32,12 +32,12 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const [errors, setErrors] = useState({});
   const validateStep = () => {
     let newErrors = {};
-
+    // Validate step 1 form
     if (step === 1) {
       if (!String(menuData.name || "").trim())
         newErrors.name = "Name is required.";
       if (Number(menuData.basePrice) < 5000) {
-        newErrors.basePrice = "Base Price cannot be lower than 5000";
+        newErrors.basePrice = "Base price can't lower than 5000";
       }
       if (!String(menuData.categoryId || "").trim()) {
         newErrors.categoryId = "Category is required.";
@@ -50,6 +50,15 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
       if (Number(menuData.initialStock) > 100) {
         newErrors.initialStock = "Maximal stock is 100.";
       }
+    } else if (step === 2) {
+      menuData.sizes.map((size) => {
+        if (size.size !== "regular" && !size.additionalPrice) {
+          if (size === "large")
+            newErrors.large = "Additional Price is required";
+          if (size === "extra large")
+            newErrors.extraLarge = "Additional Price is required";
+        }
+      });
     }
 
     setErrors(newErrors);
@@ -70,15 +79,16 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const prevStep = () => setStep((prev) => prev - 1);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
     console.log(menuData);
-    if (
-      menuData.ingredientsList.some(
-        (ingredient) => ingredient.selectedId !== ""
-      )
-    ) {
-      toast.error("Ingredient data is not completed");
-    }
+    // if (
+    //   menuData.ingredientsList.some(
+    //     (ingredient) => ingredient.selectedId !== ""
+    //   )
+    // ) {
+    //   toast.error("Ingredient data is not completed");
+    // }
+    addNewMenu(menuData);
+    fetchProducts();
   };
 
   // Step 1 functions
@@ -150,57 +160,56 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     <form className="flex flex-col md:flex-row gap-3" onSubmit={handleSubmit}>
       {/* Menu Detail */}
       {step === 1 && (
-        <div className="w-full flex flex-col gap-3">
-          <div className="grid md:grid-cols-2 grid-cols-1 gap-3 items-center">
-            <MenuImageInput
-              label="Product Image"
-              onFileChange={(file) => console.log("Uploaded File:", file)}
+        <div className="flex flex-col w-full gap-2">
+          <MenuImageInput
+            label="Product Image"
+            onFileChange={(file) => console.log("Uploaded File:", file)}
+          />
+          <div className="grid grid-cols-2 gap-5 items-center">
+            <Input
+              className="w-full"
+              type="text"
+              placeholder="e.g. Burnt Toast"
+              label="Product Name"
+              name="name"
+              value={menuData.name}
+              onChange={handleInputChange}
+              error={errors.name}
             />
-            <div className="flex flex-col gap-3">
-              <Input
-                className="w-full"
-                type="text"
-                placeholder="e.g. Burnt Toast"
-                label="Product Name"
-                name="name"
-                value={menuData.name}
-                onChange={handleInputChange}
-                error={errors.name}
-              />
-              <DropdownInput
-                label="Category"
-                name="categoryId"
-                value={menuData.categoryId}
-                options={categories.map((category) => ({
-                  value: category._id,
-                  label: category.name,
-                }))}
-                onChange={handleInputChange}
-                error={errors.categoryId}
-              />
-            </div>
+            <DropdownInput
+              label="Category"
+              name="categoryId"
+              value={menuData.categoryId}
+              options={categories.map((category) => ({
+                value: category._id,
+                label: category.name,
+              }))}
+              onChange={handleInputChange}
+              error={errors.categoryId}
+            />
           </div>
-          <Input
-            type="number"
-            placeholder="e.g. 10.000"
-            min="5000"
-            label="Base Price"
-            name="basePrice"
-            value={menuData.basePrice}
-            onChange={handleInputChange}
-            error={errors.basePrice}
-          />
-
-          <DropdownInput
-            label="Status"
-            name="status"
-            value={menuData.status}
-            options={[
-              { value: "Available", label: "Available" },
-              { value: "Not Available", label: "Not Available" },
-            ]}
-            onChange={handleInputChange}
-          />
+          <div className="w-full grid grid-cols-2 gap-5 items-center">
+            <Input
+              type="number"
+              min="5000"
+              label="Base Price"
+              name="basePrice"
+              value={menuData.basePrice}
+              onChange={handleInputChange}
+              error={errors.basePrice}
+              placeholder="e.g. 10.000"
+            />
+            <DropdownInput
+              label="Status"
+              name="status"
+              value={menuData.status}
+              options={[
+                { value: "Available", label: "Available" },
+                { value: "Not Available", label: "Not Available" },
+              ]}
+              onChange={handleInputChange}
+            />
+          </div>
           <Input
             type="number"
             placeholder="e.g. 100"
@@ -255,9 +264,16 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
                   required={true}
                   min="1"
                   max="100000"
-                  label={`Additional Price for ${s.size}`}
+                  label={`Additional Price for ${s.size.toUpperCase()}`}
                   onChange={(e) =>
                     handleAdditionalPriceChange(s.size, e.target.value)
+                  }
+                  error={
+                    s.size === "large"
+                      ? errors.large
+                      : s.size === "extra large"
+                      ? errors.extraLarge
+                      : ""
                   }
                 />
               </div>

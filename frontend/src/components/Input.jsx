@@ -190,7 +190,7 @@ export const MenuImageInput = ({ label, onFileChange }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex flex-col gap-2 w-full pb-3">
       {label && (
         <label className="block text-sm font-medium text-gray-600">
           {label}
