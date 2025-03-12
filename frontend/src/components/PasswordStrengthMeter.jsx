@@ -14,11 +14,11 @@ const PasswordCriteria = ({ password }) => {
       {criteria.map((item) => (
         <div key={item.label} className="flex items-center text-xs">
           {item.met ? (
-            <Check className="size-4 text-green-500 mr-2" />
+            <Check className="size-4 text-accent mr-2" />
           ) : (
             <X className="size-4 text-gray-500 mr-2" />
           )}
-          <span className={item.met ? "text-green-500" : "text-gray-400"}>
+          <span className={item.met ? "text-accent" : "text-gray-400"}>
             {item.label}
           </span>
         </div>
@@ -68,7 +68,7 @@ const PasswordStrengthMeter = ({ password }) => {
           <div
             key={index}
             className={`h-1 w-1/4 rounded-full transition-colors duration-300 
-                ${index < strength ? getColor(strength) : "bg-gray-600"}
+                ${index < strength ? getColor(strength) : "bg-gray-300"}
               `}
           />
         ))}

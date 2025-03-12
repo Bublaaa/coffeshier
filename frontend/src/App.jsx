@@ -13,8 +13,6 @@ import TestPage from "./pages/TestPage.jsx";
 // Components
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
 
-const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard.jsx"));
-const ManagerDashboard = lazy(() => import("./pages/ManagerDashboard.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
 const MenuPage = lazy(() => import("./pages/MenuPage.jsx"));
 const ProductPage = lazy(() => import("./pages/ProductPage.jsx"));
@@ -72,7 +70,7 @@ function App() {
   if (isCheckingAuth) return <LoadingSpinner />;
 
   return (
-    <div className="h-screen w-full bg-white-shadow flex  overflow-hidden">
+    <div className="h-screen w-full bg-white-shadow flex items-center justify-center overflow-hidden">
       <Routes>
         {/* Owner Routes */}
         <Route

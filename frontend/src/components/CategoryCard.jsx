@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useCategoryStore } from "../store/categoryStore";
 import * as LucideIcons from "lucide-react";
+import { motion } from "framer-motion";
 
 const Skeleton = ({ count }) => {
   return Array.from({ length: count }).map((_, index) => (
