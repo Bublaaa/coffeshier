@@ -1,10 +1,10 @@
 import { useState, Suspense, lazy, useEffect } from "react";
-import { Input, DropdownInput } from "./Input";
-import { formatDate } from "../utils/date";
+import { Input, DropdownInput } from "../Input.jsx";
+import { formatDate } from "../../utils/date.js";
 import { motion } from "framer-motion";
-import { useIngredientStore } from "../store/ingredientStore.js";
-import Button from "./Button.jsx";
-import Modal from "./Modal.jsx";
+import { useIngredientStore } from "../../store/ingredientStore.js";
+import Button from "../Button.jsx";
+import Modal from "../Modal.jsx";
 import toast from "react-hot-toast";
 import * as LucideIcons from "lucide-react";
 const StockMovement = lazy(() => import("./StockMovement.jsx"));

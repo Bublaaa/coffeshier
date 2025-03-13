@@ -1,18 +1,14 @@
-import { useState, useEffect } from "react";
-import * as LucideIcons from "lucide-react";
-import Modal from "../components/Modal.jsx";
-import ProductCard from "./ProductCard.jsx";
-import { useProductStore } from "../store/productStore.js";
+import { useProductStore } from "../../store/productStore.js";
+import { useState } from "react";
 import {
   Input,
   TextareaInput,
   DropdownInput,
-  FileInput,
   CheckboxInput,
   MenuImageInput,
-} from "./Input.jsx";
-import Button from "./Button.jsx";
+} from "../Input.jsx";
 import toast from "react-hot-toast";
+import Button from "../Button.jsx";
 
 const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const { addNewMenu, fetchProducts } = useProductStore();
@@ -32,32 +28,38 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const [errors, setErrors] = useState({});
   const validateStep = () => {
     let newErrors = {};
+    // Validate step 1 form
     if (step === 1) {
-      newErrors = {
-        ...(menuData.name.trim() ? {} : { name: "Name is required." }),
-        ...(menuData.basePrice < 5000
-          ? { basePrice: "Base price can't be lower than 5000." }
-          : {}),
-        ...(menuData.categoryId.trim()
-          ? {}
-          : { categoryId: "Category is required." }),
-        ...(menuData.initialStock.trim()
-          ? {}
-          : { initialStock: "Initial Stock is required." }),
-        ...(menuData.initialStock > 100
-          ? { initialStock: "Maximal stock is 100." }
-          : {}),
-      };
+      if (!String(menuData.name || "").trim())
+        newErrors.name = "Name is required.";
+      if (Number(menuData.basePrice) < 5000) {
+        newErrors.basePrice = "Base price can't lower than 5000";
+      }
+      if (!String(menuData.categoryId || "").trim()) {
+        newErrors.categoryId = "Category is required.";
+      }
+
+      if (!String(menuData.initialStock || "").trim()) {
+        newErrors.initialStock = "Initial Stock is required.";
+      }
+
+      if (Number(menuData.initialStock) > 100) {
+        newErrors.initialStock = "Maximal stock is 100.";
+      }
     } else if (step === 2) {
-      menuData.sizes.forEach((size) => {
+      menuData.sizes.map((size) => {
         if (size.size !== "regular" && !size.additionalPrice) {
-          newErrors[size.size] = "Additional Price is required";
+          if (size === "large")
+            newErrors.large = "Additional Price is required";
+          if (size === "extra large")
+            newErrors.extraLarge = "Additional Price is required";
         }
       });
     }
 
     setErrors(newErrors);
-    if (Object.keys(newErrors).length) {
+
+    if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields.");
       return false;
     }
@@ -90,10 +92,6 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     const { name, value } = e.target;
     setMenuData((prev) => ({ ...prev, [name]: value }));
     console.log(menuData);
-  };
-
-  const handleFileChange = (e) => {
-    setMenuData((prev) => ({ ...prev, image: e.target.files[0] }));
   };
 
   // Step 2 functions
@@ -317,7 +315,6 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
                     handleIngredientChange(index, e.target.value)
                   }
                 />
-
                 <Input
                   className="w-1/2"
                   type="number"
@@ -354,89 +351,4 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   );
 };
 
-const ProductTabContent = ({
-  categories,
-  activeTab,
-  ingredients,
-  products,
-  isLoadingProducts,
-}) => {
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [modalBody, setModalBody] = useState(null);
-  const [modalTitle, setModalTitle] = useState("");
-
-  const openModal = (title, body) => {
-    setModalTitle(title);
-    setModalBody(body);
-    setModalOpen(true);
-  };
-
-  const handleProductClick = (event) => {
-    const card = event.target.closest("[data-id]");
-    if (!card) return;
-
-    const productId = card.getAttribute("data-id");
-    const product = products.find((p) => p._id === productId);
-
-    if (product) {
-      setSelectedProduct(product);
-    }
-  };
-
-  return (
-    <div className="flex flex-col">
-      <div className="flex flex-row h-fit md:gap-5 gap-2 md:pb-5 pb-2 items-center">
-        <Button
-          className="mx-1 "
-          buttonType="primary"
-          buttonSize="icon"
-          onClick={() =>
-            openModal(
-              "Add New Menu",
-              <AddMenuForm categories={categories} ingredients={ingredients} />
-            )
-          }
-        >
-          <LucideIcons.Plus />
-        </Button>
-        <h2>{activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}</h2>
-      </div>
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        title={modalTitle}
-        body={modalBody}
-      />
-      <div
-        className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-5 gap-2 p-2 overflow-y-auto scrollbar-hidden"
-        onClick={handleProductClick}
-      >
-        {/* <div key={product._id} > */}
-        {products?.length > 0 ? (
-          products.map((product) => (
-            <ProductCard
-              product={product}
-              buttonLabel={"Edit"}
-              key={product._id}
-              data-id={product._id}
-              isLoading={isLoadingProducts}
-            ></ProductCard>
-          ))
-        ) : (
-          <p>No products available</p>
-        )}
-        {/* </div> */}
-      </div>
-      {selectedProduct && (
-        <Modal onClose={() => setSelectedProduct(null)}>
-          <h2>{selectedProduct.name}</h2>
-          <p>{selectedProduct.description}</p>
-          <img src={selectedProduct.image} alt={selectedProduct.name} />
-        </Modal>
-      )}
-    </div>
-  );
-};
-
-export default ProductTabContent;
+export default AddMenuForm;

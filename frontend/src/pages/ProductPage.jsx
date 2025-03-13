@@ -7,8 +7,8 @@ import { motion } from "framer-motion";
 import Button from "../components/Button.jsx";
 
 import * as LucideIcons from "lucide-react";
-import IngredientTabContent from "../components/IngredientTabContent.jsx";
-import ProductTabContent from "../components/ProductTabContent.jsx";
+import IngredientTabContent from "../components/ProductPage/IngredientTabContent.jsx";
+import ProductTabContent from "../components/ProductPage/ProductTabContent.jsx";
 
 const ProductPage = () => {
   const [activeTab, setActiveTab] = useState("Product");
