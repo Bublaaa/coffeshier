@@ -4,11 +4,12 @@ import { useProductStore } from "../store/productStore.js";
 import { useOrderStore } from "../store/orderStore.js";
 import { useCategoryStore } from "../store/categoryStore.js";
 import { motion } from "framer-motion";
-import Button from "../components/Button.jsx";
 
 import * as LucideIcons from "lucide-react";
 import IngredientTabContent from "../components/ProductPage/IngredientTabContent.jsx";
 import ProductTabContent from "../components/ProductPage/ProductTabContent.jsx";
+import MerchandiseTabContent from "../components/ProductPage/MerchandiseTabContent.jsx";
+import CategoryTabContent from "../components/ProductPage/CategoryTabContent.jsx";
 
 const ProductPage = () => {
   const [activeTab, setActiveTab] = useState("Product");
@@ -24,9 +25,9 @@ const ProductPage = () => {
 
   // Fetching state from product store
   const {
-    products,
+    menus,
+    merchandises,
     fetchProducts,
-    fetchProductsByCategory,
     isLoading: isLoadingProducts,
     error: productError,
   } = useProductStore();
@@ -58,16 +59,6 @@ const ProductPage = () => {
     if (currentPage > 1) fetchIngredients(currentPage - 1, 5);
   };
 
-  const merchandiseTabContent = ({ activeTab }) => {
-    return (
-      <div className="flex flex-row h-fit md:gap-5 gap-2 items-center">
-        <Button className="mx-1 " buttonType="primary" buttonSize="icon">
-          <LucideIcons.Plus />
-        </Button>
-        <h2>{activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}</h2>
-      </div>
-    );
-  };
   const tabs = [
     {
       id: "product",
@@ -78,7 +69,7 @@ const ProductPage = () => {
           categories={categories}
           activeTab={activeTab}
           ingredients={ingredients}
-          products={products}
+          menus={menus}
           isLoadingProducts={isLoadingProducts}
         />
       ),
@@ -87,7 +78,15 @@ const ProductPage = () => {
       id: "merchandise",
       label: "Merchandise",
       icon: "ShoppingBag",
-      content: (props) => merchandiseTabContent(props),
+      content: () => (
+        <MerchandiseTabContent
+          activeTab={activeTab}
+          orders={orders}
+          merchandises={merchandises}
+          isLoadingProducts={isLoadingProducts}
+          isLoadingOrders={isLoadingOrders}
+        />
+      ),
     },
     {
       id: "ingredient",
@@ -105,6 +104,18 @@ const ProductPage = () => {
           handleNextPage={handleNextPage}
           handlePrevPage={handlePrevPage}
           handleSearch={handleSearch}
+        />
+      ),
+    },
+    {
+      id: "category",
+      label: "Category",
+      icon: "Group",
+      content: () => (
+        <CategoryTabContent
+          activeTab={activeTab}
+          categories={categories}
+          isLoadingCategory={isLoadingCategory}
         />
       ),
     },

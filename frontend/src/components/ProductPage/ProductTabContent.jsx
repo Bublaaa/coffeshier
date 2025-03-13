@@ -9,7 +9,7 @@ const ProductTabContent = ({
   categories,
   activeTab,
   ingredients,
-  products,
+  menus,
   isLoadingProducts,
 }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -27,11 +27,11 @@ const ProductTabContent = ({
     const card = event.target.closest("[data-id]");
     if (!card) return;
 
-    const productId = card.getAttribute("data-id");
-    const product = products.find((p) => p._id === productId);
+    const menuId = card.getAttribute("data-id");
+    const menu = menus.find((p) => p._id === menuId);
 
-    if (product) {
-      setSelectedProduct(product);
+    if (menu) {
+      setSelectedProduct(menu);
     }
   };
 
@@ -63,18 +63,18 @@ const ProductTabContent = ({
         className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-5 gap-2 p-2 overflow-y-auto scrollbar-hidden"
         onClick={handleProductClick}
       >
-        {products?.length > 0 ? (
-          products.map((product) => (
+        {menus?.length > 0 ? (
+          menus.map((menu) => (
             <ProductCard
-              product={product}
+              product={menu}
               buttonLabel={"Edit"}
-              key={product._id}
-              data-id={product._id}
+              key={menu._id}
+              data-id={menu._id}
               isLoading={isLoadingProducts}
             ></ProductCard>
           ))
         ) : (
-          <p>No products available</p>
+          <p>No menus available</p>
         )}
       </div>
       {selectedProduct && (

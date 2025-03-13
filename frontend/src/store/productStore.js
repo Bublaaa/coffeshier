@@ -10,7 +10,8 @@ const API_URL =
 axios.defaults.withCredentials = true;
 
 export const useProductStore = create((set) => ({
-  products: [],
+  menus: [],
+  merchandises: [],
   error: null,
   isLoading: false,
   message: null,
@@ -21,8 +22,23 @@ export const useProductStore = create((set) => ({
     try {
       const response = await axios.get(`${API_URL}product/all`);
       const successMessage = "Success fetch products";
+      const menus = [];
+      const merchandises = [];
+
+      response.data.products.forEach((product) => {
+        if (
+          Array.isArray(product.ingredients) &&
+          product.ingredients.length > 0
+        ) {
+          menus.push(product);
+        } else {
+          merchandises.push(product);
+        }
+      });
+
       set({
-        products: [...response.data.products],
+        menus: menus,
+        merchandises: merchandises,
         isLoading: false,
         message: successMessage,
       });
@@ -46,7 +62,7 @@ export const useProductStore = create((set) => ({
       const successMessage = "Success fetch merchandises";
       const merchandises = response.data.products.filter(
         (product) =>
-          Array.isArray(product.ingredients) && product.ingredients.length > 0
+          Array.isArray(product.ingredients) && product.ingredients.length < 1
       );
       console.log(merchandises);
 
