@@ -26,10 +26,8 @@ const ProductTabContent = ({
   const handleProductClick = (event) => {
     const card = event.target.closest("[data-id]");
     if (!card) return;
-
     const menuId = card.getAttribute("data-id");
     const menu = menus.find((p) => p._id === menuId);
-
     if (menu) {
       setSelectedProduct(menu);
     }

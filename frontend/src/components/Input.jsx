@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, Upload } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
 // Text Input
 export const Input = ({ icon: Icon, label, error, ...props }) => (
@@ -82,7 +82,9 @@ export const CheckboxInput = ({
             className={`flex w-fit px-3 py-2 items-center cursor-pointer peer-checked:border-2 hover:bg-gray-100 peer-checked:border-accent border rounded-lg bg-white 
               ${error ? "border-red-500" : "border-gray-200"}`}
           >
-            <span className="text-gray-700">{option.label}</span>
+            {option.label && (
+              <span className="text-gray-700">{option.label}</span>
+            )}
           </label>
         </div>
       ))}
@@ -140,7 +142,7 @@ export const DropdownInput = ({
         {options
           .find((opt) => opt.value === selectedValue)
           ?.label.replace(/\b\w/g, (char) => char.toUpperCase()) || placeholder}
-        <ChevronRight
+        <LucideIcons.ChevronRight
           className={`ml-2 transition-transform ${isOpen ? "rotate-90" : ""}`}
         />
       </button>
@@ -167,7 +169,7 @@ export const DropdownInput = ({
 // File Upload
 export const FileInput = ({ selectedFile, onFileChange, ...props }) => (
   <label className="relative w-full border border-gray-300 rounded-lg bg-white text-dark px-3 py-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition">
-    <Upload className="size-5 text-accent" />
+    <LucideIcons.Upload className="size-5 text-accent" />
     <input type="file" className="hidden" onChange={onFileChange} {...props} />
     {selectedFile ? selectedFile.name : "Choose a file"}
   </label>
@@ -208,7 +210,7 @@ export const MenuImageInput = ({ label, onFileChange }) => {
           />
         ) : (
           <div className="flex flex-col items-center justify-center p-6">
-            <Upload className="w-8 h-8 mb-4 text-gray-500" />
+            <LucideIcons.Upload className="w-8 h-8 mb-4 text-gray-500" />
             <p className="mb-2 text-sm text-gray-500">
               <span className="font-semibold">Click to upload</span> or drag and
               drop
@@ -229,3 +231,51 @@ export const MenuImageInput = ({ label, onFileChange }) => {
     </div>
   );
 };
+
+export const RadioInput = ({
+  options,
+  name,
+  initialValue = "",
+  label,
+  error,
+  ...props
+}) => (
+  <div className="relative w-full">
+    {label && (
+      <label className="block text-sm font-medium text-gray-600 mb-1">
+        {label}
+      </label>
+    )}
+    <div className="flex flex-wrap gap-5">
+      {options.map((option, index) => {
+        const IconComponent = option.icon
+          ? LucideIcons[option.icon]
+          : LucideIcons.HandPlatter;
+        return (
+          <div key={index}>
+            <input
+              name={name}
+              id={`radio-${index}`}
+              type="radio"
+              value={option.value}
+              checked={initialValue === option.value}
+              className="hidden peer"
+              {...props}
+            />
+            <label
+              htmlFor={`radio-${index}`}
+              className={`flex w-fit px-4 py-4 items-center cursor-pointer peer-checked:border-2 hover:bg-gray-100 peer-checked:border-accent border rounded-lg bg-white 
+              ${error ? "border-red-500" : "border-gray-200"}`}
+            >
+              {option.icon && <IconComponent className="size-7 text-accent" />}
+              {option.label && (
+                <span className="text-gray-700">{option.label}</span>
+              )}
+            </label>
+          </div>
+        );
+      })}
+    </div>
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  </div>
+);
