@@ -43,7 +43,7 @@ export const useProductStore = create((set) => ({
         message: successMessage,
       });
 
-      toast.success(successMessage);
+      // toast.success(successMessage);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error fetching products";
@@ -71,7 +71,7 @@ export const useProductStore = create((set) => ({
         isLoading: false,
         message: successMessage,
       });
-      toast.success(successMessage);
+      // toast.success(successMessage);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error fetching merchandise";

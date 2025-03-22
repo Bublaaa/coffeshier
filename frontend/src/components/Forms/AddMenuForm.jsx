@@ -350,5 +350,4 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     </form>
   );
 };
-
 export default AddMenuForm;

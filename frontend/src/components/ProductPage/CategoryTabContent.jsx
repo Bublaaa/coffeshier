@@ -48,19 +48,19 @@ const DeleteCategoryForm = ({ onClose, category }) => {
   const [error, setError] = useState({});
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // FIXED: Prevent default form submission
+    e.preventDefault();
 
     // Validation
     if (confirmationText !== category.name) {
       let newErrors = { confirmation: "Confirmation does not match" };
       setError(newErrors);
-      toast.error("Please fill in all required fields.");
+      toast.error("Confirmation does not match");
       return;
     }
 
-    await deleteCategory(category._id);
-    fetchCategories();
     onClose();
+    await deleteCategory(category.id);
+    fetchCategories();
   };
 
   return (
@@ -121,7 +121,7 @@ const CategoryForm = ({ category, onClose }) => {
     if (!validateForm()) return;
 
     category
-      ? await updateCategory(category._id, categoryData.name, categoryData.icon)
+      ? await updateCategory(category.id, categoryData.name, categoryData.icon)
       : await addCategory(categoryData.name, categoryData.icon);
 
     fetchCategories();
@@ -165,24 +165,25 @@ const CategoryTabContent = ({ activeTab, isLoadingCategory, categories }) => {
     setModalState({ isOpen: false, title: "", body: null });
 
   const handleCategoryActions = (e) => {
+    // Check if delete button is clicked
     const deleteButton = e.target.closest(".delete-category-btn");
-    const editButton = e.target.closest(".edit-category-btn");
-
-    console.log("Delete button clicked:", deleteButton); // FIXED: Debugging log
-
     if (deleteButton) {
       openModal(
         "Delete Category",
         <DeleteCategoryForm
           category={{
-            _id: deleteButton.dataset.id,
+            id: deleteButton.dataset.id,
             name: deleteButton.dataset.name,
             icon: deleteButton.dataset.icon,
           }}
-          onClose={closeModal} // FIXED: Used the correct closeModal function
+          onClose={closeModal}
         />
       );
+      return; // Stop execution to prevent edit from triggering
     }
+
+    // Check if edit button is clicked (only if delete was not clicked)
+    const editButton = e.target.closest(".edit-category-btn");
     if (editButton) {
       const category = {
         id: editButton.dataset.id,
@@ -217,7 +218,6 @@ const CategoryTabContent = ({ activeTab, isLoadingCategory, categories }) => {
         title={modalState.title}
         body={modalState.body}
       />
-
       <div
         className="grid xl:grid-cols-4 md:grid-cols-3 grid-cols-1 gap-5 p-2"
         onClick={(e) => handleCategoryActions(e)}
@@ -241,7 +241,7 @@ const CategoryTabContent = ({ activeTab, isLoadingCategory, categories }) => {
                 <Button
                   buttonType="danger"
                   buttonSize="icon"
-                  className="delete-category-btn ml-auto"
+                  className="delete-category-btn ml-auto z-10"
                   data-id={category._id}
                   data-name={category.name}
                   data-icon={category.icon}

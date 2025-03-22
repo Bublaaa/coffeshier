@@ -19,8 +19,7 @@ export const useCategoryStore = create((set) => ({
     try {
       const response = await axios.get(`${API_URL}category/get`);
       set({ categories: response.data.categories, isLoading: false });
-      toast.success("Fetch categories successful");
-      console.log(response.data.categories);
+      // toast.success("Fetch categories successful");
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error fetching categories";

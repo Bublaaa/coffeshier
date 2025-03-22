@@ -34,7 +34,7 @@ export const useIngredientStore = create((set) => ({
         isLoading: false,
         message: "Success fetch ingredients",
       });
-      toast.success("Success fetch ingredients");
+      // toast.success("Success fetch ingredients");
     } catch (error) {
       set({
         error: error.response?.data?.message || "Error fetching ingredients",
