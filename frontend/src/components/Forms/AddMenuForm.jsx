@@ -7,6 +7,7 @@ import {
   CheckboxInput,
   MenuImageInput,
 } from "../Input.jsx";
+import * as LucideIcons from "lucide-react";
 import toast from "react-hot-toast";
 import Button from "../Button.jsx";
 
@@ -18,7 +19,6 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     basePrice: 0,
     categoryId: "",
     status: "Not Available",
-    initialStock: 0,
     description: "",
     sizes: [{ size: "regular", additionalPrice: 0 }],
     image: null,
@@ -37,14 +37,6 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
       }
       if (!String(menuData.categoryId || "").trim()) {
         newErrors.categoryId = "Category is required.";
-      }
-
-      if (!String(menuData.initialStock || "").trim()) {
-        newErrors.initialStock = "Initial Stock is required.";
-      }
-
-      if (Number(menuData.initialStock) > 100) {
-        newErrors.initialStock = "Maximal stock is 100.";
       }
     } else if (step === 2) {
       menuData.sizes.map((size) => {
@@ -76,13 +68,13 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // if (
-    //   menuData.ingredientsList.some(
-    //     (ingredient) => ingredient.selectedId !== ""
-    //   )
-    // ) {
-    //   toast.error("Ingredient data is not completed");
-    // }
+    if (
+      menuData.ingredientsList.some(
+        (ingredient) => ingredient.selectedId !== ""
+      )
+    ) {
+      toast.error("Ingredient data is not completed");
+    }
     addNewMenu(menuData);
     fetchProducts();
   };
@@ -123,6 +115,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
       ...prev,
       ingredientsList: [...prev.ingredientsList, { count: 1, selectedId: "" }],
     }));
+    console.log(menuData.ingredientsList);
   };
   const handleRemoveIngredient = (index) => {
     setMenuData((prev) => {
@@ -194,17 +187,6 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
               onChange={handleInputChange}
             />
           </div>
-          <Input
-            type="number"
-            placeholder="e.g. 100"
-            min="1"
-            max="100"
-            value={menuData.initialStock}
-            label="Initial Stock"
-            name="initialStock"
-            onChange={handleInputChange}
-            error={errors.initialStock}
-          />
           <TextareaInput
             label="Description"
             placeholder="e.g. Burnt to perfection for exact 29 minutes"

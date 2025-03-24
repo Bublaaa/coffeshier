@@ -6,7 +6,7 @@ const ProductSchema = new mongoose.Schema(
     basePrice: { type: Number, required: true }, // Base price for regular size
     image: { type: String, require: true },
     status: { type: String, enum: ["Available", "Not Available"] },
-    stockQuantity: { type: Number, required: true },
+    stockQuantity: { type: Number },
     description: { type: String },
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,

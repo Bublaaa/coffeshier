@@ -81,13 +81,7 @@ export const addProduct = async (req, res) => {
       recipe,
     } = req.body;
 
-    if (
-      !name ||
-      !basePrice ||
-      !stockQuantity ||
-      !Array.isArray(sizes) ||
-      sizes.length < 1
-    ) {
+    if (!name || !basePrice || !Array.isArray(sizes) || sizes.length < 1) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
