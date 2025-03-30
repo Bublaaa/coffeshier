@@ -109,14 +109,14 @@ export const useProductStore = create((set) => ({
         description: menuData.description,
         categoryId: menuData.categoryId,
         sizes: menuData.sizes,
-        ingredients: menuData.ingredients,
+        ingredients: menuData.ingredientsList,
         recipe: menuData.recipe,
       });
       set({ products: response.data.products, isLoading: false });
       toast.success("Success add new menu");
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Error fetching products";
+        error.response?.data?.message || "Error adding product";
       set({ error: errorMessage, isLoading: false, products: [] });
       toast.error(errorMessage);
     }

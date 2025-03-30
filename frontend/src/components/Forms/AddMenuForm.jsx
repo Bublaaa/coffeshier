@@ -22,7 +22,12 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     description: "",
     sizes: [{ size: "regular", additionalPrice: 0 }],
     image: null,
-    ingredientsList: [{ count: 1, selectedId: "" }],
+    ingredientsList: [
+      {
+        ingredientId: "",
+        quantityBySize: [{ size: "regular", quantity: 0, unit: "" }],
+      },
+    ],
     recipe: "",
   });
   const [errors, setErrors] = useState({});
@@ -65,18 +70,23 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     }
   };
   const prevStep = () => setStep((prev) => prev - 1);
-
+  const handleAddMenu = async (menuData) => {
+    await addNewMenu(menuData);
+    fetchProducts();
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (
-      menuData.ingredientsList.some(
-        (ingredient) => ingredient.selectedId !== ""
-      )
-    ) {
+    const isIngredientDataValid = menuData.ingredientsList.every(
+      (ingredient) =>
+        ingredient.ingredientId &&
+        ingredient.quantityBySize.every((qs) => qs.quantity > 0 && qs.unit)
+    );
+    if (!isIngredientDataValid) {
       toast.error("Ingredient data is not completed");
+      return;
     }
-    addNewMenu(menuData);
-    fetchProducts();
+    handleAddMenu(menuData);
+    onClose();
   };
 
   // Step 1 functions
@@ -91,14 +101,17 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const handleSizeChange = (size) => {
     setMenuData((prev) => {
       const isSelected = prev.sizes.some((s) => s.size === size.target.value);
+      const updatedSizes = isSelected
+        ? prev.sizes.filter((s) => s.size !== size.target.value)
+        : [...prev.sizes, { size: size.target.value, additionalPrice: 0 }];
+
       return {
         ...prev,
-        sizes: isSelected
-          ? prev.sizes.filter((s) => s.size !== size.target.value)
-          : [...prev.sizes, { size: size.target.value, additionalPrice: 0 }],
+        sizes: updatedSizes,
       };
     });
   };
+
   // Handle additional price change
   const handleAdditionalPriceChange = (size, value) => {
     setMenuData((prev) => ({
@@ -113,7 +126,10 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const handleAddIngredientClick = () => {
     setMenuData((prev) => ({
       ...prev,
-      ingredientsList: [...prev.ingredientsList, { count: 1, selectedId: "" }],
+      ingredientsList: [
+        ...prev.ingredientsList,
+        { count: 1, ingredientId: "" },
+      ],
     }));
     console.log(menuData.ingredientsList);
   };
@@ -124,12 +140,53 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     });
   };
 
-  const handleIngredientChange = (index, selectedId) => {
+  const handleIngredientChange = (index, field, value, size = null) => {
     setMenuData((prev) => {
-      const newList = prev.ingredientsList.map((ing, i) =>
-        i === index ? { ...ing, selectedId } : ing
-      );
-      return { ...prev, ingredientsList: newList };
+      const updatedIngredients = prev.ingredientsList.map((ing, i) => {
+        if (i === index) {
+          if (field === "ingredientId") {
+            // 🔥 Safe check to prevent error
+            const ingredientData =
+              ingredients?.find((ing) => ing._id === value) || null;
+
+            // Ensure quantityBySize matches menuData.sizes
+            const updatedQuantityBySize = prev.sizes.map((s) => {
+              const existingSize = ing.quantityBySize?.find(
+                (qs) => qs.size === s.size
+              );
+              return {
+                size: s.size,
+                quantity: existingSize ? existingSize.quantity : 0,
+                unit: ingredientData ? ingredientData.unit : "",
+              };
+            });
+
+            return {
+              ...ing,
+              ingredientId: value,
+              quantityBySize: updatedQuantityBySize,
+            };
+          } else if (field === "quantityBySize" && size) {
+            return {
+              ...ing,
+              quantityBySize: prev.sizes.map((s) => ({
+                size: s.size,
+                quantity:
+                  s.size === size
+                    ? Number(value)
+                    : ing.quantityBySize?.find((qs) => qs.size === s.size)
+                        ?.quantity || 0,
+                unit:
+                  ing.quantityBySize?.find((qs) => qs.size === s.size)?.unit ||
+                  "",
+              })),
+            };
+          }
+        }
+        return ing;
+      });
+
+      return { ...prev, ingredientsList: updatedIngredients };
     });
   };
 
@@ -276,41 +333,65 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
             <p>Ingredient</p>
             <p>Quantity</p>
           </div>
-          {menuData.ingredientsList.map((ing, index) => (
-            <div key={index} className="flex flex-row gap-2 items-end">
-              <Button
-                className="w-fit mb-2"
-                buttonSize="icon"
-                buttonType="danger"
-                onClick={() => handleRemoveIngredient(index)}
-                icon={LucideIcons.Trash}
-              />
-              <div className="grid grid-cols-2 gap-2 items-center w-full">
-                <DropdownInput
-                  className="w-1/2"
-                  options={ingredients.map((ingredient) => ({
-                    value: String(ingredient._id),
-                    label: ingredient.name,
-                  }))}
-                  value={ing.selectedId}
-                  onChange={(e) =>
-                    handleIngredientChange(index, e.target.value)
-                  }
-                />
-                <Input
-                  className="w-1/2"
-                  type="number"
-                  min="1"
-                  max="100"
-                  placeholder="e.g. 100"
-                />
+          {menuData.sizes.map((size) => {
+            return (
+              <div key={size.size}>
+                <h6>
+                  {size.size.replace(/\b\w/g, (char) => char.toUpperCase())}
+                </h6>
+                {menuData.ingredientsList.map((ing, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-row gap-2 py-1 items-end"
+                  >
+                    <Button
+                      className="w-fit mb-2"
+                      buttonSize="icon"
+                      buttonType="danger"
+                      onClick={() => handleRemoveIngredient(index)}
+                      icon={LucideIcons.Trash}
+                    />
+                    <div className="grid grid-cols-2 gap-2 items-center w-full">
+                      <DropdownInput
+                        className="w-1/2"
+                        options={ingredients.map((ingredient) => ({
+                          value: String(ingredient._id),
+                          label: ingredient.name,
+                        }))}
+                        value={ing.ingredientId}
+                        onChange={(e) =>
+                          handleIngredientChange(
+                            index,
+                            "ingredientId",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <Input
+                        className="w-1/2"
+                        type="number"
+                        min="1"
+                        max="100"
+                        placeholder="e.g. 100"
+                        onChange={(e) =>
+                          handleIngredientChange(
+                            index,
+                            "quantityBySize",
+                            e.target.value,
+                            size.size
+                          )
+                        }
+                      />
+                    </div>
+                    <p className="mb-3 font-semibold">
+                      {ingredients.find((ingr) => ingr._id === ing.ingredientId)
+                        ?.unit || ""}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <p className="mb-3 font-semibold">
-                {ingredients.find((ingr) => ingr._id === ing.selectedId)
-                  ?.unit || ""}
-              </p>
-            </div>
-          ))}
+            );
+          })}
           <TextareaInput
             label="Directions"
             placeholder="e.g. Put perfectly fine bread on toaster for 29 minutes"

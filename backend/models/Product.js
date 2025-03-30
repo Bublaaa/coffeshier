@@ -16,7 +16,7 @@ const ProductSchema = new mongoose.Schema(
     sizes: [
       {
         size: { type: String, required: true },
-        additionalPrice: { type: Number, default: 0 }, // Extra charge for larger size
+        additionalPrice: { type: Number, default: 0 },
       },
     ],
     ingredients: [
@@ -28,7 +28,11 @@ const ProductSchema = new mongoose.Schema(
         },
         quantityBySize: [
           {
-            size: { type: String, enum: ["regular", "large"], required: true },
+            size: {
+              type: String,
+              enum: ["regular", "large", "extra large"],
+              required: true,
+            },
             quantity: { type: Number, required: true },
             unit: {
               type: String,
@@ -39,9 +43,7 @@ const ProductSchema = new mongoose.Schema(
         ],
       },
     ],
-    recipe: {
-      steps: [{ type: String }],
-    },
+    recipe: { type: String },
     // toppings: [
     //   {
     //     toppingId: {

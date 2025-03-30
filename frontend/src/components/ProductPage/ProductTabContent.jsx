@@ -16,11 +16,13 @@ const ProductTabContent = ({
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalBody, setModalBody] = useState(null);
   const [modalTitle, setModalTitle] = useState("");
+  const [modalSize, setModalSize] = useState("small");
 
-  const openModal = (title, body) => {
+  const openModal = (title, body, size) => {
     setModalTitle(title);
     setModalBody(body);
     setModalOpen(true);
+    setModalSize(size);
   };
 
   const handleProductClick = (event) => {
@@ -43,7 +45,11 @@ const ProductTabContent = ({
           onClick={() =>
             openModal(
               "Add New Menu",
-              <AddMenuForm categories={categories} ingredients={ingredients} />
+              <AddMenuForm
+                categories={categories}
+                ingredients={ingredients}
+                onClose={() => setModalOpen(false)}
+              />
             )
           }
         >
@@ -56,6 +62,7 @@ const ProductTabContent = ({
         onClose={() => setModalOpen(false)}
         title={modalTitle}
         body={modalBody}
+        size={modalSize}
       />
       <div
         className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-5 gap-2 p-2 overflow-y-auto scrollbar-hidden"
