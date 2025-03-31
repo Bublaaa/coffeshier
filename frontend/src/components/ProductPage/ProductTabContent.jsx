@@ -4,6 +4,7 @@ import Modal from "../Modal.jsx";
 import ProductCard from "../ProductCard.jsx";
 import AddMenuForm from "../Forms/AddMenuForm.jsx";
 import Button from "../Button.jsx";
+import { NavLink } from "react-router-dom";
 
 const ProductTabContent = ({
   categories,
@@ -70,13 +71,14 @@ const ProductTabContent = ({
       >
         {menus?.length > 0 && !isLoadingProducts ? (
           menus.map((menu) => (
-            <ProductCard
-              product={menu}
-              buttonLabel={"Edit"}
-              key={menu._id}
-              data-id={menu._id}
-              isLoading={isLoadingProducts}
-            ></ProductCard>
+            <NavLink key={menu._id} to={`/owner/product/${menu._id}`}>
+              <ProductCard
+                product={menu}
+                buttonLabel={"Edit"}
+                data-id={menu._id}
+                isLoading={isLoadingProducts}
+              ></ProductCard>
+            </NavLink>
           ))
         ) : (
           <p>No menus available</p>

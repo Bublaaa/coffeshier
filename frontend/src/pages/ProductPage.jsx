@@ -29,23 +29,16 @@ const ProductPage = () => {
     merchandises,
     fetchProducts,
     isLoading: isLoadingProducts,
-    error: productError,
   } = useProductStore();
 
   // Fetching state from order store
-  const {
-    orders,
-    fetchOrders,
-    isLoading: isLoadingOrders,
-    error: orderError,
-  } = useOrderStore();
+  const { orders, fetchOrders, isLoading: isLoadingOrders } = useOrderStore();
 
   // Fetching state from category store
   const {
     categories,
     fetchCategories,
     isLoading: isLoadingCategory,
-    error: categoryError,
   } = useCategoryStore();
 
   // Ingredient Tab Function
@@ -132,7 +125,7 @@ const ProductPage = () => {
     <div className="flex flex-row md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300">
       <div className="flex flex-col md:gap-5 gap-2 w-full">
         {/* Tabs */}
-        <div className="flex flex-row h-fit overflow-x-auto md:gap-5 gap-2  scrollbar-hidden">
+        <div className="flex flex-row h-fit overflow-x-auto md:gap-5 gap-2 p-1 scrollbar-hidden">
           {tabs.map((tab, index) => {
             const IconComponent =
               LucideIcons[tab.icon] || LucideIcons.GlassWater;
@@ -141,12 +134,16 @@ const ProductPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: index / 3 }}
+                whileHover={{
+                  scale: 1.05,
+                  transition: { duration: 0.2, ease: "easeInOut" },
+                }}
                 key={tab.id}
                 onClick={() => setActiveTab(tab.label)}
                 className={`${
                   activeTab === tab.label
                     ? "text-white bg-accent hover:bg-accent-hover"
-                    : "text-dark bg-white hover:bg-gray-200"
+                    : "text-dark bg-white hover:border-2 border-accent"
                 } flex flex-col justify-between cursor-pointer md:py-4 py-2 md:px-5 px-4 rounded-lg group`}
               >
                 <IconComponent className="md:size-7 size-5 md:mb-4 mb-2 transition-transform duration-300 group-hover:scale-110" />

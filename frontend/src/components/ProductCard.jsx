@@ -30,9 +30,9 @@ const ProductCard = ({ product, buttonLabel, isLoading }) => {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{
         scale: 1.05,
-        transition: { duration: 0.2, ease: "easeInOut" },
+        transition: { duration: 0.1, ease: "easeInOut" },
       }}
-      className="transition-all ease-in-out group flex flex-col w-full h-fit gap-2 bg-white cursor-pointer p-3 rounded-xl"
+      className="transition-all ease-in-out group flex flex-col w-full h-fit gap-2 bg-white cursor-pointer p-3 rounded-xl hover:border-2 border-accent"
     >
       <div className="overflow-hidden rounded-lg">
         <img
@@ -41,26 +41,26 @@ const ProductCard = ({ product, buttonLabel, isLoading }) => {
           className="w-full h-auto object-cover"
         />
       </div>
-      <div className="flex flex-col justify-between">
-        <div className="flex flex-row gap-2 items-center justify-between">
-          <h6 className="truncate max-w-3xs">{product.name || "No Name"}</h6>
-          <p className="whitespace-nowrap w-fit text-accent font-bold text-end">
-            {product.basePrice
-              ? product.basePrice.toLocaleString("id-ID")
-              : "0"}
-          </p>
-        </div>
+      <div className="flex flex-col gap-1">
+        <h6 className="line-clamp-2 max-w-3xs">
+          {product.name.replace(/\b\w/g, (char) => char.toUpperCase()) ||
+            "No Name Added"}
+        </h6>
+
         <p className="text-gray-500 max-w-full line-clamp-3">
           {product.description || "No description available"}
         </p>
+        <h5 className="whitespace-nowrap w-fit text-accent font-bold text-end">
+          {product.basePrice ? product.basePrice.toLocaleString("id-ID") : "0"}
+        </h5>
       </div>
-      <Button
+      {/* <Button
         buttonType="primary"
         buttonSize="medium"
         icon={LucideIcons.Pencil}
       >
         {buttonLabel || "Edit"}
-      </Button>
+      </Button> */}
     </motion.div>
   );
 };

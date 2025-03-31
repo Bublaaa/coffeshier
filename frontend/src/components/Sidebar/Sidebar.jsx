@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SideBarLink from "./SideBarLink.jsx";
 import * as LucideIcons from "lucide-react";
+import { logo } from "../../assets/index.js";
 
 const Sidebar = ({ links }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -27,7 +28,7 @@ const Sidebar = ({ links }) => {
     >
       <div className="flex items-center justify-between p-3 md:p-4">
         <a href="/" className="flex w-fit items-center space-x-3">
-          <img src="../public/Logo.svg" className="h-10" alt="Flowbite Logo" />
+          <img src={logo} className="h-10" alt="Flowbite Logo" />
           {!isCollapsed && (
             <h3 className="font-semibold hidden lg:block">Puch Coffee</h3>
           )}
