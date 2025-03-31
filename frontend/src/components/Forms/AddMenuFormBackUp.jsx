@@ -1,5 +1,5 @@
 import { useProductStore } from "../../store/productStore.js";
-import { useState, useReducer, useMemo, useCallback } from "react";
+import { useReducer, useCallback } from "react";
 import {
   Input,
   TextareaInput,
@@ -13,195 +13,256 @@ import Button from "../Button.jsx";
 
 const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const { addNewMenu, fetchProducts } = useProductStore();
-  const [step, setStep] = useState(1);
-  const [errors, setErrors] = useState({});
-  const [menuData, setMenuData] = useState({
-    name: "",
-    basePrice: 0,
-    categoryId: "",
-    status: "Not Available",
-    description: "",
-    sizes: [{ size: "regular", additionalPrice: 0 }],
-    image: null,
-    ingredientsList: [
-      {
-        ingredientId: "",
-        quantityBySize: [{ size: "regular", quantity: 0, unit: "" }],
-      },
-    ],
-    recipe: "",
-  });
+
+  const initialState = {
+    step: 1,
+    errors: {},
+    menuData: {
+      name: "",
+      basePrice: 0,
+      categoryId: "",
+      status: "Not Available",
+      description: "",
+      sizes: [{ size: "regular", additionalPrice: 0 }],
+      image: null,
+      ingredientsList: [
+        {
+          ingredientId: "",
+          quantityBySize: [{ size: "regular", quantity: 0, unit: "" }],
+        },
+      ],
+      recipe: "",
+    },
+  };
+
+  const formReducer = (state, action) => {
+    switch (action.type) {
+      case "SET_ERRORS":
+        return { ...state, errors: action.payload };
+
+      case "CLEAR_ERRORS":
+        return { ...state, errors: {} };
+
+      case "SET_STEP":
+        return { ...state, step: action.payload };
+
+      case "UPDATE_MENU":
+        return {
+          ...state,
+          menuData: { ...state.menuData, ...action.payload },
+        };
+
+      case "TOGGLE_SIZE": {
+        const isSelected = state.menuData.sizes.some(
+          (s) => s.size === action.payload
+        );
+        return {
+          ...state,
+          menuData: {
+            ...state.menuData,
+            sizes: isSelected
+              ? state.menuData.sizes.filter((s) => s.size !== action.payload)
+              : [
+                  ...state.menuData.sizes,
+                  { size: action.payload, additionalPrice: 0 },
+                ],
+          },
+        };
+      }
+
+      case "UPDATE_ADDITIONAL_PRICE":
+        return {
+          ...state,
+          menuData: {
+            ...state.menuData,
+            sizes: state.menuData.sizes.map((s) =>
+              s.size === action.payload.size
+                ? { ...s, additionalPrice: action.payload.value }
+                : s
+            ),
+          },
+        };
+
+      case "ADD_INGREDIENT":
+        return {
+          ...state,
+          menuData: {
+            ...state.menuData,
+            ingredientsList: [
+              ...state.menuData.ingredientsList,
+              {
+                ingredientId: "",
+                quantityBySize: state.menuData.sizes.map((s) => ({
+                  size: s.size,
+                  quantity: 0,
+                  unit: "",
+                })),
+              },
+            ],
+          },
+        };
+
+      case "REMOVE_INGREDIENT":
+        return {
+          ...state,
+          menuData: {
+            ...state.menuData,
+            ingredientsList: state.menuData.ingredientsList.filter(
+              (_, i) => i !== action.payload
+            ),
+          },
+        };
+
+      case "UPDATE_INGREDIENT":
+        return {
+          ...state,
+          menuData: {
+            ...state.menuData,
+            ingredientsList: state.menuData.ingredientsList.map((ing, i) => {
+              if (i === action.payload.index) {
+                if (action.payload.field === "ingredientId") {
+                  const ingredientData =
+                    ingredients.find(
+                      (ing) => ing._id === action.payload.value
+                    ) || null;
+
+                  return {
+                    ...ing,
+                    ingredientId: action.payload.value,
+                    quantityBySize: state.menuData.sizes.map((s) => ({
+                      size: s.size,
+                      quantity: 0,
+                      unit: ingredientData ? ingredientData.unit : "",
+                    })),
+                  };
+                } else if (
+                  action.payload.field === "quantityBySize" &&
+                  action.payload.size
+                ) {
+                  return {
+                    ...ing,
+                    quantityBySize: state.menuData.sizes.map((s) => ({
+                      size: s.size,
+                      quantity:
+                        s.size === action.payload.size
+                          ? Number(action.payload.value)
+                          : 0,
+                      unit:
+                        ing.quantityBySize?.find((qs) => qs.size === s.size)
+                          ?.unit || "",
+                    })),
+                  };
+                }
+              }
+              return ing;
+            }),
+          },
+        };
+
+      default:
+        return state;
+    }
+  };
+
+  const [state, dispatch] = useReducer(formReducer, initialState);
+  const { step, errors, menuData } = state;
+
   const validateForm = () => {
     let newErrors = {};
+
     if (step === 1) {
-      if (!String(menuData.name || "").trim())
-        newErrors.name = "Name is required.";
-      if (Number(menuData.basePrice) < 5000) {
-        newErrors.basePrice = "Base price can't lower than 5000";
-      }
-      if (!String(menuData.categoryId || "").trim()) {
+      if (!menuData.name.trim()) newErrors.name = "Name is required.";
+      if (menuData.basePrice < 5000)
+        newErrors.basePrice = "Base price can't be lower than 5000.";
+      if (!menuData.categoryId.trim())
         newErrors.categoryId = "Category is required.";
-      }
-    } else if (step === 2) {
-      menuData.sizes.map((size) => {
+    }
+
+    if (step === 2) {
+      menuData.sizes.forEach((size) => {
         if (size.size !== "regular" && !size.additionalPrice) {
-          if (size === "large")
-            newErrors.large = "Additional Price is required";
-          if (size === "extra large")
-            newErrors.extraLarge = "Additional Price is required";
+          newErrors[size.size] = "Additional Price is required";
         }
       });
-    } else if (step === 3) {
-      const isIngredientListValid = menuData.ingredientsList.every(
-        (ingredient) =>
-          ingredient.ingredientId &&
-          ingredient.quantityBySize.every((qs) => qs.quantity > 0 && qs.unit)
-      );
-      if (!isIngredientListValid) {
+    }
+
+    if (step === 3) {
+      if (
+        !menuData.ingredientsList.every(
+          (ingredient) =>
+            ingredient.ingredientId &&
+            ingredient.quantityBySize.every((qs) => qs.quantity > 0 && qs.unit)
+        )
+      ) {
         toast.error(
           "Ingredient data is incomplete. Please fill in all required fields."
         );
+        return false;
       }
-      menuData.ingredientsList.forEach((ingredient, ingIndex) => {
-        const sizeOrder = ["regular", "large", "extra large"];
-        const sortedQuantities = ingredient.quantityBySize
-          .slice()
-          .sort(
-            (a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size)
-          );
-        sortedQuantities.forEach((entry, index) => {
-          if (
-            index > 0 &&
-            entry.quantity < sortedQuantities[index - 1].quantity
-          ) {
-            newErrors[`ingredient-${ingIndex}-${entry.size}`] =
-              "Larger menu size quantity can't be lower than smaller one";
-          }
-        });
-      });
     }
-    setErrors(newErrors);
+
+    dispatch({ type: "SET_ERRORS", payload: newErrors });
+
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields.");
       return false;
     }
+
     return true;
   };
 
   const nextStep = () => {
     if (validateForm()) {
-      setStep((prev) => prev + 1);
+      dispatch({ type: "SET_STEP", payload: step + 1 });
     }
   };
-  const prevStep = () => setStep((prev) => prev - 1);
-  const handleAddMenu = async (menuData) => {
-    await addNewMenu(menuData);
-    fetchProducts();
-  };
+
+  const prevStep = () => dispatch({ type: "SET_STEP", payload: step - 1 });
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const isStepValid = validateForm();
-    if (!isStepValid) return;
-    const isIngredientDataValid = menuData.ingredientsList.every(
-      (ingredient) =>
-        ingredient.ingredientId &&
-        ingredient.quantityBySize.every((qs) => qs.quantity > 0 && qs.unit)
-    );
-    if (!isIngredientDataValid) {
-      toast.error("Ingredient data is not completed");
-      return;
+    if (validateForm()) {
+      addNewMenu(menuData);
+      fetchProducts();
+      onClose();
     }
-    handleAddMenu(menuData);
-    onClose();
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setMenuData((prev) => ({ ...prev, [name]: value }));
-  };
-  const handleSizeChange = (size) => {
-    setMenuData((prev) => {
-      const isSelected = prev.sizes.some((s) => s.size === size.target.value);
-      const updatedSizes = isSelected
-        ? prev.sizes.filter((s) => s.size !== size.target.value)
-        : [...prev.sizes, { size: size.target.value, additionalPrice: 0 }];
-      return {
-        ...prev,
-        sizes: updatedSizes,
-      };
+  const handleInputChange = useCallback((e) => {
+    dispatch({
+      type: "UPDATE_MENU",
+      payload: { [e.target.name]: e.target.value },
     });
-  };
-  const handleAdditionalPriceChange = (size, value) => {
-    setMenuData((prev) => ({
-      ...prev,
-      sizes: prev.sizes.map((s) =>
-        s.size == size ? { ...s, additionalPrice: Number(value) } : s
-      ),
-    }));
-  };
-  const handleAddIngredientClick = () => {
-    setMenuData((prev) => ({
-      ...prev,
-      ingredientsList: [
-        ...prev.ingredientsList,
-        { count: 1, ingredientId: "" },
-      ],
-    }));
-  };
-  const handleRemoveIngredient = (index) => {
-    setMenuData((prev) => {
-      const newList = prev.ingredientsList.filter((_, i) => i !== index);
-      return { ...prev, ingredientsList: newList };
+  }, []);
+
+  const handleSizeChange = useCallback((size) => {
+    dispatch({ type: "TOGGLE_SIZE", payload: size });
+  }, []);
+
+  const handleAdditionalPriceChange = useCallback((size, value) => {
+    dispatch({
+      type: "UPDATE_ADDITIONAL_PRICE",
+      payload: { size, value: Number(value) },
     });
-  };
-  const handleIngredientChange = (index, field, value, size = null) => {
-    setMenuData((prev) => {
-      const updatedIngredients = prev.ingredientsList.map((ing, i) => {
-        if (i === index) {
-          if (field === "ingredientId") {
-            // 🔥 Safe check to prevent error
-            const ingredientData =
-              ingredients?.find((ing) => ing._id === value) || null;
+  }, []);
 
-            // Ensure quantityBySize matches menuData.sizes
-            const updatedQuantityBySize = prev.sizes.map((s) => {
-              const existingSize = ing.quantityBySize?.find(
-                (qs) => qs.size === s.size
-              );
-              return {
-                size: s.size,
-                quantity: existingSize ? existingSize.quantity : 0,
-                unit: ingredientData ? ingredientData.unit : "",
-              };
-            });
+  const handleAddIngredientClick = useCallback(() => {
+    dispatch({ type: "ADD_INGREDIENT" });
+  }, []);
 
-            return {
-              ...ing,
-              ingredientId: value,
-              quantityBySize: updatedQuantityBySize,
-            };
-          } else if (field === "quantityBySize" && size) {
-            return {
-              ...ing,
-              quantityBySize: prev.sizes.map((s) => ({
-                size: s.size,
-                quantity:
-                  s.size === size
-                    ? Number(value)
-                    : ing.quantityBySize?.find((qs) => qs.size === s.size)
-                        ?.quantity || 0,
-                unit:
-                  ing.quantityBySize?.find((qs) => qs.size === s.size)?.unit ||
-                  "",
-              })),
-            };
-          }
-        }
-        return ing;
+  const handleRemoveIngredient = useCallback((index) => {
+    dispatch({ type: "REMOVE_INGREDIENT", payload: index });
+  }, []);
+
+  const handleIngredientChange = useCallback(
+    (index, field, value, size = null) => {
+      dispatch({
+        type: "UPDATE_INGREDIENT",
+        payload: { index, field, value, size },
       });
-      return { ...prev, ingredientsList: updatedIngredients };
-    });
-  };
+    },
+    []
+  );
 
   return (
     <form className="flex flex-col md:flex-row gap-3" onSubmit={handleSubmit}>
@@ -300,7 +361,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
                   required={true}
                   min="1"
                   max="100000"
-                  label={`Additional Price for ${s.size.toUpperCase()}`}
+                  label={`Additional Price for ${String(s.size).toUpperCase()}`}
                   value={
                     menuData.sizes.find((size) => size.size === s.size)
                       ?.additionalPrice || ""
@@ -346,9 +407,9 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
             <p>Ingredient</p>
             <p>Quantity</p>
           </div>
-          {menuData.sizes.map((size) => {
+          {menuData.sizes.map((size, sizeIndex) => {
             return (
-              <div key={size.size}>
+              <div key={sizeIndex}>
                 <h6>
                   {size.size.replace(/\b\w/g, (char) => char.toUpperCase())}
                 </h6>
@@ -427,4 +488,5 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     </form>
   );
 };
+
 export default AddMenuForm;

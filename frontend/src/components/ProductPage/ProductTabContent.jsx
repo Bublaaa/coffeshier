@@ -68,7 +68,7 @@ const ProductTabContent = ({
         className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-5 gap-2 p-2 overflow-y-auto scrollbar-hidden"
         onClick={handleProductClick}
       >
-        {menus?.length > 0 ? (
+        {menus?.length > 0 && !isLoadingProducts ? (
           menus.map((menu) => (
             <ProductCard
               product={menu}
