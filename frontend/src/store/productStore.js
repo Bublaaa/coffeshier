@@ -67,7 +67,7 @@ export const useProductStore = create((set) => ({
       console.log(merchandises);
 
       set({
-        products: merchandises,
+        merchandises: merchandises,
         isLoading: false,
         message: successMessage,
       });
@@ -89,7 +89,7 @@ export const useProductStore = create((set) => ({
         categoryId,
       });
 
-      set({ products: response.data.products, isLoading: false });
+      set({ menus: response.data.products, isLoading: false });
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error fetching products";
@@ -112,12 +112,26 @@ export const useProductStore = create((set) => ({
         ingredients: menuData.ingredientsList,
         recipe: menuData.recipe,
       });
-      set({ products: response.data.products, isLoading: false });
+      set({ menus: response.data.products, isLoading: false });
       toast.success("Success add new menu");
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error adding product";
       set({ error: errorMessage, isLoading: false, products: [] });
+      toast.error(errorMessage);
+    }
+  },
+
+  fetchProductDetails: async (id) => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      const response = await axios.get(`${API_URL}product/detail/${id}`);
+      set({ menus: response.data.product, isLoading: false });
+      // toast.success("Success Fetch Product Detail");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error fetching product detail";
+      set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
     }
   },
