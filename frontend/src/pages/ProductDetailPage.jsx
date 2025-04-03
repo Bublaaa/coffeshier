@@ -2,11 +2,16 @@ import { useParams } from "react-router-dom";
 import { useProductStore } from "../store/productStore";
 import { useCategoryStore } from "../store/categoryStore.js";
 import { useIngredientStore } from "../store/ingredientStore.js";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { placeholder } from "../assets/index.js";
-import { RadioInput, DropdownInput, Input } from "../components/Input";
+import {
+  RadioInput,
+  DropdownInput,
+  Input,
+  TextareaInput,
+} from "../components/Input";
 import * as LucideIcons from "lucide-react";
 import Button from "../components/Button";
 import Modal from "../components/Modal.jsx";
@@ -54,13 +59,17 @@ const ProductDetailPage = () => {
     modalSize: "small",
   };
 
-  const EditStatusForm = ({}) => {
+  const EditStatusForm = ({ state, dispatch }) => {
+    const handleChangeStatus = (e) => {
+      const { value } = e.target;
+      dispatch({ type: "SET_MENUS", payload: { status: value } });
+    };
     return (
       <form>
         <DropdownInput
           label="Status"
           name="status"
-          value={state.menus.status}
+          value={state.menus.status || "Not Available"}
           options={[
             { value: "Available", label: "Available" },
             { value: "Not Available", label: "Not Available" },
@@ -70,13 +79,17 @@ const ProductDetailPage = () => {
       </form>
     );
   };
-  const EditCategoryForm = ({ categories }) => {
+  const EditCategoryForm = ({ categories, state, dispatch }) => {
+    const handleCategoryChange = (e) => {
+      const { value } = e.target;
+      dispatch({ type: "SET_MENUS", payload: { categoryId: value } });
+    };
     return (
       <form>
         <DropdownInput
           label="Category"
           name="categoryId"
-          value={state.menus.categoryId}
+          value={state.menus.categoryId || ""}
           options={categories.map((category) => ({
             value: category._id,
             label: category.name,
@@ -87,14 +100,127 @@ const ProductDetailPage = () => {
     );
   };
 
+  const EditNameForm = ({ state, dispatch }) => {
+    const [localName, setLocalName] = useState(state.menus.name || "");
+    useEffect(() => {
+      setLocalName(state.menus.name);
+    }, [state.menus.name]);
+    const handleChangeName = (e) => {
+      setLocalName(e.target.value);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, name: e.target.value },
+      });
+    };
+    return (
+      <Input
+        className="w-full"
+        type="text"
+        placeholder="e.g. Burnt Toast"
+        label="Menu Name"
+        name="name"
+        value={localName}
+        onChange={handleChangeName}
+      />
+    );
+  };
+  const EditDescriptionForm = ({ state, dispatch }) => {
+    const [localDescription, setLocalDescription] = useState(
+      state.menus.description || ""
+    );
+    useEffect(() => {
+      setLocalDescription(state.menus.description);
+    }, [state.menus.description]);
+    const handleChangeDescription = (e) => {
+      setLocalDescription(e.target.value);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, description: e.target.value },
+      });
+    };
+    return (
+      <TextareaInput
+        className="w-full"
+        type="text"
+        placeholder="e.g. Burnt to perfection for exact 29 minutes"
+        label="Menu Description"
+        name="description"
+        rows="3"
+        value={localDescription}
+        onChange={handleChangeDescription}
+      />
+    );
+  };
+
+  const EditRecipeForm = ({ state, dispatch }) => {
+    const [localRecipe, setLocalRecipe] = useState(
+      state.menus.localRecipe || ""
+    );
+    useEffect(() => {
+      setLocalRecipe(state.menus.recipe);
+    }, [state.menus.recipe]);
+    const handleChangeRecipe = (e) => {
+      setLocalRecipe(e.target.value);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, recipe: e.target.value },
+      });
+    };
+    return (
+      <form action="">
+        <TextareaInput
+          label="Directions"
+          placeholder="e.g. Put perfectly fine bread on toaster for 29 minutes"
+          name="recipe"
+          value={localRecipe}
+          rows="5"
+          onChange={handleChangeRecipe}
+        />
+      </form>
+    );
+  };
+  const EditBasePriceForm = ({ state, dispatch }) => {
+    const [localBasePrice, setLocalBasePrice] = useState(
+      state.menus.basePrice || 0
+    );
+    useEffect(() => {
+      setLocalBasePrice(state.menus.basePrice);
+    }, [state.menus.localBasePrice]);
+    const handleBasePriceChange = (e) => {
+      setLocalBasePrice(e.target.value);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, basePrice: Number(e.target.value) },
+      });
+    };
+    return (
+      <form action="">
+        <Input
+          type="number"
+          min="5000"
+          label="Base Price"
+          name="basePrice"
+          value={localBasePrice}
+          onChange={handleBasePriceChange}
+          placeholder="e.g. 10.000"
+        />
+      </form>
+    );
+  };
   const menuReducer = (state, action) => {
     switch (action.type) {
       case "SET_MENUS":
-        return { ...state, menus: { ...state.menus, ...action.payload } };
-      case "SET_CATEGORY":
-        return { ...state, categoryId: action.payload };
-      case "SET_STATUS":
-        return { ...state, status: action.payload };
+        const newMenus = { ...state.menus, ...action.payload };
+        console.log("New menus:", newMenus);
+        return { ...state, menus: newMenus };
+      case "SET_MENU_NAME":
+        return {
+          ...state,
+          menus: {
+            name: action.payload,
+          },
+        };
+
       case "SET_SELECTED_SIZE":
         return { ...state, selectedSize: action.payload };
       case "SET_SELECTED_UNIT":
@@ -124,14 +250,26 @@ const ProductDetailPage = () => {
     }
   };
   const [state, dispatch] = useReducer(menuReducer, initialState);
+
+  const hasSetMenus = useRef(false);
+
   useEffect(() => {
-    fetchProductDetails(id);
-    fetchIngredients();
-    fetchCategories();
-    if (menus) {
+    const fetchAllData = async () => {
+      await fetchProductDetails(id);
+      await fetchIngredients();
+      await fetchCategories();
+    };
+    fetchAllData();
+    console.log("Id is Changed");
+  }, [id]);
+
+  useEffect(() => {
+    if (menus && Object.keys(menus).length > 0) {
       dispatch({ type: "SET_MENUS", payload: menus });
     }
-  }, [id, menus]);
+    console.log("Menu Is Changed");
+  }, [menus]);
+
   const handleSizeChange = (e) => {
     const { value } = e.target;
     dispatch({ type: "SET_SELECTED_SIZE", payload: value });
@@ -146,18 +284,15 @@ const ProductDetailPage = () => {
         });
       }
     });
-    const totalPrice = state.menus.basePrice + additionalPrice;
+    const basePrice = state.menus.basePrice || 0;
+    const totalPrice = basePrice + additionalPrice;
     dispatch({ type: "SET_TOTAL_PRICE", payload: totalPrice });
   };
 
-  const handleCategoryChange = (e) => {
-    const { value } = e.target;
-    dispatch({ type: "SET_CATEGORY", payload: value });
-  };
-  const handleChangeStatus = (e) => {
-    const { value } = e.target;
-    dispatch({ type: "SET_STATUS", payload: value });
-  };
+  // const handleMenuDetailChange = (e) => {
+  //   const { name, value } = e.target;
+  //   dispatch({ type: "SET_MENUS", payload: { [name]: value } });
+  // };
 
   const handleOpenModal = (title, body, size) => {
     dispatch({ type: "SET_MODAL_OPEN", payload: true });
@@ -170,18 +305,47 @@ const ProductDetailPage = () => {
     const target = e.target.closest("[data-id]");
     if (!target) return;
     switch (target.dataset.id) {
+      case "name":
+        handleOpenModal(
+          "Change Menu Name",
+          <EditNameForm state={state} dispatch={dispatch} />
+        );
+        break;
+      case "description":
+        handleOpenModal(
+          "Change Menu Description",
+          <EditDescriptionForm state={state} dispatch={dispatch} />
+        );
+        break;
+      case "recipe":
+        handleOpenModal(
+          "Change Menu Recipe",
+          <EditRecipeForm state={state} dispatch={dispatch} />
+        );
+        break;
       case "status":
-        handleOpenModal("Change Menu Name", <EditStatusForm />);
+        handleOpenModal(
+          "Change Menu Status",
+          <EditStatusForm state={state} dispatch={dispatch} />
+        );
         break;
       case "category":
         handleOpenModal(
           "Change Category Name",
-          <EditCategoryForm categories={categories} />
+          <EditCategoryForm
+            categories={categories}
+            state={state}
+            dispatch={dispatch}
+          />
         );
         break;
-
+      case "basePrice":
+        handleOpenModal(
+          "Change Base Price",
+          <EditBasePriceForm state={state} dispatch={dispatch} />
+        );
       default:
-        toast.error("Unknown menu change request:" + target.dataset.id);
+        return;
     }
   };
 
@@ -202,7 +366,7 @@ const ProductDetailPage = () => {
             </NavLink>
           </Button>
         </div>
-        <div className="absolute inset-x-100 inset-y-10 flex items-center justify-end w-1/2 z-5">
+        <div className="absolute inset-x-100 pt-50 flex items-center justify-end w-1/2 z-0 p-2">
           <motion.img
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -215,14 +379,14 @@ const ProductDetailPage = () => {
             className="max-w-full max-h-full object-contain hover:scale-105 hover:rotate-5"
           />
         </div>
-        <div className="relative z-10 flex flex-row md:gap-5 gap-2 h-fit mt-auto">
+        <div className=" flex flex-row md:gap-5 gap-2 h-fit mt-auto">
           <motion.div
             onClick={(e) => handleMenuChange(e)}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col w-1/3 p-5 rounded-lg gap-5 bg-white mt-auto"
+            className="relative flex flex-col w-1/3 p-5 rounded-lg gap-5 bg-white mt-auto"
           >
-            <div className="flex flex-row gap-2 md:gap-5 items-center">
+            <div className="flex z-10  flex-row gap-2 md:gap-5 items-center">
               {/* Status Display */}
               <div
                 data-id="status"
@@ -266,22 +430,37 @@ const ProductDetailPage = () => {
                 })}
             </div>
             {/* Menu Name */}
-            <h1 className="line-clamp-3 max-w-sm whitespace-normal hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg px-2">
-              {menus.name}
+            <h1
+              data-id="name"
+              className="line-clamp-3 max-w-sm whitespace-normal hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg px-2"
+            >
+              {state.menus.name || "No Name"}
             </h1>
             {/* Menu Description */}
-            <p className="hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2">
-              {menus.descriptions || "No description available "}
+            <p
+              data-id="description"
+              className="hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2"
+            >
+              {state.menus.description || "No description available "}
             </p>
             {/* Menu Recipe */}
-            <div className="gap-2 hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2">
+            <div
+              data-id="recipe"
+              className="gap-2 hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2"
+            >
               <h6>Recipe</h6>
               <p>{state.menus.recipe || "No recipe available "}</p>
             </div>
           </motion.div>
           {/* Price */}
-          <div className="flex flex-col gap-2 p-2 w-1/3 justify-end items-end">
-            <div className="flex flex-row w-full justify-between items-center text-dark hover:cursor-pointer hover:scale-101 hover:bg-gray-200 rounded-lg hover:p-2">
+          <div
+            onClick={(e) => handleMenuChange(e)}
+            className="flex flex-col gap-2 p-2 w-1/3 h-fit mt-auto justify-end items-end"
+          >
+            <div
+              data-id="basePrice"
+              className="flex flex-row w-full justify-between items-center text-dark hover:cursor-pointer hover:scale-101 hover:bg-gray-200 rounded-lg hover:p-2"
+            >
               <h6>Base Price</h6>
               <p>
                 {state.menus.basePrice

@@ -2,7 +2,14 @@ import { useState, useEffect } from "react";
 import * as LucideIcons from "lucide-react";
 
 // Text Input
-export const Input = ({ icon: Icon, label, error, ...props }) => (
+export const Input = ({
+  icon: Icon,
+  value,
+  onChange,
+  label,
+  error,
+  ...props
+}) => (
   <div className="relative">
     {label && (
       <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -16,6 +23,8 @@ export const Input = ({ icon: Icon, label, error, ...props }) => (
     )}
     <input
       {...props}
+      value={value}
+      onChange={onChange}
       className={`w-full border rounded-lg md:p-3 p-2 bg-white text-dark placeholder:text-sm 
         md:placeholder:text-base placeholder-gray-400 focus:ring-4 focus:outline-none transition no-spinner 
         ${Icon ? "pl-10" : ""} 
