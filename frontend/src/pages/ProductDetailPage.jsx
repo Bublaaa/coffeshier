@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useProductStore } from "../store/productStore";
 import { useCategoryStore } from "../store/categoryStore.js";
 import { useIngredientStore } from "../store/ingredientStore.js";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { placeholder } from "../assets/index.js";
@@ -11,11 +11,11 @@ import {
   DropdownInput,
   Input,
   TextareaInput,
+  CheckboxInput,
 } from "../components/Input";
 import * as LucideIcons from "lucide-react";
 import Button from "../components/Button";
 import Modal from "../components/Modal.jsx";
-import toast from "react-hot-toast";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -65,18 +65,16 @@ const ProductDetailPage = () => {
       dispatch({ type: "SET_MENUS", payload: { status: value } });
     };
     return (
-      <form>
-        <DropdownInput
-          label="Status"
-          name="status"
-          value={state.menus.status || "Not Available"}
-          options={[
-            { value: "Available", label: "Available" },
-            { value: "Not Available", label: "Not Available" },
-          ]}
-          onChange={handleChangeStatus}
-        />
-      </form>
+      <DropdownInput
+        label="Status"
+        name="status"
+        value={state.menus.status || "Not Available"}
+        options={[
+          { value: "Available", label: "Available" },
+          { value: "Not Available", label: "Not Available" },
+        ]}
+        onChange={handleChangeStatus}
+      />
     );
   };
   const EditCategoryForm = ({ categories, state, dispatch }) => {
@@ -85,21 +83,18 @@ const ProductDetailPage = () => {
       dispatch({ type: "SET_MENUS", payload: { categoryId: value } });
     };
     return (
-      <form>
-        <DropdownInput
-          label="Category"
-          name="categoryId"
-          value={state.menus.categoryId || ""}
-          options={categories.map((category) => ({
-            value: category._id,
-            label: category.name,
-          }))}
-          onChange={handleCategoryChange}
-        />
-      </form>
+      <DropdownInput
+        label="Category"
+        name="categoryId"
+        value={state.menus.categoryId || ""}
+        options={categories.map((category) => ({
+          value: category._id,
+          label: category.name,
+        }))}
+        onChange={handleCategoryChange}
+      />
     );
   };
-
   const EditNameForm = ({ state, dispatch }) => {
     const [localName, setLocalName] = useState(state.menus.name || "");
     useEffect(() => {
@@ -151,7 +146,6 @@ const ProductDetailPage = () => {
       />
     );
   };
-
   const EditRecipeForm = ({ state, dispatch }) => {
     const [localRecipe, setLocalRecipe] = useState(
       state.menus.localRecipe || ""
@@ -167,51 +161,130 @@ const ProductDetailPage = () => {
       });
     };
     return (
-      <form action="">
-        <TextareaInput
-          label="Directions"
-          placeholder="e.g. Put perfectly fine bread on toaster for 29 minutes"
-          name="recipe"
-          value={localRecipe}
-          rows="5"
-          onChange={handleChangeRecipe}
-        />
-      </form>
+      <TextareaInput
+        label="Directions"
+        placeholder="e.g. Put perfectly fine bread on toaster for 29 minutes"
+        name="recipe"
+        value={localRecipe}
+        rows="5"
+        onChange={handleChangeRecipe}
+      />
     );
   };
   const EditBasePriceForm = ({ state, dispatch }) => {
     const [localBasePrice, setLocalBasePrice] = useState(
       state.menus.basePrice || 0
     );
+    const [localTotalPrice, setLocalTotalPrice] = useState(
+      state.menus.basePrice + state.selectedAdditionalPrice
+    );
     useEffect(() => {
       setLocalBasePrice(state.menus.basePrice);
-    }, [state.menus.localBasePrice]);
+    }, [state.menus.basePrice]);
+    useEffect(() => {
+      const total =
+        Number(localBasePrice) + Number(state.selectedAdditionalPrice || 0);
+      setLocalTotalPrice(total);
+      dispatch({ type: "SET_TOTAL_PRICE", payload: total });
+    }, [localBasePrice, state.selectedAdditionalPrice, dispatch]);
+
     const handleBasePriceChange = (e) => {
-      setLocalBasePrice(e.target.value);
+      const value = Number(e.target.value);
+      setLocalBasePrice(value);
       dispatch({
         type: "SET_MENUS",
-        payload: { ...state.menus, basePrice: Number(e.target.value) },
+        payload: { ...state.menus, basePrice: value },
       });
     };
+
     return (
-      <form action="">
-        <Input
-          type="number"
-          min="5000"
-          label="Base Price"
-          name="basePrice"
-          value={localBasePrice}
-          onChange={handleBasePriceChange}
-          placeholder="e.g. 10.000"
-        />
-      </form>
+      <Input
+        type="number"
+        min="5000"
+        label="Base Price"
+        name="basePrice"
+        value={localBasePrice}
+        onChange={handleBasePriceChange}
+        placeholder="e.g. 10.000"
+      />
     );
   };
+  const EditAvailableSizeForm = ({ state, dispatch }) => {
+    const [availableSize, setAvailableSize] = useState(state.menus.sizes || []);
+    useEffect(() => {
+      setAvailableSize(state.menus.sizes || []);
+    }, [state.menus.sizes]);
+
+    const handleSizeChange = (e) => {
+      const selectedSize = e.target.value;
+      const exists = availableSize.find((s) => s.size === selectedSize);
+
+      if (selectedSize === "regular" && exists) return;
+      const updatedSizes = exists
+        ? availableSize.filter((s) => s.size !== selectedSize)
+        : [...availableSize, { size: selectedSize, additionalPrice: 0 }];
+
+      setAvailableSize(updatedSizes);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, sizes: updatedSizes },
+      });
+      dispatch({ type: "SET_SELECTED_SIZE", payload: "regular" });
+    };
+
+    const handleAdditionalPriceChange = (size, price) => {
+      const updatedSizes = availableSize.map((s) =>
+        s.size === size ? { ...s, additionalPrice: Number(price) } : s
+      );
+      setAvailableSize(updatedSizes);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, sizes: updatedSizes },
+      });
+      dispatch({ type: "SET_SELECTED_SIZE", payload: "regular" });
+    };
+
+    return (
+      <div className="w-full flex flex-col gap-3">
+        <CheckboxInput
+          label="Size"
+          name="size"
+          initialValue={availableSize.map((s) => s.size)}
+          options={[
+            { value: "regular", label: "Regular", disabled: true },
+            { value: "large", label: "Large" },
+            { value: "extra large", label: "Extra Large" },
+          ]}
+          onChange={handleSizeChange}
+        />
+
+        {availableSize
+          .filter((s) => s.size !== "regular")
+          .map((s) => (
+            <div key={s.size}>
+              <Input
+                type="number"
+                placeholder="e.g. 5000"
+                required
+                min="1"
+                max="100000"
+                label={`Additional Price for ${s.size.toUpperCase()}`}
+                value={s.additionalPrice}
+                onChange={(e) =>
+                  handleAdditionalPriceChange(s.size, e.target.value)
+                }
+              />
+            </div>
+          ))}
+      </div>
+    );
+  };
+
   const menuReducer = (state, action) => {
     switch (action.type) {
       case "SET_MENUS":
         const newMenus = { ...state.menus, ...action.payload };
-        console.log("New menus:", newMenus);
+        // console.log("New menus:", newMenus);
         return { ...state, menus: newMenus };
       case "SET_MENU_NAME":
         return {
@@ -251,8 +324,6 @@ const ProductDetailPage = () => {
   };
   const [state, dispatch] = useReducer(menuReducer, initialState);
 
-  const hasSetMenus = useRef(false);
-
   useEffect(() => {
     const fetchAllData = async () => {
       await fetchProductDetails(id);
@@ -260,14 +331,12 @@ const ProductDetailPage = () => {
       await fetchCategories();
     };
     fetchAllData();
-    console.log("Id is Changed");
   }, [id]);
 
   useEffect(() => {
     if (menus && Object.keys(menus).length > 0) {
       dispatch({ type: "SET_MENUS", payload: menus });
     }
-    console.log("Menu Is Changed");
   }, [menus]);
 
   const handleSizeChange = (e) => {
@@ -275,7 +344,7 @@ const ProductDetailPage = () => {
     dispatch({ type: "SET_SELECTED_SIZE", payload: value });
 
     let additionalPrice = 0;
-    menus.sizes.forEach((menu) => {
+    state.menus.sizes.forEach((menu) => {
       if (menu.size === value) {
         additionalPrice = menu.additionalPrice;
         dispatch({
@@ -343,6 +412,12 @@ const ProductDetailPage = () => {
         handleOpenModal(
           "Change Base Price",
           <EditBasePriceForm state={state} dispatch={dispatch} />
+        );
+        break;
+      case "availableSize":
+        handleOpenModal(
+          "Change Available Size",
+          <EditAvailableSizeForm state={state} dispatch={dispatch} />
         );
       default:
         return;
@@ -479,21 +554,33 @@ const ProductDetailPage = () => {
               <h6>{state.totalPrice.toLocaleString("id-ID")}</h6>
             </div>
           </div>
-          <motion.div className="w-1/3 flex flex-col gap-2 mt-auto h-fit p-5 bg-white rounded-lg ">
-            <RadioInput
-              options={
-                menus?.sizes?.map((item) => ({
-                  value: item.size,
-                  label: item.size.replace(/\b\w/g, (char) =>
-                    char.toUpperCase()
-                  ),
-                })) || []
-              }
-              initialValue={state.selectedSize}
-              name="selectedSize"
-              label="Available Sizes"
-              onChange={handleSizeChange}
-            />
+          <motion.div
+            onClick={(e) => handleMenuChange(e)}
+            className="w-1/3 flex flex-col gap-2 mt-auto h-fit p-5 bg-white rounded-lg "
+          >
+            <div className="flex flex-row justify-between items-center w-full">
+              <RadioInput
+                options={
+                  state.menus?.sizes?.map((item) => ({
+                    value: item.size,
+                    label: item.size.replace(/\b\w/g, (char) =>
+                      char.toUpperCase()
+                    ),
+                  })) || []
+                }
+                initialValue={state.selectedSize || "regular"}
+                name="selectedSize"
+                label="Available Sizes"
+                onChange={handleSizeChange}
+              />
+              <Button
+                data-id="availableSize"
+                buttonSize="icon"
+                buttonType="primary"
+                icon={LucideIcons.Pen}
+                className="mt-6"
+              ></Button>
+            </div>
             {state.menus?.ingredients?.length > 0 ? (
               state.menus.ingredients.map((ingredient) => {
                 const selectedIngredient = ingredients.find(
