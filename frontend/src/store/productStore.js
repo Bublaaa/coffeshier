@@ -97,7 +97,6 @@ export const useProductStore = create((set) => ({
       toast.error(errorMessage);
     }
   },
-
   addNewMenu: async (menuData) => {
     set({ isLoading: true, error: null, message: null });
     try {
@@ -109,7 +108,7 @@ export const useProductStore = create((set) => ({
         description: menuData.description,
         categoryId: menuData.categoryId,
         sizes: menuData.sizes,
-        ingredients: menuData.ingredientsList,
+        ingredients: menuData.ingredients,
         recipe: menuData.recipe,
       });
       set({ menus: response.data.products, isLoading: false });
@@ -121,7 +120,29 @@ export const useProductStore = create((set) => ({
       toast.error(errorMessage);
     }
   },
-
+  updateMenu: async (id, menuData) => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      const response = await axios.put(`${API_URL}product/update/${id}`, {
+        name: menuData.name,
+        basePrice: menuData.basePrice,
+        image: menuData.image,
+        status: menuData.status,
+        description: menuData.description,
+        categoryId: menuData.categoryId,
+        sizes: menuData.sizes,
+        ingredients: menuData.ingredients,
+        recipe: menuData.recipe,
+      });
+      set({ menus: response.data.product, isLoading: false });
+      toast.success("Success update menu");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error adding product";
+      set({ error: errorMessage, isLoading: false, products: [] });
+      toast.error(errorMessage);
+    }
+  },
   fetchProductDetails: async (id) => {
     set({ isLoading: true, error: null, message: null });
     try {

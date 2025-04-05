@@ -145,6 +145,7 @@ export const updateProduct = async (req, res) => {
       basePrice,
       image,
       status,
+      description,
       stockQuantity,
       categoryId,
       sizes,
@@ -162,8 +163,6 @@ export const updateProduct = async (req, res) => {
     if (
       !name ||
       !basePrice ||
-      !image ||
-      !stockQuantity ||
       !status ||
       !Array.isArray(sizes) ||
       sizes.length < 1
@@ -222,6 +221,7 @@ export const updateProduct = async (req, res) => {
         basePrice: basePrice,
         image: image,
         status: status,
+        description: description,
         stockQuantity: stockQuantity,
         categoryId: categoryId,
         sizes: sizes,

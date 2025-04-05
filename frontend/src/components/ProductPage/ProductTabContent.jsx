@@ -48,7 +48,7 @@ const ProductTabContent = ({
               "Add New Menu",
               <AddMenuForm
                 categories={categories}
-                ingredients={ingredients}
+                ingredientsList={ingredients}
                 onClose={() => setModalOpen(false)}
               />
             )

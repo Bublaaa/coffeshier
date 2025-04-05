@@ -11,7 +11,7 @@ import * as LucideIcons from "lucide-react";
 import toast from "react-hot-toast";
 import Button from "../Button.jsx";
 
-const AddMenuForm = ({ categories, ingredients, onClose }) => {
+const AddMenuForm = ({ categories, ingredientsList, onClose }) => {
   const { addNewMenu, fetchProducts } = useProductStore();
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
@@ -23,7 +23,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     description: "",
     sizes: [{ size: "regular", additionalPrice: 0 }],
     image: null,
-    ingredientsList: [
+    ingredients: [
       {
         ingredientId: "",
         quantityBySize: [{ size: "regular", quantity: 0, unit: "" }],
@@ -52,7 +52,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
         }
       });
     } else if (step === 3) {
-      const isIngredientListValid = menuData.ingredientsList.every(
+      const isIngredientListValid = menuData.ingredients.every(
         (ingredient) =>
           ingredient.ingredientId &&
           ingredient.quantityBySize.every((qs) => qs.quantity > 0 && qs.unit)
@@ -62,7 +62,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
           "Ingredient data is incomplete. Please fill in all required fields."
         );
       }
-      menuData.ingredientsList.forEach((ingredient, ingIndex) => {
+      menuData.ingredients.forEach((ingredient, ingIndex) => {
         const sizeOrder = ["regular", "large", "extra large"];
         const sortedQuantities = ingredient.quantityBySize
           .slice()
@@ -102,7 +102,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
     e.preventDefault();
     const isStepValid = validateForm();
     if (!isStepValid) return;
-    const isIngredientDataValid = menuData.ingredientsList.every(
+    const isIngredientDataValid = menuData.ingredients.every(
       (ingredient) =>
         ingredient.ingredientId &&
         ingredient.quantityBySize.every((qs) => qs.quantity > 0 && qs.unit)
@@ -142,26 +142,23 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
   const handleAddIngredientClick = () => {
     setMenuData((prev) => ({
       ...prev,
-      ingredientsList: [
-        ...prev.ingredientsList,
-        { count: 1, ingredientId: "" },
-      ],
+      ingredients: [...prev.ingredients, { count: 1, ingredientId: "" }],
     }));
   };
   const handleRemoveIngredient = (index) => {
     setMenuData((prev) => {
-      const newList = prev.ingredientsList.filter((_, i) => i !== index);
-      return { ...prev, ingredientsList: newList };
+      const newList = prev.ingredients.filter((_, i) => i !== index);
+      return { ...prev, ingredients: newList };
     });
   };
   const handleIngredientChange = (index, field, value, size = null) => {
     setMenuData((prev) => {
-      const updatedIngredients = prev.ingredientsList.map((ing, i) => {
+      const updatedIngredients = prev.ingredients.map((ing, i) => {
         if (i === index) {
           if (field === "ingredientId") {
             // 🔥 Safe check to prevent error
             const ingredientData =
-              ingredients?.find((ing) => ing._id === value) || null;
+              ingredientsList?.find((ing) => ing._id === value) || null;
 
             // Ensure quantityBySize matches menuData.sizes
             const updatedQuantityBySize = prev.sizes.map((s) => {
@@ -199,7 +196,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
         }
         return ing;
       });
-      return { ...prev, ingredientsList: updatedIngredients };
+      return { ...prev, ingredients: updatedIngredients };
     });
   };
 
@@ -352,7 +349,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
                 <h6>
                   {size.size.replace(/\b\w/g, (char) => char.toUpperCase())}
                 </h6>
-                {menuData.ingredientsList.map((ing, index) => (
+                {menuData.ingredients.map((ing, index) => (
                   <div
                     key={index}
                     className="flex flex-row gap-2 py-1 items-end"
@@ -367,7 +364,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
                     <div className="grid grid-cols-2 gap-2 items-center w-full">
                       <DropdownInput
                         className="w-1/2"
-                        options={ingredients.map((ingredient) => ({
+                        options={ingredientsList.map((ingredient) => ({
                           value: String(ingredient._id),
                           label: ingredient.name,
                         }))}
@@ -398,8 +395,9 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
                       />
                     </div>
                     <p className="mb-3 font-semibold">
-                      {ingredients.find((ingr) => ingr._id === ing.ingredientId)
-                        ?.unit || ""}
+                      {ingredientsList.find(
+                        (ingr) => ingr._id === ing.ingredientId
+                      )?.unit || ""}
                     </p>
                   </div>
                 ))}

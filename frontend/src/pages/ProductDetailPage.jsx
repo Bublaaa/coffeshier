@@ -20,7 +20,8 @@ import toast from "react-hot-toast";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
-  const { menus, fetchProductDetails } = useProductStore();
+  const { menus, fetchProductDetails, updateMenu } = useProductStore();
+  const hasOpenedModalRef = useRef(false);
   const {
     ingredients,
     fetchIngredients,
@@ -459,15 +460,7 @@ const ProductDetailPage = () => {
     switch (action.type) {
       case "SET_MENUS":
         const newMenus = { ...state.menus, ...action.payload };
-        return { ...state, menus: newMenus };
-      case "SET_MENU_NAME":
-        return {
-          ...state,
-          menus: {
-            name: action.payload,
-          },
-        };
-
+        return { ...state, menus: newMenus, isUpdated: true };
       case "SET_SELECTED_SIZE":
         return { ...state, selectedSize: action.payload };
       case "SET_SELECTED_UNIT":
@@ -511,9 +504,31 @@ const ProductDetailPage = () => {
   useEffect(() => {
     if (menus && Object.keys(menus).length > 0) {
       dispatch({ type: "SET_MENUS", payload: menus });
+      dispatch({ type: "SET_IS_UPDATED", payload: false });
       dispatch({ type: "SET_TOTAL_PRICE", payload: state.menus.basePrice });
     }
   }, [menus]);
+  useEffect(() => {
+    hasOpenedModalRef.current = false;
+  }, [state.menus.sizes]);
+
+  // const hasOpenedRef = useRef(false);
+
+  // useEffect(() => {
+  //   const currentLength = (state.menus.sizes || []).length;
+  //   const originalLength = (menus.sizes || []).length;
+
+  //   const isCurrentLengthLonger = currentLength > originalLength;
+
+  //   if (isCurrentLengthLonger && !hasOpenedRef.current) {
+  //     hasOpenedRef.current = true;
+  //     handleOpenModal(
+  //       "Change Ingredients Data",
+  //       <EditIngredientForm state={state} dispatch={dispatch} />,
+  //       "large"
+  //     );
+  //   }
+  // }, [state.menus.sizes]);
 
   // Size selection function
   const handleSizeChange = (e) => {
@@ -533,13 +548,38 @@ const ProductDetailPage = () => {
     const totalPrice = basePrice + additionalPrice;
     dispatch({ type: "SET_TOTAL_PRICE", payload: totalPrice });
   };
+  const handleCloseModal = () => {
+    dispatch({ type: "SET_MODAL_OPEN", payload: false });
+    const currentLength = (state.menus.sizes || []).length;
+    const originalLength = (menus.sizes || []).length;
+
+    if (currentLength > originalLength && !hasOpenedModalRef.current) {
+      hasOpenedModalRef.current = true; // set flag so it only happens once
+      setTimeout(() => {
+        handleOpenModal(
+          "Change Ingredients Data",
+          <EditIngredientForm state={state} dispatch={dispatch} />,
+          "large"
+        );
+      }, 300);
+    }
+  };
   // Open modal function
   const handleOpenModal = (title, body, size) => {
     dispatch({ type: "SET_MODAL_TITLE", payload: title });
     dispatch({ type: "SET_MODAL_BODY", payload: body });
     dispatch({ type: "SET_MODAL_SIZE", payload: size });
     dispatch({ type: "SET_MODAL_OPEN", payload: true });
-    console.log(size);
+  };
+  // Handle clear changes
+  const handleClearChanges = () => {
+    dispatch({ type: "SET_MENUS", payload: menus });
+    dispatch({ type: "SET_IS_UPDATED", payload: false });
+  };
+  // Handle save changes
+  const handleSaveChanges = async (id, menuData) => {
+    await updateMenu(id, menuData);
+    fetchProductDetails(id);
   };
   // Handle menu detail change
   const handleMenuChange = (e) => {
@@ -611,7 +651,7 @@ const ProductDetailPage = () => {
         title={state.modalTitle}
         body={state.modalBody}
         size={state.modalSize}
-        onClose={() => dispatch({ type: "SET_MODAL_OPEN", payload: false })}
+        onClose={handleCloseModal}
       />
       <div className="flex flex-col md:gap-5 gap-2 h-full">
         {/* Back Button */}
@@ -745,10 +785,18 @@ const ProductDetailPage = () => {
           >
             {/* CTA */}
             <div className="flex flex-row gap-2 md:gap-5 justify-end">
-              <Button buttonSize="medium" buttonType="secondary">
+              <Button
+                buttonSize="medium"
+                buttonType={`${state.isUpdated ? "secondary" : "disabled"}`}
+                onClick={handleClearChanges}
+              >
                 Clear Changes
               </Button>
-              <Button buttonSize="medium" buttonType="primary">
+              <Button
+                buttonSize="medium"
+                buttonType={`${state.isUpdated ? "primary" : "disabled"}`}
+                onClick={() => handleSaveChanges(id, state.menus)}
+              >
                 Save Changes
               </Button>
             </div>
