@@ -41,7 +41,7 @@ const ProductDetailPage = () => {
       description: "",
       sizes: [{ size: "regular", additionalPrice: 0 }],
       image: null,
-      ingredientsList: [
+      ingredients: [
         {
           ingredientId: "",
           quantityBySize: [{ size: "regular", quantity: 0, unit: "" }],
@@ -56,7 +56,7 @@ const ProductDetailPage = () => {
     isModalOpen: false,
     modalBody: null,
     modalTitle: "",
-    modalSize: "small",
+    modalSize: "medium",
   };
 
   const EditStatusForm = ({ state, dispatch }) => {
@@ -279,6 +279,165 @@ const ProductDetailPage = () => {
       </div>
     );
   };
+  const EditIngredientForm = ({ state, dispatch }) => {
+    const [ingredientData, setIngredientData] = useState(
+      state.menus.ingredients || []
+    );
+
+    useEffect(() => {
+      setIngredientData(state.menus.ingredients || []);
+    }, [state.menus.ingredients]);
+
+    const handleIngredientChange = (index, field, value, size = null) => {
+      const updatedIngredients = ingredientData.map((ingredient, i) => {
+        if (i !== index) return ingredient;
+
+        if (field === "ingredientId") {
+          const selectedIngredient = ingredients.find(
+            (ing) => ing._id === value
+          );
+          const newQuantityBySize = state.menus.sizes.map((s) => ({
+            size: s.size,
+            quantity: 0,
+            unit: selectedIngredient?.unit || "",
+          }));
+
+          return {
+            ...ingredient,
+            ingredientId: value,
+            quantityBySize: newQuantityBySize,
+          };
+        }
+
+        if (field === "quantityBySize" && size) {
+          const updatedQtyBySize = ingredient.quantityBySize.map((qs) =>
+            qs.size === size ? { ...qs, quantity: Number(value) } : qs
+          );
+
+          return { ...ingredient, quantityBySize: updatedQtyBySize };
+        }
+
+        return ingredient;
+      });
+
+      setIngredientData(updatedIngredients);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, ingredients: updatedIngredients },
+      });
+    };
+
+    const handleAddIngredient = () => {
+      const newIngredient = {
+        ingredientId: "",
+        quantityBySize: state.menus.sizes.map((s) => ({
+          size: s.size,
+          quantity: 0,
+          unit: "",
+        })),
+      };
+
+      const updatedList = [...ingredientData, newIngredient];
+      setIngredientData(updatedList);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, ingredients: updatedList },
+      });
+    };
+
+    const handleRemoveIngredient = (index) => {
+      const updatedList = ingredientData.filter((_, i) => i !== index);
+      setIngredientData(updatedList);
+      dispatch({
+        type: "SET_MENUS",
+        payload: { ...state.menus, ingredients: updatedList },
+      });
+    };
+
+    return (
+      <div className="w-full flex flex-col gap-3">
+        <div className="flex justify-between items-center">
+          <Button
+            buttonSize="medium"
+            buttonType="primary"
+            onClick={handleAddIngredient}
+          >
+            Add <LucideIcons.Plus />
+          </Button>
+        </div>
+
+        <div className="flex flex-row gap-2">
+          {state.menus.sizes.map((size) => (
+            <div
+              key={size.size}
+              className="w-full bg-white-shadow p-3 rounded-lg"
+            >
+              <h6 className="capitalize">{size.size}</h6>
+              {ingredientData.map((ingredient, index) => (
+                <div
+                  key={index}
+                  className="flex flex-row gap-2 py-1 items-center"
+                >
+                  <Button
+                    className="w-fit mb-2"
+                    buttonSize="icon"
+                    buttonType="danger"
+                    onClick={() => handleRemoveIngredient(index)}
+                    icon={LucideIcons.Trash}
+                  />
+                  <div className="grid grid-cols-5 gap-2 items-center w-full">
+                    <div className="col-span-4">
+                      <DropdownInput
+                        options={ingredients.map((ing) => ({
+                          value: ing._id,
+                          label: ing.name,
+                        }))}
+                        value={ingredient.ingredientId}
+                        onChange={(e) =>
+                          handleIngredientChange(
+                            index,
+                            "ingredientId",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Input
+                        className="w-1/5"
+                        type="number"
+                        min="1"
+                        max="100"
+                        placeholder="e.g. 100"
+                        value={
+                          ingredient.quantityBySize.find(
+                            (qs) => qs.size === size.size
+                          )?.quantity || ""
+                        }
+                        onChange={(e) =>
+                          handleIngredientChange(
+                            index,
+                            "quantityBySize",
+                            e.target.value,
+                            size.size
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                  <p className="mb-3 font-semibold">
+                    {ingredients.find(
+                      (ing) => ing._id === ingredient.ingredientId
+                    )?.unit || ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const menuReducer = (state, action) => {
     switch (action.type) {
@@ -314,8 +473,10 @@ const ProductDetailPage = () => {
       case "SET_MODAL_SIZE":
         return { ...state, modalSize: action.payload };
 
-      case "SET_INGREDIENTS":
-        return { ...state, ingredients: action.payload };
+      case "SET_INGREDIENT_ID":
+        return { ...state, ingredients: { ingredientId: action.payload } };
+      case "SET_INGREDIENTS_QUANTITY":
+        return { ...state, ingredients: { quantityBySize: action.payload } };
       case "SET_ERRORS":
         return { ...state, errors: action.payload };
       default:
@@ -364,10 +525,11 @@ const ProductDetailPage = () => {
   // };
 
   const handleOpenModal = (title, body, size) => {
-    dispatch({ type: "SET_MODAL_OPEN", payload: true });
     dispatch({ type: "SET_MODAL_TITLE", payload: title });
     dispatch({ type: "SET_MODAL_BODY", payload: body });
     dispatch({ type: "SET_MODAL_SIZE", payload: size });
+    dispatch({ type: "SET_MODAL_OPEN", payload: true });
+    console.log(size);
   };
 
   const handleMenuChange = (e) => {
@@ -419,6 +581,14 @@ const ProductDetailPage = () => {
           "Change Available Size",
           <EditAvailableSizeForm state={state} dispatch={dispatch} />
         );
+        break;
+      case "ingredient":
+        handleOpenModal(
+          "Change Ingredients Data",
+          <EditIngredientForm state={state} dispatch={dispatch} />,
+          "large"
+        );
+        break;
       default:
         return;
     }
@@ -430,6 +600,7 @@ const ProductDetailPage = () => {
         isOpen={state.isModalOpen}
         title={state.modalTitle}
         body={state.modalBody}
+        size={state.modalSize}
         onClose={() => dispatch({ type: "SET_MODAL_OPEN", payload: false })}
       />
 
@@ -454,7 +625,7 @@ const ProductDetailPage = () => {
             className="max-w-full max-h-full object-contain hover:scale-105 hover:rotate-5"
           />
         </div>
-        <div className=" flex flex-row md:gap-5 gap-2 h-fit mt-auto">
+        <div className=" flex flex-row md:gap-5 gap-2 h-fit  mt-auto">
           <motion.div
             onClick={(e) => handleMenuChange(e)}
             initial={{ opacity: 0, y: 10 }}
@@ -595,6 +766,7 @@ const ProductDetailPage = () => {
                 });
                 return selectedIngredient ? (
                   <div
+                    data-id="ingredient"
                     className="flex flex-col gap-1"
                     key={selectedIngredient._id}
                   >

@@ -6,6 +6,7 @@ const Modal = ({ isOpen, onClose, title, body, size = "small" }) => {
   const modalSize = {
     small: "md:w-1/3",
     medium: "md:w-2/3",
+    large: "md:w-4/5",
   };
   const handleOverlayClick = (e) => {
     if (e.target.id === "modal-overlay") {
