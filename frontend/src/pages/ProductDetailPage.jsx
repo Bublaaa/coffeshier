@@ -4,7 +4,7 @@ import { useCategoryStore } from "../store/categoryStore.js";
 import { useIngredientStore } from "../store/ingredientStore.js";
 import { useEffect, useReducer, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { placeholder } from "../assets/index.js";
 import {
   RadioInput,
@@ -22,6 +22,7 @@ const ProductDetailPage = () => {
   const { id } = useParams();
   const { menus, fetchProductDetails, updateMenu } = useProductStore();
   const hasOpenedModalRef = useRef(false);
+  const navigate = useNavigate();
   const {
     ingredients,
     fetchIngredients,
@@ -512,24 +513,6 @@ const ProductDetailPage = () => {
     hasOpenedModalRef.current = false;
   }, [state.menus.sizes]);
 
-  // const hasOpenedRef = useRef(false);
-
-  // useEffect(() => {
-  //   const currentLength = (state.menus.sizes || []).length;
-  //   const originalLength = (menus.sizes || []).length;
-
-  //   const isCurrentLengthLonger = currentLength > originalLength;
-
-  //   if (isCurrentLengthLonger && !hasOpenedRef.current) {
-  //     hasOpenedRef.current = true;
-  //     handleOpenModal(
-  //       "Change Ingredients Data",
-  //       <EditIngredientForm state={state} dispatch={dispatch} />,
-  //       "large"
-  //     );
-  //   }
-  // }, [state.menus.sizes]);
-
   // Size selection function
   const handleSizeChange = (e) => {
     const { value } = e.target;
@@ -571,6 +554,11 @@ const ProductDetailPage = () => {
     dispatch({ type: "SET_MODAL_SIZE", payload: size });
     dispatch({ type: "SET_MODAL_OPEN", payload: true });
   };
+  // Handle redirect back
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   // Handle clear changes
   const handleClearChanges = () => {
     dispatch({ type: "SET_MENUS", payload: menus });
@@ -656,10 +644,12 @@ const ProductDetailPage = () => {
       <div className="flex flex-col md:gap-5 gap-2 h-full">
         {/* Back Button */}
         <div className="flex justify-between items-center p-1">
-          <Button buttonSize="icon" buttonType="secondary">
-            <NavLink to={"/owner/product"}>
-              <LucideIcons.ChevronLeft size={25} />
-            </NavLink>
+          <Button
+            buttonSize="icon"
+            buttonType="secondary"
+            onClick={handleGoBack}
+          >
+            <LucideIcons.ChevronLeft size={25} />
           </Button>
         </div>
         <div className="absolute inset-x-100 pt-50 flex items-center justify-end w-1/2 z-0 p-2">
