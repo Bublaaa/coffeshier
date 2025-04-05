@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useProductStore } from "../store/productStore";
 import { useCategoryStore } from "../store/categoryStore.js";
 import { useIngredientStore } from "../store/ingredientStore.js";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { placeholder } from "../assets/index.js";
@@ -16,6 +16,7 @@ import {
 import * as LucideIcons from "lucide-react";
 import Button from "../components/Button";
 import Modal from "../components/Modal.jsx";
+import toast from "react-hot-toast";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -57,6 +58,7 @@ const ProductDetailPage = () => {
     modalBody: null,
     modalTitle: "",
     modalSize: "medium",
+    isUpdated: false,
   };
 
   const EditStatusForm = ({ state, dispatch }) => {
@@ -280,6 +282,7 @@ const ProductDetailPage = () => {
     );
   };
   const EditIngredientForm = ({ state, dispatch }) => {
+    const toastShownRef = useRef(false);
     const [ingredientData, setIngredientData] = useState(
       state.menus.ingredients || []
     );
@@ -347,6 +350,17 @@ const ProductDetailPage = () => {
 
     const handleRemoveIngredient = (index) => {
       const updatedList = ingredientData.filter((_, i) => i !== index);
+      if (ingredientData.length === 1) {
+        if (!toastShownRef.current) {
+          toast.error("Ingredient can't be empty");
+          toastShownRef.current = true;
+          setTimeout(() => {
+            toastShownRef.current = false;
+          }, 4000); // prevent spam for 1.5 seconds
+        }
+        return;
+      }
+
       setIngredientData(updatedList);
       dispatch({
         type: "SET_MENUS",
@@ -367,7 +381,7 @@ const ProductDetailPage = () => {
         </div>
 
         <div className="flex flex-row gap-2">
-          {state.menus.sizes.map((size) => (
+          {state.menus.sizes.map((size, sizeIndex) => (
             <div
               key={size.size}
               className="w-full bg-white-shadow p-3 rounded-lg"
@@ -378,13 +392,15 @@ const ProductDetailPage = () => {
                   key={index}
                   className="flex flex-row gap-2 py-1 items-center"
                 >
-                  <Button
-                    className="w-fit mb-2"
-                    buttonSize="icon"
-                    buttonType="danger"
-                    onClick={() => handleRemoveIngredient(index)}
-                    icon={LucideIcons.Trash}
-                  />
+                  {sizeIndex < 1 && (
+                    <Button
+                      className="w-fit"
+                      buttonSize="icon"
+                      buttonType="danger"
+                      onClick={() => handleRemoveIngredient(index)}
+                      icon={LucideIcons.Minus}
+                    />
+                  )}
                   <div className="grid grid-cols-5 gap-2 items-center w-full">
                     <div className="col-span-4">
                       <DropdownInput
@@ -443,7 +459,6 @@ const ProductDetailPage = () => {
     switch (action.type) {
       case "SET_MENUS":
         const newMenus = { ...state.menus, ...action.payload };
-        // console.log("New menus:", newMenus);
         return { ...state, menus: newMenus };
       case "SET_MENU_NAME":
         return {
@@ -473,10 +488,9 @@ const ProductDetailPage = () => {
       case "SET_MODAL_SIZE":
         return { ...state, modalSize: action.payload };
 
-      case "SET_INGREDIENT_ID":
-        return { ...state, ingredients: { ingredientId: action.payload } };
-      case "SET_INGREDIENTS_QUANTITY":
-        return { ...state, ingredients: { quantityBySize: action.payload } };
+      case "SET_IS_UPDATED":
+        return { ...state, isUpdated: action.payload };
+
       case "SET_ERRORS":
         return { ...state, errors: action.payload };
       default:
@@ -484,7 +498,7 @@ const ProductDetailPage = () => {
     }
   };
   const [state, dispatch] = useReducer(menuReducer, initialState);
-
+  // Initial data load form database
   useEffect(() => {
     const fetchAllData = async () => {
       await fetchProductDetails(id);
@@ -493,17 +507,18 @@ const ProductDetailPage = () => {
     };
     fetchAllData();
   }, [id]);
-
+  // Update the state
   useEffect(() => {
     if (menus && Object.keys(menus).length > 0) {
       dispatch({ type: "SET_MENUS", payload: menus });
+      dispatch({ type: "SET_TOTAL_PRICE", payload: state.menus.basePrice });
     }
   }, [menus]);
 
+  // Size selection function
   const handleSizeChange = (e) => {
     const { value } = e.target;
     dispatch({ type: "SET_SELECTED_SIZE", payload: value });
-
     let additionalPrice = 0;
     state.menus.sizes.forEach((menu) => {
       if (menu.size === value) {
@@ -518,12 +533,7 @@ const ProductDetailPage = () => {
     const totalPrice = basePrice + additionalPrice;
     dispatch({ type: "SET_TOTAL_PRICE", payload: totalPrice });
   };
-
-  // const handleMenuDetailChange = (e) => {
-  //   const { name, value } = e.target;
-  //   dispatch({ type: "SET_MENUS", payload: { [name]: value } });
-  // };
-
+  // Open modal function
   const handleOpenModal = (title, body, size) => {
     dispatch({ type: "SET_MODAL_TITLE", payload: title });
     dispatch({ type: "SET_MODAL_BODY", payload: body });
@@ -531,7 +541,7 @@ const ProductDetailPage = () => {
     dispatch({ type: "SET_MODAL_OPEN", payload: true });
     console.log(size);
   };
-
+  // Handle menu detail change
   const handleMenuChange = (e) => {
     const target = e.target.closest("[data-id]");
     if (!target) return;
@@ -603,8 +613,8 @@ const ProductDetailPage = () => {
         size={state.modalSize}
         onClose={() => dispatch({ type: "SET_MODAL_OPEN", payload: false })}
       />
-
       <div className="flex flex-col md:gap-5 gap-2 h-full">
+        {/* Back Button */}
         <div className="flex justify-between items-center p-1">
           <Button buttonSize="icon" buttonType="secondary">
             <NavLink to={"/owner/product"}>
@@ -613,6 +623,7 @@ const ProductDetailPage = () => {
           </Button>
         </div>
         <div className="absolute inset-x-100 pt-50 flex items-center justify-end w-1/2 z-0 p-2">
+          {/* Menu Image */}
           <motion.img
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -626,6 +637,7 @@ const ProductDetailPage = () => {
           />
         </div>
         <div className=" flex flex-row md:gap-5 gap-2 h-fit  mt-auto">
+          {/* Menu Description Detail */}
           <motion.div
             onClick={(e) => handleMenuChange(e)}
             initial={{ opacity: 0, y: 10 }}
@@ -683,22 +695,22 @@ const ProductDetailPage = () => {
               {state.menus.name || "No Name"}
             </h1>
             {/* Menu Description */}
-            <p
+            <div
               data-id="description"
-              className="hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2"
+              className="hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2 overflow-y-auto max-h-48 scrollbar-hidden"
             >
-              {state.menus.description || "No description available "}
-            </p>
+              <p>{state.menus.description || "No description available "}</p>
+            </div>
             {/* Menu Recipe */}
             <div
               data-id="recipe"
-              className="gap-2 hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2"
+              className="gap-2 hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2 overflow-y-auto max-h-49 scrollbar-hidden"
             >
               <h6>Recipe</h6>
               <p>{state.menus.recipe || "No recipe available "}</p>
             </div>
           </motion.div>
-          {/* Price */}
+          {/* Base Price */}
           <div
             onClick={(e) => handleMenuChange(e)}
             className="flex flex-col gap-2 p-2 w-1/3 h-fit mt-auto justify-end items-end"
@@ -714,6 +726,7 @@ const ProductDetailPage = () => {
                   : "0"}
               </p>
             </div>
+            {/* Additional Price */}
             {state.selectedAdditionalPrice > 0 && (
               <div className="flex flex-row w-full justify-between items-center">
                 <h6>Size Price</h6>
@@ -725,79 +738,92 @@ const ProductDetailPage = () => {
               <h6>{state.totalPrice.toLocaleString("id-ID")}</h6>
             </div>
           </div>
+          {/* Size & Ingredient Display */}
           <motion.div
             onClick={(e) => handleMenuChange(e)}
-            className="w-1/3 flex flex-col gap-2 mt-auto h-fit p-5 bg-white rounded-lg "
+            className="w-1/3 z-10 flex flex-col gap-2 md:gap-5 mt-auto h-fit"
           >
-            <div className="flex flex-row justify-between items-center w-full">
-              <RadioInput
-                options={
-                  state.menus?.sizes?.map((item) => ({
-                    value: item.size,
-                    label: item.size.replace(/\b\w/g, (char) =>
-                      char.toUpperCase()
-                    ),
-                  })) || []
-                }
-                initialValue={state.selectedSize || "regular"}
-                name="selectedSize"
-                label="Available Sizes"
-                onChange={handleSizeChange}
-              />
-              <Button
-                data-id="availableSize"
-                buttonSize="icon"
-                buttonType="primary"
-                icon={LucideIcons.Pen}
-                className="mt-6"
-              ></Button>
+            {/* CTA */}
+            <div className="flex flex-row gap-2 md:gap-5 justify-end">
+              <Button buttonSize="medium" buttonType="secondary">
+                Clear Changes
+              </Button>
+              <Button buttonSize="medium" buttonType="primary">
+                Save Changes
+              </Button>
             </div>
-            {state.menus?.ingredients?.length > 0 ? (
-              state.menus.ingredients.map((ingredient) => {
-                const selectedIngredient = ingredients.find(
-                  (ingredientInList) =>
-                    ingredientInList._id === ingredient.ingredientId
-                );
-                ingredient.quantityBySize.map((size) => {
-                  if (state.selectedSize == size.size) {
-                    selectedQuantity = size.quantity;
-                    selectedUnit = size.unit;
+            <div className="flex flex-col gap-2 md:gap-5 bg-white rounded-lg p-5">
+              <div className="flex flex-row justify-between items-center w-full">
+                <RadioInput
+                  options={
+                    state.menus?.sizes?.map((item) => ({
+                      value: item.size,
+                      label: item.size.replace(/\b\w/g, (char) =>
+                        char.toUpperCase()
+                      ),
+                    })) || []
                   }
-                });
-                return selectedIngredient ? (
-                  <div
-                    data-id="ingredient"
-                    className="flex flex-col gap-1"
-                    key={selectedIngredient._id}
-                  >
+                  initialValue={state.selectedSize || "regular"}
+                  name="selectedSize"
+                  label="Available Sizes"
+                  onChange={handleSizeChange}
+                />
+                <Button
+                  data-id="availableSize"
+                  buttonSize="icon"
+                  buttonType="primary"
+                  icon={LucideIcons.Pen}
+                  className="mt-6"
+                ></Button>
+              </div>
+              {state.menus?.ingredients?.length > 0 ? (
+                state.menus.ingredients.map((ingredient, ingredientIndex) => {
+                  const selectedIngredient = ingredients.find(
+                    (ingredientInList) =>
+                      ingredientInList._id === ingredient.ingredientId
+                  );
+
+                  const matchedSize = ingredient.quantityBySize.find(
+                    (size) => state.selectedSize === size.size
+                  );
+
+                  const selectedQuantity = matchedSize?.quantity ?? null;
+                  const selectedUnit = matchedSize?.unit ?? null;
+
+                  return selectedIngredient ? (
                     <div
-                      className="flex flex-row hover:cursor-pointer hover:scale-101 hover:bg-gray-200 rounded-lg p-2"
-                      key={selectedIngredient._id || selectedIngredient.name}
+                      data-id="ingredient"
+                      className="flex flex-col gap-1"
+                      key={`${selectedIngredient._id}-${ingredientIndex}`} // ✅ only key needed
                     >
-                      <p>
-                        {selectedIngredient.name.replace(/\b\w/g, (char) =>
-                          char.toUpperCase()
-                        )}
-                      </p>
-                      <p className="text-center ml-auto">
-                        {selectedQuantity !== null
-                          ? selectedQuantity
-                          : "No quantity found"}
-                      </p>
-                      <p>
-                        {selectedUnit !== null ? selectedUnit : "No Unit found"}
-                      </p>
+                      <div className="flex flex-row hover:cursor-pointer hover:scale-101 hover:bg-gray-200 rounded-lg p-2">
+                        <p>
+                          {selectedIngredient.name.replace(/\b\w/g, (char) =>
+                            char.toUpperCase()
+                          )}
+                        </p>
+                        <p className="text-center ml-auto">
+                          {selectedQuantity !== null
+                            ? selectedQuantity
+                            : "No quantity found"}
+                        </p>
+                        <p>
+                          {selectedUnit !== null
+                            ? selectedUnit
+                            : "No Unit found"}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <p key={ingredient._id || ingredient.name}>
-                    Ingredient not found
-                  </p>
-                );
-              })
-            ) : (
-              <p>No ingredients available</p>
-            )}
+                  ) : (
+                    <p key={`missing-${ingredient._id || ingredientIndex}`}>
+                      Ingredient not found
+                    </p>
+                  );
+                })
+              ) : (
+                <p>No ingredients available</p>
+              )}
+            </div>
           </motion.div>
         </div>
       </div>
