@@ -678,8 +678,9 @@ const ProductDetailPage = () => {
   const Skeleton = () => (
     <div className="animate-pulse flex flex-col h-[95vh] md:gap-5 gap-2 p-3 md:my-5 my-2 rounded-lg">
       <div className="w-10 p-6 rounded-lg bg-gray-300"></div>
-      <div className=" flex flex-row md:gap-5 gap-2 h-full">
-        <div className="flex flex-col w-1/3 h-fit mt-auto p-5 rounded-lg gap-5 bg-gray-200">
+      <div className=" flex md:flex-row flex-col md:gap-5 gap-2 h-full">
+        <div className="bg-gray-300 rounded-lg md:absolute lg:inset-x-100 md:inset-x-60 lg:mt-35 md:mt-15 flex items-center md:justify-end w-full md:w-1/2 z-0 p-2 lg:py-40 md:py-30 py-20 "></div>
+        <div className="flex flex-col md:w-1/3 w-full h-fit mt-auto p-5 rounded-lg gap-5 bg-gray-200 md:order-1 order-2 z-30">
           <div className="flex flex-row h-10 gap-2 md:justify-between items-center">
             <div className="rounded-lg bg-gray-300 h-full w-md"></div>
             <div className="flex bg-gray-300 gap-2 px-3 py-2 bg-accent rounded-lg h-full w-md"></div>
@@ -696,7 +697,6 @@ const ProductDetailPage = () => {
             <div className="w-full rounded-lg h-7 bg-gray-300"></div>
             <div className="w-full rounded-lg h-7 bg-gray-300"></div>
           </div>
-
           <div className="flex flex-col gap-3">
             <div className="w-full rounded-lg h-7 bg-gray-100"></div>
             <div className="w-full rounded-lg h-7 bg-gray-100"></div>
@@ -704,18 +704,12 @@ const ProductDetailPage = () => {
             <div className="w-full rounded-lg h-7 bg-gray-100"></div>
           </div>
         </div>
-        <div className="flex flex-col gap-2 p-2 w-1/3 h-fit mt-auto justify-end items-end">
-          <div
-            data-id="basePrice"
-            className="w-full bg-gray-300 rounded-lg py-5"
-          ></div>
-          <div
-            data-id="basePrice"
-            className="w-full bg-gray-300 rounded-lg py-5"
-          ></div>
+        <div className="flex flex-col gap-2 p-2 md:w-1/3 w-full h-fit mt-auto justify-end items-end md:order-2 order-1">
+          <div className="w-full bg-gray-300 rounded-lg py-5"></div>
+          <div className="w-full bg-gray-300 rounded-lg py-5"></div>
         </div>
-        <div className="w-1/3 z-10 flex flex-col gap-2 md:gap-5 mt-auto h-fit">
-          <div className="flex flex-row gap-2 md:gap-5 justify-end">
+        <div className="md:w-1/3 w-full z-10 flex flex-col gap-2 md:gap-5 mt-auto h-fit order-3">
+          <div className="flex flex-row gap-2 md:gap-5 justify-end md:order-1 order-2 md:pb-0 pb-2">
             <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
             <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
           </div>
@@ -745,7 +739,7 @@ const ProductDetailPage = () => {
     return <Skeleton />;
   }
   return (
-    <div className=" md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300 h-[95vh]">
+    <div className=" md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300 h-[95vh] ">
       <Modal
         isOpen={state.isModalOpen}
         title={state.modalTitle}
@@ -764,7 +758,7 @@ const ProductDetailPage = () => {
             <LucideIcons.ChevronLeft size={25} />
           </Button>
         </div>
-        <div className="absolute inset-x-100 pt-50 flex items-center justify-end w-1/2 z-0 p-2">
+        <div className="md:absolute lg:inset-x-100 md:inset-x-60 lg:mt-35 md:mt-25 flex items-center md:justify-end w-full md:w-1/2 z-0 p-2">
           {/* Menu Image */}
           <motion.img
             initial={{ opacity: 0, y: 10 }}
@@ -778,15 +772,15 @@ const ProductDetailPage = () => {
             className="max-w-full max-h-full object-contain hover:scale-105 hover:rotate-5"
           />
         </div>
-        <div className=" flex flex-row md:gap-5 gap-2 h-fit  mt-auto">
+        <div className=" flex md:flex-row flex-col lg:gap-5 gap-2 h-fit  md:mt-auto">
           {/* Menu Description Detail */}
           <motion.div
             onClick={(e) => handleMenuChange(e)}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative flex flex-col w-1/3 p-5 rounded-lg gap-5 bg-white mt-auto"
+            className="relative flex flex-col lg:w-1/3 md:w-2/5 w-full p-5 rounded-lg gap-5 bg-white mt-auto md:order-1 order-2"
           >
-            <div className="flex z-10  flex-row gap-2 md:justify-between items-center">
+            <div className="flex z-10 flex-wrap md:flex-row gap-2 md:justify-between items-start">
               {/* Status Display */}
               <div
                 data-id="status"
@@ -842,14 +836,14 @@ const ProductDetailPage = () => {
               ></Button>
             </div>
             {/* Menu Name */}
-            <h1
+            <h3
               data-id="name"
-              className="line-clamp-3 max-w-sm whitespace-normal hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg px-2"
+              className="line-clamp-3 md:max-w-sm max-w-full whitespace-normal truncate hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg px-2"
             >
               {state.menus.name.replace(/\b\w/g, (char) =>
                 char.toUpperCase()
               ) || "No Name"}
-            </h1>
+            </h3>
             {/* Menu Description */}
             <div
               data-id="description"
@@ -869,7 +863,7 @@ const ProductDetailPage = () => {
           {/* Base Price */}
           <div
             onClick={(e) => handleMenuChange(e)}
-            className="flex flex-col gap-2 p-2 w-1/3 h-fit mt-auto justify-end items-end"
+            className="flex flex-col gap-2 p-2 md:w-1/3 w-full h-fit mt-auto justify-end items-end md:order-2 order-1 z-10"
           >
             <div
               data-id="basePrice"
@@ -897,27 +891,31 @@ const ProductDetailPage = () => {
           {/* Size & Ingredient Display */}
           <motion.div
             onClick={(e) => handleMenuChange(e)}
-            className="w-1/3 z-10 flex flex-col gap-2 md:gap-5 mt-auto h-fit"
+            className="md:w-1/3 w-full z-10 flex flex-col gap-2 md:gap-5 mt-auto h-fit order-3"
           >
             {/* CTA */}
-            <div className="flex flex-row gap-2 md:gap-5 justify-end">
+            <div className="flex flex-row gap-2 md:gap-5 justify-end md:order-1 order-2 md:pb-0 pb-2">
               <Button
                 buttonSize="medium"
                 buttonType={`${state.isUpdated ? "secondary" : "disabled"}`}
                 onClick={handleClearChanges}
               >
-                Clear Changes
+                <LucideIcons.X className="size-6 xl:mr-2 md:mr-0" />
+                <span className="xl:inline md:hidden hidden">
+                  Discard Changes
+                </span>
               </Button>
               <Button
                 buttonSize="medium"
                 buttonType={`${state.isUpdated ? "primary" : "disabled"}`}
                 onClick={() => handleSaveChanges(id, state.menus)}
               >
-                Save Changes
+                <LucideIcons.Save className="size-6 xl:mr-2 md:mr-0 mr-1" />
+                <span className="xl:inline md:hidden inline">Save Changes</span>
               </Button>
             </div>
-            <div className="flex flex-col gap-2 md:gap-5 bg-white rounded-lg p-5">
-              <div className="flex flex-row justify-between items-center w-full">
+            <div className="flex flex-col gap-2 md:gap-5 bg-white rounded-lg p-5 md:order-2 order-1">
+              <div className="flex flex-row justify-between items-start w-full">
                 <RadioInput
                   options={
                     state.menus?.sizes?.map((item) => ({
@@ -937,7 +935,7 @@ const ProductDetailPage = () => {
                   buttonSize="icon"
                   buttonType="primary"
                   icon={LucideIcons.Pen}
-                  className="mt-6"
+                  className="lg:mt-6"
                 ></Button>
               </div>
               {state.menus?.ingredients?.length > 0 ? (

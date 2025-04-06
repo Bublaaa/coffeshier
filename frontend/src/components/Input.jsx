@@ -273,7 +273,7 @@ export const RadioInput = ({
             />
             <label
               htmlFor={`radio-${index}`}
-              className={`flex w-fit p-3 items-center cursor-pointer peer-checked:border-2 hover:bg-gray-100 peer-checked:border-accent border rounded-lg bg-white 
+              className={`flex w-fit p-2 items-center cursor-pointer peer-checked:border-2 hover:bg-gray-100 peer-checked:border-accent border rounded-lg bg-white 
               ${error ? "border-red-500" : "border-gray-200"}`}
             >
               {option.icon && <IconComponent className="size-7 text-accent" />}
