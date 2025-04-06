@@ -20,8 +20,13 @@ import toast from "react-hot-toast";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
-  const { menus, message, fetchProductDetails, updateMenu, deleteProduct } =
-    useProductStore();
+  const {
+    menus,
+    isLoading: isLoadingProduct,
+    fetchProductDetails,
+    updateMenu,
+    deleteProduct,
+  } = useProductStore();
   const hasOpenedModalRef = useRef(false);
   const navigate = useNavigate();
   const {
@@ -61,6 +66,41 @@ const ProductDetailPage = () => {
     modalSize: "medium",
     isUpdated: false,
   };
+  const menuReducer = (state, action) => {
+    switch (action.type) {
+      case "SET_MENUS":
+        const newMenus = { ...state.menus, ...action.payload };
+        return { ...state, menus: newMenus, isUpdated: true };
+      case "SET_SELECTED_SIZE":
+        return { ...state, selectedSize: action.payload };
+      case "SET_SELECTED_UNIT":
+        return { ...state, selectedSize: action.payload };
+      case "SET_SELECTED_QUANTITY":
+        return { ...state, selectedQuantity: action.payload };
+      case "SET_SELECTED_ADDITIONAL_PRICE":
+        return { ...state, selectedAdditionalPrice: action.payload };
+      case "SET_TOTAL_PRICE":
+        return { ...state, totalPrice: action.payload };
+
+      case "SET_MODAL_OPEN":
+        return { ...state, isModalOpen: action.payload };
+      case "SET_MODAL_BODY":
+        return { ...state, modalBody: action.payload };
+      case "SET_MODAL_TITLE":
+        return { ...state, modalTitle: action.payload };
+      case "SET_MODAL_SIZE":
+        return { ...state, modalSize: action.payload };
+
+      case "SET_IS_UPDATED":
+        return { ...state, isUpdated: action.payload };
+
+      case "SET_ERRORS":
+        return { ...state, errors: action.payload };
+      default:
+        return state;
+    }
+  };
+  const [state, dispatch] = useReducer(menuReducer, initialState);
 
   const EditStatusForm = ({ state, dispatch }) => {
     const handleChangeStatus = (e) => {
@@ -501,42 +541,6 @@ const ProductDetailPage = () => {
       </form>
     );
   };
-
-  const menuReducer = (state, action) => {
-    switch (action.type) {
-      case "SET_MENUS":
-        const newMenus = { ...state.menus, ...action.payload };
-        return { ...state, menus: newMenus, isUpdated: true };
-      case "SET_SELECTED_SIZE":
-        return { ...state, selectedSize: action.payload };
-      case "SET_SELECTED_UNIT":
-        return { ...state, selectedSize: action.payload };
-      case "SET_SELECTED_QUANTITY":
-        return { ...state, selectedQuantity: action.payload };
-      case "SET_SELECTED_ADDITIONAL_PRICE":
-        return { ...state, selectedAdditionalPrice: action.payload };
-      case "SET_TOTAL_PRICE":
-        return { ...state, totalPrice: action.payload };
-
-      case "SET_MODAL_OPEN":
-        return { ...state, isModalOpen: action.payload };
-      case "SET_MODAL_BODY":
-        return { ...state, modalBody: action.payload };
-      case "SET_MODAL_TITLE":
-        return { ...state, modalTitle: action.payload };
-      case "SET_MODAL_SIZE":
-        return { ...state, modalSize: action.payload };
-
-      case "SET_IS_UPDATED":
-        return { ...state, isUpdated: action.payload };
-
-      case "SET_ERRORS":
-        return { ...state, errors: action.payload };
-      default:
-        return state;
-    }
-  };
-  const [state, dispatch] = useReducer(menuReducer, initialState);
   // Initial data load form database
   useEffect(() => {
     const fetchAllData = async () => {
@@ -576,11 +580,11 @@ const ProductDetailPage = () => {
     const totalPrice = basePrice + additionalPrice;
     dispatch({ type: "SET_TOTAL_PRICE", payload: totalPrice });
   };
+  // Close modal function
   const handleCloseModal = () => {
     dispatch({ type: "SET_MODAL_OPEN", payload: false });
     const currentLength = (state.menus.sizes || []).length;
     const originalLength = (menus.sizes || []).length;
-
     if (currentLength > originalLength && !hasOpenedModalRef.current) {
       hasOpenedModalRef.current = true; // set flag so it only happens once
       setTimeout(() => {
@@ -599,11 +603,6 @@ const ProductDetailPage = () => {
     dispatch({ type: "SET_MODAL_SIZE", payload: size });
     dispatch({ type: "SET_MODAL_OPEN", payload: true });
   };
-  // Handle redirect back
-  const handleGoBack = () => {
-    navigate(-1);
-  };
-
   // Handle clear changes
   const handleClearChanges = () => {
     dispatch({ type: "SET_MENUS", payload: menus });
@@ -676,7 +675,75 @@ const ProductDetailPage = () => {
         return;
     }
   };
+  const Skeleton = () => (
+    <div className="animate-pulse flex flex-col h-[95vh] md:gap-5 gap-2 p-3 md:my-5 my-2 rounded-lg">
+      <div className="w-10 p-6 rounded-lg bg-gray-300"></div>
+      <div className=" flex flex-row md:gap-5 gap-2 h-full">
+        <div className="flex flex-col w-1/3 h-fit mt-auto p-5 rounded-lg gap-5 bg-gray-200">
+          <div className="flex flex-row h-10 gap-2 md:justify-between items-center">
+            <div className="rounded-lg bg-gray-300 h-full w-md"></div>
+            <div className="flex bg-gray-300 gap-2 px-3 py-2 bg-accent rounded-lg h-full w-md"></div>
+            <div className="rounded-lg bg-gray-300 h-full w-35"></div>
+          </div>
+          <div className="flex flex-col gap-3">
+            <div className="w-full rounded-lg h-12 bg-gray-100"></div>
+            <div className="w-full rounded-lg h-12 bg-gray-100"></div>
+            <div className="w-full rounded-lg h-12 bg-gray-100"></div>
+          </div>
+          <div className="flex flex-col gap-3">
+            <div className="w-full rounded-lg h-7 bg-gray-300"></div>
+            <div className="w-full rounded-lg h-7 bg-gray-300"></div>
+            <div className="w-full rounded-lg h-7 bg-gray-300"></div>
+            <div className="w-full rounded-lg h-7 bg-gray-300"></div>
+          </div>
 
+          <div className="flex flex-col gap-3">
+            <div className="w-full rounded-lg h-7 bg-gray-100"></div>
+            <div className="w-full rounded-lg h-7 bg-gray-100"></div>
+            <div className="w-full rounded-lg h-7 bg-gray-100"></div>
+            <div className="w-full rounded-lg h-7 bg-gray-100"></div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 p-2 w-1/3 h-fit mt-auto justify-end items-end">
+          <div
+            data-id="basePrice"
+            className="w-full bg-gray-300 rounded-lg py-5"
+          ></div>
+          <div
+            data-id="basePrice"
+            className="w-full bg-gray-300 rounded-lg py-5"
+          ></div>
+        </div>
+        <div className="w-1/3 z-10 flex flex-col gap-2 md:gap-5 mt-auto h-fit">
+          <div className="flex flex-row gap-2 md:gap-5 justify-end">
+            <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+            <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+          </div>
+          <div className="flex flex-col gap-2 md:gap-5 bg-gray-200 rounded-lg p-5">
+            <div className="flex flex-row gap-2 items-center w-full">
+              <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+              <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+              <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+              <div className="rounded-lg bg-gray-300 py-5 w-40"></div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
+              <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
+              <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+  if (
+    isLoadingCategory ||
+    isLoadingIngredients ||
+    isLoadingProduct ||
+    !state.menus
+  ) {
+    return <Skeleton />;
+  }
   return (
     <div className=" md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300 h-[95vh]">
       <Modal
@@ -692,7 +759,7 @@ const ProductDetailPage = () => {
           <Button
             buttonSize="icon"
             buttonType="secondary"
-            onClick={handleGoBack}
+            onClick={() => navigate(-1)}
           >
             <LucideIcons.ChevronLeft size={25} />
           </Button>
@@ -779,7 +846,9 @@ const ProductDetailPage = () => {
               data-id="name"
               className="line-clamp-3 max-w-sm whitespace-normal hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg px-2"
             >
-              {state.menus.name || "No Name"}
+              {state.menus.name.replace(/\b\w/g, (char) =>
+                char.toUpperCase()
+              ) || "No Name"}
             </h1>
             {/* Menu Description */}
             <div
