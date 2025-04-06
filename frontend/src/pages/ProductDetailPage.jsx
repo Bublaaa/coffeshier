@@ -20,7 +20,8 @@ import toast from "react-hot-toast";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
-  const { menus, fetchProductDetails, updateMenu } = useProductStore();
+  const { menus, message, fetchProductDetails, updateMenu, deleteProduct } =
+    useProductStore();
   const hasOpenedModalRef = useRef(false);
   const navigate = useNavigate();
   const {
@@ -33,8 +34,6 @@ const ProductDetailPage = () => {
     fetchCategories,
     isLoading: isLoadingCategory,
   } = useCategoryStore();
-  let selectedQuantity = 0;
-  let selectedUnit = "";
   const initialState = {
     menus: {
       name: "",
@@ -456,6 +455,52 @@ const ProductDetailPage = () => {
       </div>
     );
   };
+  const DeleteConfirmationForm = ({ menu }) => {
+    const [confirmationText, setConfirmationText] = useState("");
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (confirmationText !== menu.name.trim()) {
+        toast.error("Confirmation does not match");
+        return;
+      }
+      await deleteProduct(menu._id);
+      setTimeout(() => {
+        navigate(-1);
+        toast.success("Product deleted successfully");
+      }, 1000);
+      dispatch({ type: "SET_MODAL_OPEN", payload: false });
+    };
+    return (
+      <form
+        className="flex flex-col gap-3 overflow-y-auto p-2 scrollbar-hidden"
+        onSubmit={handleSubmit}
+      >
+        <div className="w-full flex flex-col gap-3">
+          <p>
+            Please retype <span className="font-semibold">{menu.name}</span> to
+            confirm deletion.
+          </p>
+          <Input
+            type="text"
+            label="Confirmation"
+            name="confirmation"
+            onChange={(e) => {
+              setConfirmationText(e.target.value);
+            }}
+          />
+        </div>
+        <Button
+          type="submit"
+          buttonType="danger"
+          buttonSize="large"
+          className="w-fit items-end"
+        >
+          Confirm
+          <LucideIcons.Trash2Icon />
+        </Button>
+      </form>
+    );
+  };
 
   const menuReducer = (state, action) => {
     switch (action.type) {
@@ -674,7 +719,7 @@ const ProductDetailPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="relative flex flex-col w-1/3 p-5 rounded-lg gap-5 bg-white mt-auto"
           >
-            <div className="flex z-10  flex-row gap-2 md:gap-5 items-center">
+            <div className="flex z-10  flex-row gap-2 md:justify-between items-center">
               {/* Status Display */}
               <div
                 data-id="status"
@@ -716,6 +761,18 @@ const ProductDetailPage = () => {
                     </div>
                   );
                 })}
+              {/* Delete Button */}
+              <Button
+                icon={LucideIcons.Trash}
+                buttonType="danger"
+                buttonSize="icon"
+                onClick={() => {
+                  handleOpenModal(
+                    "Change Menu Name",
+                    <DeleteConfirmationForm menu={menus} />
+                  );
+                }}
+              ></Button>
             </div>
             {/* Menu Name */}
             <h1

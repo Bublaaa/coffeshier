@@ -156,4 +156,18 @@ export const useProductStore = create((set) => ({
       toast.error(errorMessage);
     }
   },
+
+  deleteProduct: async (id) => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      const response = await axios.delete(`${API_URL}product/delete/${id}`);
+    } catch (error) {
+      set({ isLoading: false, message: response.data.message });
+      toast.success(message);
+      const errorMessage =
+        error.response?.data?.message || "Error fetching product detail";
+      set({ error: errorMessage, isLoading: false });
+      toast.error(errorMessage);
+    }
+  },
 }));
