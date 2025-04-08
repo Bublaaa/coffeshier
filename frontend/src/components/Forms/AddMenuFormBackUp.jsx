@@ -5,7 +5,7 @@ import {
   TextareaInput,
   DropdownInput,
   CheckboxInput,
-  MenuImageInput,
+  ImageInput,
 } from "../Input.jsx";
 import * as LucideIcons from "lucide-react";
 import toast from "react-hot-toast";
@@ -269,7 +269,7 @@ const AddMenuForm = ({ categories, ingredients, onClose }) => {
       {/* Menu Detail */}
       {step === 1 && (
         <div className="flex flex-col w-full gap-2">
-          <MenuImageInput
+          <ImageInput
             label="Product Image"
             onFileChange={(file) => console.log("Uploaded File:", file)}
           />

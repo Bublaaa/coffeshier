@@ -184,7 +184,7 @@ export const FileInput = ({ selectedFile, onFileChange, ...props }) => (
   </label>
 );
 
-export const MenuImageInput = ({ label, onFileChange }) => {
+export const ImageInput = ({ label, onFileChange }) => {
   const [preview, setPreview] = useState(null);
 
   const handleFileChange = (event) => {

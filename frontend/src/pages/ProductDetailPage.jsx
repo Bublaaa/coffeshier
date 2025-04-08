@@ -2,21 +2,26 @@ import { useParams } from "react-router-dom";
 import { useProductStore } from "../store/productStore";
 import { useCategoryStore } from "../store/categoryStore.js";
 import { useIngredientStore } from "../store/ingredientStore.js";
-import { useEffect, useReducer, useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useReducer, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { placeholder } from "../assets/index.js";
 import {
-  RadioInput,
-  DropdownInput,
-  Input,
-  TextareaInput,
-  CheckboxInput,
-} from "../components/Input";
+  EditStatusForm,
+  EditCategoryForm,
+  EditNameForm,
+  EditDescriptionForm,
+  EditRecipeForm,
+  EditBasePriceForm,
+  EditAvailableSizeForm,
+  EditIngredientForm,
+  DeleteConfirmationForm,
+  EditImageForm,
+} from "../components/Forms/ProductDetailForm.jsx";
+import { RadioInput } from "../components/Input";
 import * as LucideIcons from "lucide-react";
 import Button from "../components/Button";
 import Modal from "../components/Modal.jsx";
-import toast from "react-hot-toast";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -69,8 +74,11 @@ const ProductDetailPage = () => {
   const menuReducer = (state, action) => {
     switch (action.type) {
       case "SET_MENUS":
-        const newMenus = { ...state.menus, ...action.payload };
-        return { ...state, menus: newMenus, isUpdated: true };
+        return {
+          ...state,
+          menus: action.payload, // replace the whole object, not merge
+          isUpdated: true,
+        };
       case "SET_SELECTED_SIZE":
         return { ...state, selectedSize: action.payload };
       case "SET_SELECTED_UNIT":
@@ -102,445 +110,6 @@ const ProductDetailPage = () => {
   };
   const [state, dispatch] = useReducer(menuReducer, initialState);
 
-  const EditStatusForm = ({ state, dispatch }) => {
-    const handleChangeStatus = (e) => {
-      const { value } = e.target;
-      dispatch({ type: "SET_MENUS", payload: { status: value } });
-    };
-    return (
-      <DropdownInput
-        label="Status"
-        name="status"
-        value={state.menus.status || "Not Available"}
-        options={[
-          { value: "Available", label: "Available" },
-          { value: "Not Available", label: "Not Available" },
-        ]}
-        onChange={handleChangeStatus}
-      />
-    );
-  };
-  const EditCategoryForm = ({ categories, state, dispatch }) => {
-    const handleCategoryChange = (e) => {
-      const { value } = e.target;
-      dispatch({ type: "SET_MENUS", payload: { categoryId: value } });
-    };
-    return (
-      <DropdownInput
-        label="Category"
-        name="categoryId"
-        value={state.menus.categoryId || ""}
-        options={categories.map((category) => ({
-          value: category._id,
-          label: category.name,
-        }))}
-        onChange={handleCategoryChange}
-      />
-    );
-  };
-  const EditNameForm = ({ state, dispatch }) => {
-    const [localName, setLocalName] = useState(state.menus.name || "");
-    useEffect(() => {
-      setLocalName(state.menus.name);
-    }, [state.menus.name]);
-    const handleChangeName = (e) => {
-      setLocalName(e.target.value);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, name: e.target.value },
-      });
-    };
-    return (
-      <Input
-        className="w-full"
-        type="text"
-        placeholder="e.g. Burnt Toast"
-        label="Menu Name"
-        name="name"
-        value={localName}
-        onChange={handleChangeName}
-      />
-    );
-  };
-  const EditDescriptionForm = ({ state, dispatch }) => {
-    const [localDescription, setLocalDescription] = useState(
-      state.menus.description || ""
-    );
-    useEffect(() => {
-      setLocalDescription(state.menus.description);
-    }, [state.menus.description]);
-    const handleChangeDescription = (e) => {
-      setLocalDescription(e.target.value);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, description: e.target.value },
-      });
-    };
-    return (
-      <TextareaInput
-        className="w-full"
-        type="text"
-        placeholder="e.g. Burnt to perfection for exact 29 minutes"
-        label="Menu Description"
-        name="description"
-        rows="3"
-        value={localDescription}
-        onChange={handleChangeDescription}
-      />
-    );
-  };
-  const EditRecipeForm = ({ state, dispatch }) => {
-    const [localRecipe, setLocalRecipe] = useState(
-      state.menus.localRecipe || ""
-    );
-    useEffect(() => {
-      setLocalRecipe(state.menus.recipe);
-    }, [state.menus.recipe]);
-    const handleChangeRecipe = (e) => {
-      setLocalRecipe(e.target.value);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, recipe: e.target.value },
-      });
-    };
-    return (
-      <TextareaInput
-        label="Directions"
-        placeholder="e.g. Put perfectly fine bread on toaster for 29 minutes"
-        name="recipe"
-        value={localRecipe}
-        rows="5"
-        onChange={handleChangeRecipe}
-      />
-    );
-  };
-  const EditBasePriceForm = ({ state, dispatch }) => {
-    const [localBasePrice, setLocalBasePrice] = useState(
-      state.menus.basePrice || 0
-    );
-    const [localTotalPrice, setLocalTotalPrice] = useState(
-      state.menus.basePrice + state.selectedAdditionalPrice
-    );
-    useEffect(() => {
-      setLocalBasePrice(state.menus.basePrice);
-    }, [state.menus.basePrice]);
-    useEffect(() => {
-      const total =
-        Number(localBasePrice) + Number(state.selectedAdditionalPrice || 0);
-      setLocalTotalPrice(total);
-      dispatch({ type: "SET_TOTAL_PRICE", payload: total });
-    }, [localBasePrice, state.selectedAdditionalPrice, dispatch]);
-
-    const handleBasePriceChange = (e) => {
-      const value = Number(e.target.value);
-      setLocalBasePrice(value);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, basePrice: value },
-      });
-    };
-
-    return (
-      <Input
-        type="number"
-        min="5000"
-        label="Base Price"
-        name="basePrice"
-        value={localBasePrice}
-        onChange={handleBasePriceChange}
-        placeholder="e.g. 10.000"
-      />
-    );
-  };
-  const EditAvailableSizeForm = ({ state, dispatch }) => {
-    const [availableSize, setAvailableSize] = useState(state.menus.sizes || []);
-    useEffect(() => {
-      setAvailableSize(state.menus.sizes || []);
-    }, [state.menus.sizes]);
-
-    const handleSizeChange = (e) => {
-      const selectedSize = e.target.value;
-      const exists = availableSize.find((s) => s.size === selectedSize);
-
-      if (selectedSize === "regular" && exists) return;
-      const updatedSizes = exists
-        ? availableSize.filter((s) => s.size !== selectedSize)
-        : [...availableSize, { size: selectedSize, additionalPrice: 0 }];
-
-      setAvailableSize(updatedSizes);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, sizes: updatedSizes },
-      });
-      dispatch({ type: "SET_SELECTED_SIZE", payload: "regular" });
-    };
-
-    const handleAdditionalPriceChange = (size, price) => {
-      const updatedSizes = availableSize.map((s) =>
-        s.size === size ? { ...s, additionalPrice: Number(price) } : s
-      );
-      setAvailableSize(updatedSizes);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, sizes: updatedSizes },
-      });
-      dispatch({ type: "SET_SELECTED_SIZE", payload: "regular" });
-    };
-
-    return (
-      <div className="w-full flex flex-col gap-3">
-        <CheckboxInput
-          label="Size"
-          name="size"
-          initialValue={availableSize.map((s) => s.size)}
-          options={[
-            { value: "regular", label: "Regular", disabled: true },
-            { value: "large", label: "Large" },
-            { value: "extra large", label: "Extra Large" },
-          ]}
-          onChange={handleSizeChange}
-        />
-
-        {availableSize
-          .filter((s) => s.size !== "regular")
-          .map((s) => (
-            <div key={s.size}>
-              <Input
-                type="number"
-                placeholder="e.g. 5000"
-                required
-                min="1"
-                max="100000"
-                label={`Additional Price for ${s.size.toUpperCase()}`}
-                value={s.additionalPrice}
-                onChange={(e) =>
-                  handleAdditionalPriceChange(s.size, e.target.value)
-                }
-              />
-            </div>
-          ))}
-      </div>
-    );
-  };
-  const EditIngredientForm = ({ state, dispatch }) => {
-    const toastShownRef = useRef(false);
-    const [ingredientData, setIngredientData] = useState(
-      state.menus.ingredients || []
-    );
-
-    useEffect(() => {
-      setIngredientData(state.menus.ingredients || []);
-    }, [state.menus.ingredients]);
-
-    const handleIngredientChange = (index, field, value, size = null) => {
-      const updatedIngredients = ingredientData.map((ingredient, i) => {
-        if (i !== index) return ingredient;
-
-        if (field === "ingredientId") {
-          const selectedIngredient = ingredients.find(
-            (ing) => ing._id === value
-          );
-          const newQuantityBySize = state.menus.sizes.map((s) => ({
-            size: s.size,
-            quantity: 0,
-            unit: selectedIngredient?.unit || "",
-          }));
-
-          return {
-            ...ingredient,
-            ingredientId: value,
-            quantityBySize: newQuantityBySize,
-          };
-        }
-
-        if (field === "quantityBySize" && size) {
-          const updatedQtyBySize = ingredient.quantityBySize.map((qs) =>
-            qs.size === size ? { ...qs, quantity: Number(value) } : qs
-          );
-
-          return { ...ingredient, quantityBySize: updatedQtyBySize };
-        }
-
-        return ingredient;
-      });
-
-      setIngredientData(updatedIngredients);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, ingredients: updatedIngredients },
-      });
-    };
-
-    const handleAddIngredient = () => {
-      const newIngredient = {
-        ingredientId: "",
-        quantityBySize: state.menus.sizes.map((s) => ({
-          size: s.size,
-          quantity: 0,
-          unit: "",
-        })),
-      };
-
-      const updatedList = [...ingredientData, newIngredient];
-      setIngredientData(updatedList);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, ingredients: updatedList },
-      });
-    };
-
-    const handleRemoveIngredient = (index) => {
-      const updatedList = ingredientData.filter((_, i) => i !== index);
-      if (ingredientData.length === 1) {
-        if (!toastShownRef.current) {
-          toast.error("Ingredient can't be empty");
-          toastShownRef.current = true;
-          setTimeout(() => {
-            toastShownRef.current = false;
-          }, 4000); // prevent spam for 1.5 seconds
-        }
-        return;
-      }
-
-      setIngredientData(updatedList);
-      dispatch({
-        type: "SET_MENUS",
-        payload: { ...state.menus, ingredients: updatedList },
-      });
-    };
-
-    return (
-      <div className="w-full flex flex-col gap-3">
-        <div className="flex justify-between items-center">
-          <Button
-            buttonSize="medium"
-            buttonType="primary"
-            onClick={handleAddIngredient}
-          >
-            Add <LucideIcons.Plus />
-          </Button>
-        </div>
-
-        <div className="flex flex-row gap-2">
-          {state.menus.sizes.map((size, sizeIndex) => (
-            <div
-              key={size.size}
-              className="w-full bg-white-shadow p-3 rounded-lg"
-            >
-              <h6 className="capitalize">{size.size}</h6>
-              {ingredientData.map((ingredient, index) => (
-                <div
-                  key={index}
-                  className="flex flex-row gap-2 py-1 items-center"
-                >
-                  {sizeIndex < 1 && (
-                    <Button
-                      className="w-fit"
-                      buttonSize="icon"
-                      buttonType="danger"
-                      onClick={() => handleRemoveIngredient(index)}
-                      icon={LucideIcons.Minus}
-                    />
-                  )}
-                  <div className="grid grid-cols-5 gap-2 items-center w-full">
-                    <div className="col-span-4">
-                      <DropdownInput
-                        options={ingredients.map((ing) => ({
-                          value: ing._id,
-                          label: ing.name,
-                        }))}
-                        value={ingredient.ingredientId}
-                        onChange={(e) =>
-                          handleIngredientChange(
-                            index,
-                            "ingredientId",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <Input
-                        className="w-1/5"
-                        type="number"
-                        min="1"
-                        max="100"
-                        placeholder="e.g. 100"
-                        value={
-                          ingredient.quantityBySize.find(
-                            (qs) => qs.size === size.size
-                          )?.quantity || ""
-                        }
-                        onChange={(e) =>
-                          handleIngredientChange(
-                            index,
-                            "quantityBySize",
-                            e.target.value,
-                            size.size
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-                  <p className="mb-3 font-semibold">
-                    {ingredients.find(
-                      (ing) => ing._id === ingredient.ingredientId
-                    )?.unit || ""}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-  const DeleteConfirmationForm = ({ menu }) => {
-    const [confirmationText, setConfirmationText] = useState("");
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (confirmationText !== menu.name.trim()) {
-        toast.error("Confirmation does not match");
-        return;
-      }
-      await deleteProduct(menu._id);
-      setTimeout(() => {
-        navigate(-1);
-        toast.success("Product deleted successfully");
-      }, 1000);
-      dispatch({ type: "SET_MODAL_OPEN", payload: false });
-    };
-    return (
-      <form
-        className="flex flex-col gap-3 overflow-y-auto p-2 scrollbar-hidden"
-        onSubmit={handleSubmit}
-      >
-        <div className="w-full flex flex-col gap-3">
-          <p>
-            Please retype <span className="font-semibold">{menu.name}</span> to
-            confirm deletion.
-          </p>
-          <Input
-            type="text"
-            label="Confirmation"
-            name="confirmation"
-            onChange={(e) => {
-              setConfirmationText(e.target.value);
-            }}
-          />
-        </div>
-        <Button
-          type="submit"
-          buttonType="danger"
-          buttonSize="large"
-          className="w-fit items-end"
-        >
-          Confirm
-          <LucideIcons.Trash2Icon />
-        </Button>
-      </form>
-    );
-  };
   // Initial data load form database
   useEffect(() => {
     const fetchAllData = async () => {
@@ -590,7 +159,11 @@ const ProductDetailPage = () => {
       setTimeout(() => {
         handleOpenModal(
           "Change Ingredients Data",
-          <EditIngredientForm state={state} dispatch={dispatch} />,
+          <EditIngredientForm
+            state={state}
+            dispatch={dispatch}
+            ingredients={ingredients}
+          />,
           "large"
         );
       }, 300);
@@ -607,6 +180,9 @@ const ProductDetailPage = () => {
   const handleClearChanges = () => {
     dispatch({ type: "SET_MENUS", payload: menus });
     dispatch({ type: "SET_IS_UPDATED", payload: false });
+    dispatch({ type: "SET_SELECTED_SIZE", payload: "regular" });
+    dispatch({ type: "SET_SELECTED_ADDITIONAL_PRICE", payload: 0 });
+    dispatch({ type: "SET_TOTAL_PRICE", payload: state.menus.basePrice });
   };
   // Handle save changes
   const handleSaveChanges = async (id, menuData) => {
@@ -667,8 +243,18 @@ const ProductDetailPage = () => {
       case "ingredient":
         handleOpenModal(
           "Change Ingredients Data",
-          <EditIngredientForm state={state} dispatch={dispatch} />,
+          <EditIngredientForm
+            state={state}
+            dispatch={dispatch}
+            ingredients={ingredients}
+          />,
           "large"
+        );
+        break;
+      case "menuImage":
+        handleOpenModal(
+          "Change Menu Image",
+          <EditImageForm state={state} dispatch={dispatch} />
         );
         break;
       default:
@@ -676,7 +262,7 @@ const ProductDetailPage = () => {
     }
   };
   const Skeleton = () => (
-    <div className="animate-pulse flex flex-col h-[95vh] md:gap-5 gap-2 p-3 md:my-5 my-2 rounded-lg">
+    <div className="animate-[pulse_0.8s_ease-in-out_infinite]  flex flex-col h-[95vh] md:gap-5 gap-2 p-3 md:my-5 my-2 rounded-lg">
       <div className="w-10 p-6 rounded-lg bg-gray-300"></div>
       <div className=" flex md:flex-row flex-col md:gap-5 gap-2 h-full">
         <div className="bg-gray-300 rounded-lg md:absolute lg:inset-x-100 md:inset-x-60 lg:mt-35 md:mt-15 flex items-center md:justify-end w-full md:w-1/2 z-0 p-2 lg:py-40 md:py-30 py-20 "></div>
@@ -730,12 +316,7 @@ const ProductDetailPage = () => {
       </div>
     </div>
   );
-  if (
-    isLoadingCategory ||
-    isLoadingIngredients ||
-    isLoadingProduct ||
-    !state.menus
-  ) {
+  if (isLoadingCategory || isLoadingIngredients || isLoadingProduct) {
     return <Skeleton />;
   }
   return (
@@ -758,9 +339,13 @@ const ProductDetailPage = () => {
             <LucideIcons.ChevronLeft size={25} />
           </Button>
         </div>
-        <div className="md:absolute lg:inset-x-100 md:inset-x-60 lg:mt-35 md:mt-25 flex items-center md:justify-end w-full md:w-1/2 z-0 p-2">
+        <div
+          onClick={(e) => handleMenuChange(e)}
+          className="md:absolute lg:inset-x-100 md:inset-x-60 lg:mt-35 md:mt-25 flex items-center md:justify-end w-full md:w-1/2 z-0 p-2"
+        >
           {/* Menu Image */}
           <motion.img
+            data-id="menuImage"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{
@@ -877,12 +462,20 @@ const ProductDetailPage = () => {
               </p>
             </div>
             {/* Additional Price */}
-            {state.selectedAdditionalPrice > 0 && (
-              <div className="flex flex-row w-full justify-between items-center">
-                <h6>Size Price</h6>
-                <p>{state.selectedAdditionalPrice.toLocaleString("id-ID")}</p>
-              </div>
-            )}
+            <AnimatePresence>
+              {state.selectedAdditionalPrice > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-row w-full justify-between items-center"
+                >
+                  <h6>Size Price</h6>
+                  <p>{state.selectedAdditionalPrice.toLocaleString("id-ID")}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div className="flex flex-row w-full justify-between items-center border-t border-gray-300">
               <h5>Total Price</h5>
               <h6>{state.totalPrice.toLocaleString("id-ID")}</h6>

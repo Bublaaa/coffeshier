@@ -36,7 +36,7 @@ const Button = ({
     <motion.button
       type="button"
       className={clsx(
-        "flex items-center justify-center gap-2 rounded-lg transition  duration-200",
+        "flex items-center text-left  justify-center gap-2 rounded-lg transition  duration-200",
         buttonVariants[buttonType], //  Use variant styles
         buttonSizes[buttonSize], //  Use size styles
         className
