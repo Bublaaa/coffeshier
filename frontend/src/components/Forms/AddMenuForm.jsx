@@ -156,11 +156,22 @@ const AddMenuForm = ({ categories, ingredientsList, onClose }) => {
       const updatedIngredients = prev.ingredients.map((ing, i) => {
         if (i === index) {
           if (field === "ingredientId") {
-            // 🔥 Safe check to prevent error
             const ingredientData =
               ingredientsList?.find((ing) => ing._id === value) || null;
 
-            // Ensure quantityBySize matches menuData.sizes
+            // Map of units to smaller units
+            const unitMap = {
+              kg: "mg",
+              gr: "mg",
+              mg: "mg",
+              li: "ml",
+              ml: "ml",
+            };
+
+            // Determine the smaller unit
+            const smallerUnit =
+              unitMap[ingredientData?.unit] || ingredientData?.unit;
+
             const updatedQuantityBySize = prev.sizes.map((s) => {
               const existingSize = ing.quantityBySize?.find(
                 (qs) => qs.size === s.size
@@ -168,7 +179,7 @@ const AddMenuForm = ({ categories, ingredientsList, onClose }) => {
               return {
                 size: s.size,
                 quantity: existingSize ? existingSize.quantity : 0,
-                unit: ingredientData ? ingredientData.unit : "",
+                unit: smallerUnit, // Use the smaller unit
               };
             });
 
@@ -328,21 +339,15 @@ const AddMenuForm = ({ categories, ingredientsList, onClose }) => {
       {/* Recipe & Direction */}
       {step === 3 && (
         <div className="w-full flex flex-col gap-3">
-          <div className="flex flex-row w-full justify-between items-center">
-            <h6>Ingredients & Direction</h6>
-            <Button
-              buttonSize="medium"
-              buttonType="primary"
-              onClick={handleAddIngredientClick}
-            >
-              Add
-              <LucideIcons.Plus />
-            </Button>
-          </div>
-          <div className="grid grid-cols-2 items-center w-full text-center">
-            <p>Ingredient</p>
-            <p>Quantity</p>
-          </div>
+          <Button
+            className="ml-auto"
+            buttonSize="medium"
+            buttonType="primary"
+            onClick={handleAddIngredientClick}
+          >
+            Add
+            <LucideIcons.Plus />
+          </Button>
           {menuData.sizes.map((size) => {
             return (
               <div key={size.size}>
@@ -352,22 +357,34 @@ const AddMenuForm = ({ categories, ingredientsList, onClose }) => {
                 {menuData.ingredients.map((ing, index) => (
                   <div
                     key={index}
-                    className="flex flex-row gap-2 py-1 items-end"
+                    className="flex flex-row gap-2 py-1 items-start"
                   >
                     <Button
-                      className="w-fit mb-2"
+                      className="w-fit mt-1"
                       buttonSize="icon"
                       buttonType="danger"
                       onClick={() => handleRemoveIngredient(index)}
-                      icon={LucideIcons.Trash}
+                      icon={LucideIcons.X}
                     />
-                    <div className="grid grid-cols-2 gap-2 items-center w-full">
+                    <div className="grid grid-cols-2 gap-2 items-start w-full">
                       <DropdownInput
                         className="w-1/2"
-                        options={ingredientsList.map((ingredient) => ({
-                          value: String(ingredient._id),
-                          label: ingredient.name,
-                        }))}
+                        options={ingredientsList
+                          .filter((ingredient) => {
+                            const isSelectedElsewhere =
+                              menuData.ingredients.some(
+                                (otherIng, otherIndex) =>
+                                  otherIndex !== index &&
+                                  otherIng.ingredientId === ingredient._id
+                              );
+                            const isCurrentIngredient =
+                              ingredient._id === ing.ingredientId;
+                            return !isSelectedElsewhere || isCurrentIngredient;
+                          })
+                          .map((ingredient) => ({
+                            value: String(ingredient._id),
+                            label: ingredient.name,
+                          }))}
                         value={ing.ingredientId}
                         onChange={(e) =>
                           handleIngredientChange(
@@ -395,9 +412,20 @@ const AddMenuForm = ({ categories, ingredientsList, onClose }) => {
                       />
                     </div>
                     <p className="mb-3 font-semibold">
-                      {ingredientsList.find(
-                        (ingr) => ingr._id === ing.ingredientId
-                      )?.unit || ""}
+                      {(() => {
+                        const unitMap = {
+                          kg: "mg",
+                          gr: "mg",
+                          mg: "mg",
+                          li: "ml",
+                          ml: "ml",
+                        };
+                        const unit = ingredientsList.find(
+                          (ingr) => ingr._id === ing.ingredientId
+                        )?.unit;
+
+                        return unitMap[unit] || "";
+                      })()}
                     </p>
                   </div>
                 ))}

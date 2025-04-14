@@ -26,7 +26,7 @@ export const Input = ({
       value={value}
       onChange={onChange}
       className={`w-full border rounded-lg md:p-3 p-2 bg-white text-dark placeholder:text-sm 
-        md:placeholder:text-base placeholder-gray-400 focus:ring-4 focus:outline-none transition no-spinner 
+        md:placeholder:text-base placeholder-gray-400 focus:ring-4 focus:outline-none transition no-spinner
         ${Icon ? "pl-10" : ""} 
         ${
           error

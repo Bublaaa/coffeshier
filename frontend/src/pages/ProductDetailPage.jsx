@@ -113,20 +113,29 @@ const ProductDetailPage = () => {
   // Initial data load form database
   useEffect(() => {
     const fetchAllData = async () => {
-      await fetchProductDetails(id);
-      await fetchIngredients();
-      await fetchCategories();
+      try {
+        await Promise.all([
+          fetchProductDetails(id),
+          fetchIngredients(),
+          fetchCategories(),
+        ]);
+      } catch (error) {
+        console.error("Data fetching failed:", error);
+      }
     };
+
     fetchAllData();
   }, [id]);
+
   // Update the state
   useEffect(() => {
     if (menus && Object.keys(menus).length > 0) {
       dispatch({ type: "SET_MENUS", payload: menus });
       dispatch({ type: "SET_IS_UPDATED", payload: false });
-      dispatch({ type: "SET_TOTAL_PRICE", payload: state.menus.basePrice });
+      dispatch({ type: "SET_TOTAL_PRICE", payload: menus.basePrice });
     }
   }, [menus]);
+
   useEffect(() => {
     hasOpenedModalRef.current = false;
   }, [state.menus.sizes]);
@@ -151,6 +160,9 @@ const ProductDetailPage = () => {
   };
   // Close modal function
   const handleCloseModal = () => {
+    if (!state.menus) {
+      return;
+    }
     dispatch({ type: "SET_MODAL_OPEN", payload: false });
     const currentLength = (state.menus.sizes || []).length;
     const originalLength = (menus.sizes || []).length;
@@ -316,7 +328,13 @@ const ProductDetailPage = () => {
       </div>
     </div>
   );
-  if (isLoadingCategory || isLoadingIngredients || isLoadingProduct) {
+  if (
+    isLoadingCategory ||
+    isLoadingIngredients ||
+    isLoadingProduct ||
+    !menus ||
+    Object.keys(menus).length === 0
+  ) {
     return <Skeleton />;
   }
   return (
