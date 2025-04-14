@@ -431,7 +431,12 @@ export const EditIngredientForm = ({ state, dispatch, ingredients }) => {
     </div>
   );
 };
-export const DeleteConfirmationForm = ({ menu }) => {
+export const DeleteConfirmationForm = ({
+  menu,
+  deleteProduct,
+  navigate,
+  dispatch,
+}) => {
   const [confirmationText, setConfirmationText] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -452,7 +457,7 @@ export const DeleteConfirmationForm = ({ menu }) => {
       onSubmit={handleSubmit}
     >
       <div className="w-full flex flex-col gap-3">
-        <p>
+        <p className="select-none">
           Please retype <span className="font-semibold">{menu.name}</span> to
           confirm deletion.
         </p>

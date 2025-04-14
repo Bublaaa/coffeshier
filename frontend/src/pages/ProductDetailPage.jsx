@@ -76,9 +76,19 @@ const ProductDetailPage = () => {
       case "SET_MENUS":
         return {
           ...state,
-          menus: action.payload, // replace the whole object, not merge
+          menus: {
+            ...state.menus,
+            ...action.payload,
+          },
           isUpdated: true,
         };
+
+      // case "SET_MENUS":
+      //   return {
+      //     ...state,
+      //     menus: action.payload, // replace the whole object, not merge
+      //     isUpdated: true,
+      //   };
       case "SET_SELECTED_SIZE":
         return { ...state, selectedSize: action.payload };
       case "SET_SELECTED_UNIT":
@@ -433,7 +443,12 @@ const ProductDetailPage = () => {
                 onClick={() => {
                   handleOpenModal(
                     "Change Menu Name",
-                    <DeleteConfirmationForm menu={menus} />
+                    <DeleteConfirmationForm
+                      menu={menus}
+                      deleteProduct={deleteProduct}
+                      navigate={navigate}
+                      dispatch={dispatch}
+                    />
                   );
                 }}
               ></Button>
@@ -443,9 +458,9 @@ const ProductDetailPage = () => {
               data-id="name"
               className="line-clamp-3 md:max-w-sm max-w-full whitespace-normal truncate hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg px-2"
             >
-              {state.menus.name.replace(/\b\w/g, (char) =>
+              {(state.menus?.name || "No Name").replace(/\b\w/g, (char) =>
                 char.toUpperCase()
-              ) || "No Name"}
+              )}
             </h3>
             {/* Menu Description */}
             <div
