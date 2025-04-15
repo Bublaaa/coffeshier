@@ -82,13 +82,6 @@ const ProductDetailPage = () => {
           },
           isUpdated: true,
         };
-
-      // case "SET_MENUS":
-      //   return {
-      //     ...state,
-      //     menus: action.payload, // replace the whole object, not merge
-      //     isUpdated: true,
-      //   };
       case "SET_SELECTED_SIZE":
         return { ...state, selectedSize: action.payload };
       case "SET_SELECTED_UNIT":
@@ -527,9 +520,7 @@ const ProductDetailPage = () => {
                 onClick={handleClearChanges}
               >
                 <LucideIcons.X className="size-6 xl:mr-2 md:mr-0" />
-                <span className="xl:inline md:hidden hidden">
-                  Discard Changes
-                </span>
+                <span className="xl:inline md:hidden hidden">Discard</span>
               </Button>
               <Button
                 buttonSize="medium"
@@ -537,7 +528,7 @@ const ProductDetailPage = () => {
                 onClick={() => handleSaveChanges(id, state.menus)}
               >
                 <LucideIcons.Save className="size-6 xl:mr-2 md:mr-0 mr-1" />
-                <span className="xl:inline md:hidden inline">Save Changes</span>
+                <span className="xl:inline md:hidden inline">Save</span>
               </Button>
             </div>
             <div className="flex flex-col gap-2 md:gap-5 bg-white rounded-lg p-5 md:order-2 order-1">

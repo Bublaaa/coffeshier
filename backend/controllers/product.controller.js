@@ -5,7 +5,9 @@ import { Category } from "../models/Category.js";
 // Get all available and not available products
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ name: 1 });
+    const products = await Product.find()
+      .collation({ locale: "en", strength: 2 })
+      .sort({ name: 1 });
     if (products.length < 1) {
       return res
         .status(404)

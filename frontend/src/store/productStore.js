@@ -54,34 +54,6 @@ export const useProductStore = create((set) => ({
       toast.error(errorMessage);
     }
   },
-
-  fetchMerchandises: async () => {
-    set({ isLoading: true, error: null, message: null });
-    try {
-      const response = await axios.get(`${API_URL}product/all`);
-      const successMessage = "Success fetch merchandises";
-      const merchandises = response.data.products.filter(
-        (product) =>
-          Array.isArray(product.ingredients) && product.ingredients.length < 1
-      );
-      console.log(merchandises);
-
-      set({
-        merchandises: merchandises,
-        isLoading: false,
-        message: successMessage,
-      });
-      // toast.success(successMessage);
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Error fetching merchandise";
-      set({
-        error: errorMessage,
-        isLoading: false,
-      });
-      toast.error(errorMessage);
-    }
-  },
   fetchProductsByCategory: async (categoryId) => {
     set({ isLoading: true, error: null, products: [], message: null });
     try {

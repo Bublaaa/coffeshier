@@ -364,7 +364,7 @@ const AddMenuForm = ({ categories, ingredientsList, onClose }) => {
                       buttonSize="icon"
                       buttonType="danger"
                       onClick={() => handleRemoveIngredient(index)}
-                      icon={LucideIcons.X}
+                      icon={LucideIcons.Minus}
                     />
                     <div className="grid grid-cols-2 gap-2 items-start w-full">
                       <DropdownInput

@@ -381,10 +381,21 @@ export const EditIngredientForm = ({ state, dispatch, ingredients }) => {
                 <div className="grid grid-cols-5 gap-2 items-center w-full">
                   <div className="col-span-4">
                     <DropdownInput
-                      options={ingredients.map((ing) => ({
-                        value: ing._id,
-                        label: ing.name,
-                      }))}
+                      options={ingredients
+                        .filter((ing) => {
+                          const isSelectedElsewhere = ingredientData.some(
+                            (otherIng, otherIndex) =>
+                              otherIndex !== index &&
+                              otherIng.ingredientId === ing._id
+                          );
+                          const isCurrentIngredient =
+                            ingredient.ingredientId === ing._id;
+                          return !isSelectedElsewhere || isCurrentIngredient;
+                        })
+                        .map((ingredientOption) => ({
+                          value: String(ingredientOption._id),
+                          label: ingredientOption.name,
+                        }))}
                       value={ingredient.ingredientId}
                       onChange={(e) =>
                         handleIngredientChange(
