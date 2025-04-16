@@ -92,6 +92,29 @@ export const useProductStore = create((set) => ({
       toast.error(errorMessage);
     }
   },
+  addNewMerchandise: async (merchandiseData) => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      const response = await axios.post(`${API_URL}product/add`, {
+        name: merchandiseData.name,
+        basePrice: merchandiseData.basePrice,
+        image: merchandiseData.image,
+        status: merchandiseData.status,
+        description: merchandiseData.description,
+        categoryId: merchandiseData.categoryId,
+        sizes: [merchandiseData.sizes],
+        ingredients: [],
+        recipe: [],
+      });
+      set({ menus: response.data.products, isLoading: false });
+      toast.success("Success add new menu");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error adding product";
+      set({ error: errorMessage, isLoading: false, products: [] });
+      toast.error(errorMessage);
+    }
+  },
   updateMenu: async (id, menuData) => {
     set({ isLoading: true, error: null, message: null });
     try {
@@ -110,7 +133,7 @@ export const useProductStore = create((set) => ({
       toast.success("Success update menu");
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Error adding product";
+        error.response?.data?.message || "Error updating product";
       set({ error: errorMessage, isLoading: false, products: [] });
       toast.error(errorMessage);
     }

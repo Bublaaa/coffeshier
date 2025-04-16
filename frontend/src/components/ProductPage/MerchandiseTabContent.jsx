@@ -1,19 +1,63 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import * as LucideIcons from "lucide-react";
 import Modal from "../Modal.jsx";
 import ProductCard from "../ProductCard.jsx";
 import Button from "../Button.jsx";
+import AddMerchandiseForm from "../Forms/AddMerchandiseForm.jsx";
 const MerchandiseTabContent = ({
   activeTab,
-  orders,
   merchandises,
   isLoadingProducts,
-  isLoadingOrders,
 }) => {
+  const initialState = {
+    isModalOpen: false,
+    modalBody: null,
+    modalTitle: "",
+    modalSize: "medium",
+  };
+
+  const merchandiseReducer = (state, action) => {
+    switch (action.type) {
+      case "SET_MODAL_OPEN":
+        return { ...state, isModalOpen: action.payload };
+      case "SET_MODAL_BODY":
+        return { ...state, modalBody: action.payload };
+      case "SET_MODAL_TITLE":
+        return { ...state, modalTitle: action.payload };
+      case "SET_MODAL_SIZE":
+        return { ...state, modalSize: action.payload };
+      default:
+        return state;
+    }
+  };
+
+  const handleOpenModal = (title, body, size) => {
+    dispatch({ type: "SET_MODAL_TITLE", payload: title });
+    dispatch({ type: "SET_MODAL_BODY", payload: body });
+    dispatch({ type: "SET_MODAL_SIZE", payload: size });
+    dispatch({ type: "SET_MODAL_OPEN", payload: true });
+  };
+
+  const [state, dispatch] = useReducer(merchandiseReducer, initialState);
+
   return (
     <div className="flex flex-col">
+      <Modal
+        isOpen={state.isModalOpen}
+        title={state.modalTitle}
+        body={state.modalBody}
+        size={state.modalSize}
+        onClose={() => dispatch({ type: "SET_MODAL_OPEN", payload: false })}
+      />
       <div className="flex flex-row h-fit md:gap-5 gap-2 items-center">
-        <Button className="mx-1 " buttonType="primary" buttonSize="icon">
+        <Button
+          className="mx-1 "
+          buttonType="primary"
+          buttonSize="icon"
+          onClick={() =>
+            handleOpenModal("Add New Merchandise", <AddMerchandiseForm />)
+          }
+        >
           <LucideIcons.Plus />
         </Button>
         <h2>{activeTab.replace(/\b\w/g, (char) => char.toUpperCase())}</h2>
