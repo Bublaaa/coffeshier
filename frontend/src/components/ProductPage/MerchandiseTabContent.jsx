@@ -5,9 +5,11 @@ import ProductCard from "../ProductCard.jsx";
 import Button from "../Button.jsx";
 import AddMerchandiseForm from "../Forms/AddMerchandiseForm.jsx";
 const MerchandiseTabContent = ({
+  categories,
   activeTab,
   merchandises,
   isLoadingProducts,
+  onChangeTab,
 }) => {
   const initialState = {
     isModalOpen: false,
@@ -49,13 +51,22 @@ const MerchandiseTabContent = ({
         size={state.modalSize}
         onClose={() => dispatch({ type: "SET_MODAL_OPEN", payload: false })}
       />
-      <div className="flex flex-row h-fit md:gap-5 gap-2 items-center">
+      <div className="flex flex-row h-fit md:gap-5 gap-2 md:pb-5 pb-2 items-center">
         <Button
           className="mx-1 "
           buttonType="primary"
           buttonSize="icon"
           onClick={() =>
-            handleOpenModal("Add New Merchandise", <AddMerchandiseForm />)
+            handleOpenModal(
+              "Add New Merchandise",
+              <AddMerchandiseForm
+                categories={categories}
+                onChangeTab={onChangeTab}
+                onClose={() =>
+                  dispatch({ type: "SET_MODAL_OPEN", payload: false })
+                }
+              />
+            )
           }
         >
           <LucideIcons.Plus />

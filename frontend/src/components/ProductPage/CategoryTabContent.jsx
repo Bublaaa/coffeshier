@@ -27,6 +27,7 @@ const iconOptions = [
   "Milk",
   "GlassWater",
   "Sandwich",
+  "Gift",
 ].map((icon) => ({ icon, value: icon }));
 
 const Skeleton = ({ count }) => (
@@ -69,7 +70,7 @@ const DeleteCategoryForm = ({ onClose, category }) => {
       onSubmit={handleSubmit}
     >
       <div className="w-full flex flex-col gap-3">
-        <p>
+        <p className="select-none">
           Please retype <span className="font-semibold">{category.name}</span>{" "}
           to confirm deletion.
         </p>

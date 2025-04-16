@@ -73,11 +73,13 @@ const ProductPage = () => {
       icon: "ShoppingBag",
       content: () => (
         <MerchandiseTabContent
+          categories={categories}
           activeTab={activeTab}
           orders={orders}
           merchandises={merchandises}
           isLoadingProducts={isLoadingProducts}
           isLoadingOrders={isLoadingOrders}
+          onChangeTab={() => setActiveTab("Category")}
         />
       ),
     },

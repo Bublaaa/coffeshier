@@ -102,9 +102,9 @@ export const useProductStore = create((set) => ({
         status: merchandiseData.status,
         description: merchandiseData.description,
         categoryId: merchandiseData.categoryId,
-        sizes: [merchandiseData.sizes],
+        sizes: [],
         ingredients: [],
-        recipe: [],
+        recipe: "",
       });
       set({ menus: response.data.products, isLoading: false });
       toast.success("Success add new menu");
