@@ -22,6 +22,13 @@ const AddMerchandiseForm = ({}) => {
     sizes: [{ size: "regular", additionalPrice: 0 }],
     image: null,
   });
+  const validateForm = () => {
+    if (!String(merchandiseData.name || "").trim())
+      newErrors.name = "Name is required.";
+    if (Number(merchandiseData.basePrice) < 5000) {
+      newErrors.basePrice = "Base price can't lower than 5000";
+    }
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setMerchandiseData((prev) => ({ ...prev, [name]: value }));
@@ -31,7 +38,7 @@ const AddMerchandiseForm = ({}) => {
   };
   return (
     <form className="flex flex-col md:flex-row gap-3" onSubmit={handleSubmit}>
-      {/* Menu Detail */}
+      {/* Merchandise Detail */}
       <div className="flex flex-col w-full gap-2">
         <ImageInput
           label="Product Image"
