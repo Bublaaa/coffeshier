@@ -30,8 +30,12 @@ const AddMerchandiseForm = ({ categories, onChangeTab, onClose }) => {
     basePrice: 0,
     categoryId: "",
     status: "Not Available",
+    stockQuantity: 0,
     description: "",
     image: null,
+    sizes: [],
+    ingredients: [],
+    recipe: "",
   });
   const validateForm = () => {
     let newErrors = {};

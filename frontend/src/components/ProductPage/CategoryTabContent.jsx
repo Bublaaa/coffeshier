@@ -238,7 +238,9 @@ const CategoryTabContent = ({ activeTab, isLoadingCategory, categories }) => {
                 data-icon={category.icon}
               >
                 <IconComponent className="size-7" />
-                <p className="text-dark font-bold">{category.name}</p>
+                <p className="text-dark font-bold">
+                  {category.name.replace(/\b\w/g, (char) => char.toUpperCase())}
+                </p>
                 <Button
                   buttonType="danger"
                   buttonSize="icon"

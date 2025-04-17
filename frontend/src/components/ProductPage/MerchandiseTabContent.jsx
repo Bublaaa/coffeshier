@@ -1,9 +1,10 @@
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
 import * as LucideIcons from "lucide-react";
 import Modal from "../Modal.jsx";
 import ProductCard from "../ProductCard.jsx";
 import Button from "../Button.jsx";
 import AddMerchandiseForm from "../Forms/AddMerchandiseForm.jsx";
+import { NavLink } from "react-router-dom";
 const MerchandiseTabContent = ({
   categories,
   activeTab,
@@ -76,13 +77,17 @@ const MerchandiseTabContent = ({
       <div className="h-[73vh] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-5 gap-2 p-2 overflow-y-auto scrollbar-hidden">
         {merchandises?.length > 0 ? (
           merchandises.map((merchandise) => (
-            <ProductCard
-              product={merchandise}
-              buttonLabel={"Edit"}
+            <NavLink
               key={merchandise._id}
-              data-id={merchandise._id}
-              isLoading={isLoadingProducts}
-            ></ProductCard>
+              to={`/owner/product/${merchandise._id}`}
+            >
+              <ProductCard
+                product={merchandise}
+                buttonLabel={"Edit"}
+                data-id={merchandise._id}
+                isLoading={isLoadingProducts}
+              ></ProductCard>
+            </NavLink>
           ))
         ) : (
           <p>No merchandises available</p>

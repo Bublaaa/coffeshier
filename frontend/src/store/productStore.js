@@ -73,6 +73,7 @@ export const useProductStore = create((set) => ({
     set({ isLoading: true, error: null, message: null });
     try {
       const response = await axios.post(`${API_URL}product/add`, {
+        type: "menu",
         name: menuData.name,
         basePrice: menuData.basePrice,
         image: menuData.image,
@@ -96,15 +97,17 @@ export const useProductStore = create((set) => ({
     set({ isLoading: true, error: null, message: null });
     try {
       const response = await axios.post(`${API_URL}product/add`, {
+        type: "merchandise",
         name: merchandiseData.name,
         basePrice: merchandiseData.basePrice,
         image: merchandiseData.image,
         status: merchandiseData.status,
         description: merchandiseData.description,
         categoryId: merchandiseData.categoryId,
-        sizes: [],
-        ingredients: [],
-        recipe: "",
+        stockQuantity: merchandiseData.stockQuantity,
+        sizes: merchandiseData.sizes,
+        ingredients: merchandiseData.ingredients,
+        recipe: merchandiseData.recipe,
       });
       set({ menus: response.data.products, isLoading: false });
       toast.success("Success add new menu");

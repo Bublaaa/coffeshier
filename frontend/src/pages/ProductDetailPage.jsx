@@ -50,6 +50,7 @@ const ProductDetailPage = () => {
       basePrice: 0,
       categoryId: "",
       status: "Not Available",
+      stockQuantity: 0,
       description: "",
       sizes: [{ size: "regular", additionalPrice: 0 }],
       image: null,
@@ -197,7 +198,7 @@ const ProductDetailPage = () => {
     dispatch({ type: "SET_IS_UPDATED", payload: false });
     dispatch({ type: "SET_SELECTED_SIZE", payload: "regular" });
     dispatch({ type: "SET_SELECTED_ADDITIONAL_PRICE", payload: 0 });
-    dispatch({ type: "SET_TOTAL_PRICE", payload: state.menus.basePrice });
+    dispatch({ type: "SET_TOTAL_PRICE", payload: menus.basePrice });
   };
   // Handle save changes
   const handleSaveChanges = async (id, menuData) => {
@@ -331,6 +332,8 @@ const ProductDetailPage = () => {
       </div>
     </div>
   );
+  const isMenu =
+    Array.isArray(menus.ingredients) && menus.ingredients.length > 0;
   if (
     isLoadingCategory ||
     isLoadingIngredients ||
@@ -407,27 +410,29 @@ const ProductDetailPage = () => {
                 </p>
               </div>
               {/* Category Display */}
-              {categories
-                .filter((category) => category._id === state.menus.categoryId)
-                .map((category) => {
-                  const IconComponent = category.icon
-                    ? LucideIcons[category.icon]
-                    : LucideIcons.HandPlatter;
-                  return (
-                    <div
-                      key={category._id}
-                      data-id="category"
-                      className="flex flex-row items-center gap-2 px-3 py-2 bg-accent rounded-lg hover:cursor-pointer hover:scale-105 hover:bg-accent-hover"
-                    >
-                      <IconComponent className="size-5 text-white" />
-                      <p className="font-semibold text-white">
-                        {category.name.replace(/\b\w/g, (char) =>
-                          char.toUpperCase()
-                        )}
-                      </p>
-                    </div>
-                  );
-                })}
+              {isMenu &&
+                categories
+                  .filter((category) => category._id === state.menus.categoryId)
+                  .map((category) => {
+                    const IconComponent = category.icon
+                      ? LucideIcons[category.icon]
+                      : LucideIcons.HandPlatter;
+                    return (
+                      <div
+                        key={category._id}
+                        data-id="category"
+                        className="flex flex-row items-center gap-2 px-3 py-2 bg-accent rounded-lg hover:cursor-pointer hover:scale-105 hover:bg-accent-hover"
+                      >
+                        <IconComponent className="size-5 text-white" />
+                        <p className="font-semibold text-white">
+                          {category.name.replace(/\b\w/g, (char) =>
+                            char.toUpperCase()
+                          )}
+                        </p>
+                      </div>
+                    );
+                  })}
+
               {/* Delete Button */}
               <Button
                 icon={LucideIcons.Trash}
@@ -463,13 +468,31 @@ const ProductDetailPage = () => {
               <p>{state.menus.description || "No description available "}</p>
             </div>
             {/* Menu Recipe */}
-            <div
-              data-id="recipe"
-              className="gap-2 hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2 overflow-y-auto max-h-49 scrollbar-hidden"
-            >
-              <h6>Recipe</h6>
-              <p>{state.menus.recipe || "No recipe available "}</p>
-            </div>
+            {isMenu ? (
+              <div
+                data-id="recipe"
+                className="gap-2 hover:cursor-pointer hover:scale-101 hover:bg-gray-100 rounded-lg p-2 overflow-y-auto max-h-49 scrollbar-hidden"
+              >
+                <h6>Recipe</h6>
+                <p>{state.menus.recipe || "No recipe available "}</p>
+              </div>
+            ) : (
+              <div className="flex flex-row items-center justify-between p-2 overflow-y-auto">
+                <div className="flex flex-col gap-2">
+                  <h6>Stock Available</h6>
+                  <p>{state.menus.stockQuantity}</p>
+                </div>
+                {state.menus.stockQuantity === 0 && (
+                  <Button
+                    buttonSize="medium"
+                    buttonType="primary"
+                    icon={LucideIcons.ShoppingCart}
+                  >
+                    Restock
+                  </Button>
+                )}
+              </div>
+            )}
           </motion.div>
           {/* Base Price */}
           <div
@@ -489,7 +512,7 @@ const ProductDetailPage = () => {
             </div>
             {/* Additional Price */}
             <AnimatePresence>
-              {state.selectedAdditionalPrice > 0 && (
+              {isMenu && state.selectedAdditionalPrice > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -531,78 +554,80 @@ const ProductDetailPage = () => {
                 <span className="xl:inline md:hidden inline">Save</span>
               </Button>
             </div>
-            <div className="flex flex-col gap-2 md:gap-5 bg-white rounded-lg p-5 md:order-2 order-1">
-              <div className="flex flex-row justify-between items-start w-full">
-                <RadioInput
-                  options={
-                    state.menus?.sizes?.map((item) => ({
-                      value: item.size,
-                      label: item.size.replace(/\b\w/g, (char) =>
-                        char.toUpperCase()
-                      ),
-                    })) || []
-                  }
-                  initialValue={state.selectedSize || "regular"}
-                  name="selectedSize"
-                  label="Available Sizes"
-                  onChange={handleSizeChange}
-                />
-                <Button
-                  data-id="availableSize"
-                  buttonSize="icon"
-                  buttonType="primary"
-                  icon={LucideIcons.Pen}
-                  className="lg:mt-6"
-                ></Button>
-              </div>
-              {state.menus?.ingredients?.length > 0 ? (
-                state.menus.ingredients.map((ingredient, ingredientIndex) => {
-                  const selectedIngredient = ingredients.find(
-                    (ingredientInList) =>
-                      ingredientInList._id === ingredient.ingredientId
-                  );
+            {isMenu && (
+              <div className="flex flex-col gap-2 md:gap-5 bg-white rounded-lg p-5 md:order-2 order-1">
+                <div className="flex flex-row justify-between items-start w-full">
+                  <RadioInput
+                    options={
+                      state.menus?.sizes?.map((item) => ({
+                        value: item.size,
+                        label: item.size.replace(/\b\w/g, (char) =>
+                          char.toUpperCase()
+                        ),
+                      })) || []
+                    }
+                    initialValue={state.selectedSize || "regular"}
+                    name="selectedSize"
+                    label="Available Sizes"
+                    onChange={handleSizeChange}
+                  />
+                  <Button
+                    data-id="availableSize"
+                    buttonSize="icon"
+                    buttonType="primary"
+                    icon={LucideIcons.Pen}
+                    className="lg:mt-6"
+                  ></Button>
+                </div>
+                {state.menus?.ingredients?.length > 0 ? (
+                  state.menus.ingredients.map((ingredient, ingredientIndex) => {
+                    const selectedIngredient = ingredients.find(
+                      (ingredientInList) =>
+                        ingredientInList._id === ingredient.ingredientId
+                    );
 
-                  const matchedSize = ingredient.quantityBySize.find(
-                    (size) => state.selectedSize === size.size
-                  );
+                    const matchedSize = ingredient.quantityBySize.find(
+                      (size) => state.selectedSize === size.size
+                    );
 
-                  const selectedQuantity = matchedSize?.quantity ?? null;
-                  const selectedUnit = matchedSize?.unit ?? null;
+                    const selectedQuantity = matchedSize?.quantity ?? null;
+                    const selectedUnit = matchedSize?.unit ?? null;
 
-                  return selectedIngredient ? (
-                    <div
-                      data-id="ingredient"
-                      className="flex flex-col gap-1"
-                      key={`${selectedIngredient._id}-${ingredientIndex}`} // ✅ only key needed
-                    >
-                      <div className="flex flex-row hover:cursor-pointer hover:scale-101 hover:bg-gray-200 rounded-lg p-2">
-                        <p>
-                          {selectedIngredient.name.replace(/\b\w/g, (char) =>
-                            char.toUpperCase()
-                          )}
-                        </p>
-                        <p className="text-center ml-auto">
-                          {selectedQuantity !== null
-                            ? selectedQuantity
-                            : "No quantity found"}
-                        </p>
-                        <p>
-                          {selectedUnit !== null
-                            ? selectedUnit
-                            : "No Unit found"}
-                        </p>
+                    return selectedIngredient ? (
+                      <div
+                        data-id="ingredient"
+                        className="flex flex-col gap-1"
+                        key={`${selectedIngredient._id}-${ingredientIndex}`} // ✅ only key needed
+                      >
+                        <div className="flex flex-row hover:cursor-pointer hover:scale-101 hover:bg-gray-200 rounded-lg p-2">
+                          <p>
+                            {selectedIngredient.name.replace(/\b\w/g, (char) =>
+                              char.toUpperCase()
+                            )}
+                          </p>
+                          <p className="text-center ml-auto">
+                            {selectedQuantity !== null
+                              ? selectedQuantity
+                              : "No quantity found"}
+                          </p>
+                          <p>
+                            {selectedUnit !== null
+                              ? selectedUnit
+                              : "No Unit found"}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <p key={`missing-${ingredient._id || ingredientIndex}`}>
-                      Ingredient not found
-                    </p>
-                  );
-                })
-              ) : (
-                <p>No ingredients available</p>
-              )}
-            </div>
+                    ) : (
+                      <p key={`missing-${ingredient._id || ingredientIndex}`}>
+                        Ingredient not found
+                      </p>
+                    );
+                  })
+                ) : (
+                  <p>No ingredients available</p>
+                )}
+              </div>
+            )}
           </motion.div>
         </div>
       </div>

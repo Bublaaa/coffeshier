@@ -71,6 +71,7 @@ export const getProductDetails = async (req, res) => {
 export const addProduct = async (req, res) => {
   try {
     const {
+      type,
       name,
       basePrice,
       image,
@@ -83,11 +84,36 @@ export const addProduct = async (req, res) => {
       recipe,
     } = req.body;
 
-    if (!name || !basePrice || !Array.isArray(sizes) || sizes.length < 1) {
+    if (!type || !name || !basePrice || !status || !categoryId) {
       return res
         .status(400)
-        .json({ success: false, message: "All fields are required" });
+        .json({ success: false, message: "Missing required fields" });
     }
+
+    // Validate by type
+    if (type === "merchandise") {
+      if (stockQuantity === undefined) {
+        return res.status(400).json({
+          success: false,
+          message: "Stock quantity is required for merchandise",
+        });
+      }
+    }
+
+    if (type === "menu") {
+      if (
+        !Array.isArray(sizes) ||
+        sizes.length === 0 ||
+        !Array.isArray(ingredients) ||
+        ingredients.length === 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "At least one size is required for menu",
+        });
+      }
+    }
+
     const productAlreadyExist = await Product.findOne({ name: name });
     if (productAlreadyExist) {
       return res
