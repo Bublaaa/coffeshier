@@ -16,6 +16,7 @@ import LoadingSpinner from "./components/LoadingSpinner.jsx";
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
 const MenuPage = lazy(() => import("./pages/MenuPage.jsx"));
 const ProductPage = lazy(() => import("./pages/ProductPage.jsx"));
+const OverviewPage = lazy(() => import("./pages/OverviewPage.jsx"));
 const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage.jsx"));
 // Protect routes that require authentication
 
@@ -83,6 +84,14 @@ function App() {
             </ProtectedRoute>
           }
         >
+          <Route
+            path="overview"
+            element={
+              <Suspense>
+                <OverviewPage />
+              </Suspense>
+            }
+          />
           <Route
             path="product"
             element={

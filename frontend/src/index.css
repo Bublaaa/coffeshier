@@ -52,7 +52,7 @@
   }
 
   p {
-    @apply md:text-base text-sm text-dark;
+    @apply md:text-base text-sm text-gray-500;
   }
 
   a {

@@ -137,7 +137,7 @@ const ProductPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: index / 3 }}
                 whileHover={{
-                  scale: 1.05,
+                  scale: 1.03,
                   transition: { duration: 0.2, ease: "easeInOut" },
                 }}
                 key={tab.id}

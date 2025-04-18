@@ -9,7 +9,7 @@ const sidebarLinks = {
     { label: "Profile", icon: "User", href: "/profile" },
   ],
   owner: [
-    { label: "Overview", icon: "BarChart", href: "/overview" },
+    { label: "Overview", icon: "BarChart", href: "/owner/overview" },
     { label: "Manage Users", icon: "Users", href: "/users" },
     { label: "Settings", icon: "Settings", href: "/settings" },
     { label: "Product", icon: "UtensilsCrossed", href: "/owner/product" },

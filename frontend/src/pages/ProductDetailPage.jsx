@@ -278,7 +278,7 @@ const ProductDetailPage = () => {
     }
   };
   const Skeleton = () => (
-    <div className="animate-[pulse_0.8s_ease-in-out_infinite]  flex flex-col h-[95vh] md:gap-5 gap-2 p-3 md:my-5 my-2 rounded-lg">
+    <div className="animate-[pulse_1s_ease-in-out_infinite] flex flex-col h-[95vh] md:gap-5 gap-2 p-3 md:my-5 my-2 rounded-lg">
       <div className="w-10 p-6 rounded-lg bg-gray-300"></div>
       <div className=" flex md:flex-row flex-col md:gap-5 gap-2 h-full">
         <div className="bg-gray-300 rounded-lg md:absolute lg:inset-x-100 md:inset-x-60 lg:mt-35 md:mt-15 flex items-center md:justify-end w-full md:w-1/2 z-0 p-2 lg:py-40 md:py-30 py-20 "></div>
@@ -311,23 +311,25 @@ const ProductDetailPage = () => {
           <div className="w-full bg-gray-300 rounded-lg py-5"></div>
         </div>
         <div className="md:w-1/3 w-full z-10 flex flex-col gap-2 md:gap-5 mt-auto h-fit order-3">
-          <div className="flex flex-row gap-2 md:gap-5 justify-end md:order-1 order-2 md:pb-0 pb-2">
-            <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
-            <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+          <div className="flex flex-row gap-2 md:gap-5 justify-end md:pb-0 pb-2">
+            <div className="rounded-lg bg-gray-200 py-5 w-full"></div>
+            <div className="rounded-lg bg-gray-200 py-5 w-full"></div>
           </div>
-          <div className="flex flex-col gap-2 md:gap-5 bg-gray-200 rounded-lg p-5">
-            <div className="flex flex-row gap-2 items-center w-full">
-              <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
-              <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
-              <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
-              <div className="rounded-lg bg-gray-300 py-5 w-40"></div>
+          {isMenu && (
+            <div className="flex flex-col gap-2 md:gap-5 bg-gray-200 rounded-lg p-5">
+              <div className="flex flex-row gap-2 items-center w-full">
+                <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+                <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+                <div className="rounded-lg bg-gray-300 py-5 w-full"></div>
+                <div className="rounded-lg bg-gray-300 py-5 w-40"></div>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
+                <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
+                <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
+              </div>
             </div>
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
-              <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
-              <div className="flex flex-row bg-gray-100 rounded-lg p-4"></div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -344,7 +346,7 @@ const ProductDetailPage = () => {
     return <Skeleton />;
   }
   return (
-    <div className=" md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300 h-[95vh] ">
+    <div className="md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300 h-[95vh]">
       <Modal
         isOpen={state.isModalOpen}
         title={state.modalTitle}

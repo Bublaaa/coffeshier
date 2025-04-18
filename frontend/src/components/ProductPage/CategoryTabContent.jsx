@@ -35,7 +35,7 @@ const Skeleton = ({ count }) => (
     {Array.from({ length: count }, (_, index) => (
       <div
         key={index}
-        className="animate-pulse bg-gray-200 flex items-center gap-5 h-fit py-6 px-8 rounded-lg shadow-md"
+        className="animate-pulse bg-gray-200 flex items-center gap-5 h-fit py-6 px-8 rounded-lg"
       >
         <div className="px-5 py-5 bg-gray-300 rounded-lg"></div>
       </div>
@@ -128,7 +128,6 @@ const CategoryForm = ({ category, onClose }) => {
     fetchCategories();
     onClose();
   };
-
   return (
     <form className="flex flex-col gap-3 p-2" onSubmit={handleSubmit}>
       <Input
@@ -231,8 +230,14 @@ const CategoryTabContent = ({ activeTab, isLoadingCategory, categories }) => {
               LucideIcons[category.icon] || LucideIcons.GlassWater;
             return (
               <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{
+                  scale: 1.05,
+                  transition: { duration: 0.1, ease: "easeInOut" },
+                }}
                 key={category._id}
-                className="flex md:flex-row items-center md:gap-5 gap-2 md:py-4 py-3 md:px-5 px-4 rounded-lg bg-white shadow-md cursor-pointer hover:bg-gray-50 hover:scale-105 edit-category-btn"
+                className="flex md:flex-row items-center md:gap-5 gap-2 md:py-4 py-3 md:px-5 px-4 rounded-lg bg-white cursor-pointer hover:bg-gray-50 hover:scale-101 hover:border-2 border-accent edit-category-btn"
                 data-id={category._id}
                 data-name={category.name}
                 data-icon={category.icon}
