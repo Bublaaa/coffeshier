@@ -240,10 +240,12 @@ const OverviewPage = ({}) => {
         <div className="grid grid-cols-2 md:gap-5 gap-2">
           {/* Monthly revenue */}
           <div className="grid grid-cols-1 md:gap-5 gap-2">
+            {/* Monthly Revenue */}
             <SectionWrapper
               sectionTitle={"Monthly Revenue"}
               sectionContent={<MonthlyRevenue />}
             ></SectionWrapper>
+            {/* Pending Order */}
             <SectionWrapper
               sectionTitle={"Pending Order"}
               sectionContent={<OrderToComplete orders={orders} />}

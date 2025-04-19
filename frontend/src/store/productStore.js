@@ -12,6 +12,7 @@ axios.defaults.withCredentials = true;
 export const useProductStore = create((set) => ({
   menus: [],
   merchandises: [],
+  products: [],
   error: null,
   isLoading: false,
   message: null,
@@ -37,6 +38,7 @@ export const useProductStore = create((set) => ({
       });
 
       set({
+        products: response.data.products,
         menus: menus,
         merchandises: merchandises,
         isLoading: false,

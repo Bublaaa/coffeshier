@@ -13,7 +13,7 @@ const OrderSchema = new mongoose.Schema(
       enum: ["pending", "paid", "shipped", "canceled"],
       default: "pending",
     },
-    // Ordered Products
+    // Sell order
     products: [
       {
         productId: {
@@ -34,7 +34,7 @@ const OrderSchema = new mongoose.Schema(
       },
     ],
 
-    // Purchased Ingredients
+    // Buy Order
     ingredients: [
       {
         _id: false,
