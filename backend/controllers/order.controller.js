@@ -24,13 +24,13 @@ export const getAllOrder = async (req, res) => {
 export const getOrderById = async (req, res) => {
   const { id } = req.params;
   try {
-    const selectedOrder = await Order.findById(id);
-    if (!selectedOrder) {
+    const order = await Order.findById(id);
+    if (!order) {
       return res
         .status(404)
         .json({ success: false, message: "Order not found" });
     }
-    res.status(200).json({ success: true, selectedOrder });
+    res.status(200).json({ success: true, order });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

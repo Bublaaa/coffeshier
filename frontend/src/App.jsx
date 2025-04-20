@@ -18,6 +18,7 @@ const MenuPage = lazy(() => import("./pages/MenuPage.jsx"));
 const ProductPage = lazy(() => import("./pages/ProductPage.jsx"));
 const OverviewPage = lazy(() => import("./pages/OverviewPage.jsx"));
 const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage.jsx"));
+const OrderDetailPage = lazy(() => import("./pages/OrderDetailPage.jsx"));
 const OrderPage = lazy(() => import("./pages/OrderPage.jsx"));
 // Protect routes that require authentication
 
@@ -101,6 +102,15 @@ function App() {
               </Suspense>
             }
           />
+          <Route
+            path="orders/:id"
+            element={
+              <Suspense>
+                <OrderDetailPage />
+              </Suspense>
+            }
+          />
+
           <Route
             path="product"
             element={

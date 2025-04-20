@@ -11,6 +11,7 @@ axios.defaults.withCredentials = true;
 
 export const useOrderStore = create((set) => ({
   orders: [],
+  order: {},
   error: null,
   isLoading: false,
   message: null,
@@ -21,6 +22,21 @@ export const useOrderStore = create((set) => ({
       const response = await axios.get(`${API_URL}order/all`);
       // console.log(response.data.orders);
       set({ orders: response.data.orders, isLoading: false });
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error fetching orders";
+      set({
+        error: errorMessage || "Error fetching orders",
+        isLoading: false,
+      });
+      toast.error(errorMessage);
+    }
+  },
+  fetchOrderDetail: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}order/get/${id}`);
+      set({ order: response.data.order, isLoading: false });
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error fetching orders";

@@ -12,7 +12,7 @@ const OrderPage = ({}) => {
   const { fetchOrders, orders } = useOrderStore();
   const { fetchIngredients, ingredients } = useIngredientStore();
   const { fetchProducts, products } = useProductStore();
-  const [activeTab, setActiveTab] = useState("Buy Order");
+  const [activeTab, setActiveTab] = useState("Sell Order");
   const tabs = [
     {
       id: "sell",
