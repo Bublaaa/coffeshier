@@ -117,23 +117,31 @@ export const deleteIngredient = async (req, res) => {
 
 export const getIngredients = async (req, res) => {
   try {
-    let { page = 1, limit = 5, search = "" } = req.query;
+    let { page = 1, limit = 5, search = "", all = false } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
+
     const query = search ? { name: { $regex: search, $options: "i" } } : {};
 
-    const ingredients = await Ingredient.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    let ingredients;
+    let totalItems;
 
-    const totalItems = await Ingredient.countDocuments(query);
+    if (all === "true") {
+      ingredients = await Ingredient.find(query).sort({ createdAt: -1 });
+      totalItems = ingredients.length;
+    } else {
+      ingredients = await Ingredient.find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit);
+      totalItems = await Ingredient.countDocuments(query);
+    }
 
     res.status(200).json({
       success: true,
       ingredients,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
+      totalPages: all === "true" ? 1 : Math.ceil(totalItems / limit),
+      currentPage: all === "true" ? 1 : page,
       totalItems,
     });
   } catch (error) {

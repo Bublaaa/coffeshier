@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const API_URL =
   import.meta.env.MODE === "development"
@@ -12,6 +13,7 @@ axios.defaults.withCredentials = true;
 
 export const useAuthStore = create((set) => ({
   user: null,
+  users: [],
   isAuthenticated: false,
   error: null,
   isLoading: false,
@@ -141,6 +143,21 @@ export const useAuthStore = create((set) => ({
         error: error.response.data.message || "Error resetting password",
       });
       throw error;
+    }
+  },
+  fetchAllUsers: async () => {
+    set({ isLoading: false, error: null });
+    try {
+      const response = await axios.get(`${API_URL}auth/users`);
+      set({ isLoading: false, users: response.data.users });
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error adding new ingredients";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      toast.error(errorMessage);
     }
   },
 }));

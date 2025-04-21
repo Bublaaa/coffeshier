@@ -1,9 +1,13 @@
 import { useParams } from "react-router-dom";
 import { useOrderStore } from "../store/orderStore";
-import { useEffect } from "react";
+import { useIngredientStore } from "../store/ingredientStore";
+import { useProductStore } from "../store/productStore";
+import { useAuthStore } from "../store/authStore";
+import { useEffect, useMemo, useState } from "react";
 import Button from "../components/Button";
 import clsx from "clsx";
 import { formatDate, formatTime } from "../utils/date";
+import toast from "react-hot-toast";
 
 const OrderDetailPage = () => {
   const { id } = useParams();
@@ -12,17 +16,44 @@ const OrderDetailPage = () => {
     isLoading: isOrderLoading,
     order,
   } = useOrderStore();
+  const { fetchAllUsers, users } = useAuthStore();
+  const {
+    fetchProducts,
+    isLoading: isProductsLoading,
+    products,
+  } = useProductStore();
+  const {
+    fetchAllIngredients,
+    isLoading: isIngredientsLoading,
+    ingredients,
+  } = useIngredientStore();
   useEffect(() => {
     const handleFetchInitialData = async () => {
       try {
-        await Promise.all([fetchOrderDetail(id)]);
+        await Promise.all([
+          fetchOrderDetail(id),
+          fetchAllIngredients(),
+          fetchProducts(),
+          fetchAllUsers(),
+        ]);
       } catch (error) {
-        console.error("Data fetching failed:,", error);
+        toast.error("Data fetching failed:,", error);
       }
     };
+    handleFetchInitialData();
   }, [id]);
+  const [items, setItems] = useState([]);
   const isMenu =
-    Array.isArray(order.ingredients) && order.ingredients.length > 0;
+    order && Array.isArray(order.products) && order.products.length > 0;
+  useEffect(() => {
+    if (order) {
+      if (isMenu) {
+        setItems(order.products || []);
+      } else {
+        setItems(order.ingredients || []);
+      }
+    }
+  }, [order]);
   const Skeleton = () => (
     <div className="animate-[pulse_1s_ease-in-out_infinite] flex flex-col h-[95vh] md:gap-5 gap-2 p-3 md:my-5 my-2 rounded-lg">
       <div className="w-10 p-6 rounded-lg bg-gray-300"></div>
@@ -93,65 +124,119 @@ const OrderDetailPage = () => {
     order.payment?.status === "pending" && "bg-yellow-200 text-yellow-400",
     order.payment?.status === "failed" && "bg-red-200 text-red-400"
   );
-  if (isOrderLoading) {
+  if (isOrderLoading || isProductsLoading || isIngredientsLoading) {
     return <Skeleton />;
   }
+  console.log(users);
+  console.log(order.userId);
+
   return (
     <div className="md:gap-5 gap-2 md:my-5 my-2 md:mr-5 mr-2 transition-all ease-in-out duration-300 h-[95vh]">
+      <h3>
+        Order ID : <span className="font-semibold"># {id.slice(-5)}</span>
+      </h3>
       <div className="flex flex-col md:gap-5 gap-2 h-full">
         <div className="grid grid-cols-3 md:gap-5 gap-2">
           {/* Order Detail */}
-          <div className="flex flex-col md:gap-3 gap-2 rounded-lg bg-white p-3">
-            <h5 className="border-b border-gray-200 pb-2">Order Detail</h5>
-            <p>
-              Order ID : <span className="font-semibold"># {id.slice(-5)}</span>
-            </p>
-            <div className="flex flex-row gap-2">
+          <div className="flex flex-col gap-1">
+            <h4>Order Detail</h4>
+            <div className="grid grid-cols-2 rounded-lg bg-white space-y-3 p-3 h-fit">
               <p>Status : </p>
               <div className={statusClass}>
                 {order.status?.toUpperCase() || "No Status Available"}
               </div>
+              <p>Total : </p>
+              <p className="font-semibold">
+                IDR {order.totalAmount?.toLocaleString("id-ID") || "0"}
+              </p>
+              <p>Created : </p>
+              <p>
+                {formatDate(order.createdAt)} {formatTime(order.createdAt)}
+              </p>
             </div>
           </div>
           {/* Payment Detail */}
-          <div className="flex flex-col md:gap-3 gap-2 rounded-lg bg-white p-3">
-            <h5 className="border-b border-gray-200 pb-2">Payment Detail</h5>
-            <p>
-              Method :{" "}
-              <span className="font-semibold">
-                {order.payment?.method.toUpperCase()}
-              </span>
-            </p>
-            <div className="flex flex-row gap-2">
-              <p>Status : </p>
-              <div className={paymentStatusClass}>
-                {order.payment.status?.toUpperCase() || "No Status Available"}
-              </div>
+          <div className="flex flex-col gap-1">
+            <h4>Payment Detail</h4>
+            <div className="flex flex-col md:gap-3 gap-2 rounded-lg bg-white p-4 h-fit">
+              {order.payment ? (
+                <>
+                  <p>
+                    Method :{" "}
+                    <span className="font-semibold">
+                      {order.payment.method?.toUpperCase()}
+                    </span>
+                  </p>
+                  <div className="flex flex-row gap-2">
+                    <p>Status : </p>
+                    <div className={paymentStatusClass}>
+                      {order.payment.status?.toUpperCase() ||
+                        "No Status Available"}
+                    </div>
+                  </div>
+                  <p>
+                    Paid At :{" "}
+                    <span className="font-semibold">
+                      {formatDate(order.payment?.paidAt)}
+                    </span>
+                  </p>
+                </>
+              ) : (
+                <p className="italic text-gray-400">
+                  No payment data available
+                </p>
+              )}
             </div>
-            <p>
-              Paid At :{" "}
-              <span className="font-semibold">
-                {formatDate(order.payment?.paidAt)}
-              </span>
-              <span className="font-semibold">
-                {formatDate(order.payment?.paidAt)}
-              </span>
-            </p>
           </div>
           {/* Server Detail */}
-          <div className="flex flex-col md:gap-3 gap-2 rounded-lg bg-white p-3">
-            <h5 className="border-b border-gray-200 pb-2">Server</h5>
-            <p>
-              Name :{" "}
-              <span className="font-semibold">
-                {order.payment?.method.toUpperCase()}
-              </span>
-            </p>
+          <div className="flex flex-col gap-1">
+            <h4>Server</h4>
+            <div className="flex flex-col md:gap-3 gap-2 rounded-lg bg-white p-3 h-fit">
+              <p>
+                Name:{" "}
+                <span className="font-semibold">
+                  {users.find(
+                    (user) => String(user._id) === String(order.userId)
+                  )?.name || "Unknown"}
+                </span>
+              </p>
+            </div>
           </div>
         </div>
+        <h5>Ordered Items</h5>
+        <div className="flex flex-col bg-white rounded-lg md:px-5 px-2">
+          {items.map((item, index) => {
+            const itemId = String(item.ingredientId || item.productId);
+            const selectedItem = isMenu
+              ? products.find((product) => String(product._id) === itemId)
+              : ingredients.find(
+                  (ingredient) => String(ingredient._id) === itemId
+                );
+            return (
+              <div
+                key={isMenu ? item.productId : item.ingredientId}
+                className={`md:py-3 py-2 grid ${
+                  isMenu ? "grid-cols-6" : "grid-cols-4"
+                } ${
+                  index < items.length - 1 ? "border-b border-gray-100" : ""
+                }`}
+              >
+                <p>
+                  {selectedItem?.name.replace(/\b\w/g, (char) =>
+                    char.toUpperCase()
+                  ) || "Unknown Item"}
+                </p>
+                {isMenu && <p>{item.customization?.size}</p>}
+                <p>{item.quantity}</p>
+                {!isMenu && <p>{item.unit}</p>}
+                {isMenu && <p>{selectedItem.basePrice}</p>}
+                {isMenu && <p>{item.customization?.note}</p>}
+                <p className="text-end">{item.subtotal.toLocaleString("id")}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      {order.status}
-      {id}
     </div>
   );
 };

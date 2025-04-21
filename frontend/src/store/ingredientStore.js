@@ -42,7 +42,29 @@ export const useIngredientStore = create((set) => ({
       });
     }
   },
+  fetchAllIngredients: async (searchQuery = "") => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}ingredient/get`, {
+        params: { all: true, search: searchQuery },
+      });
 
+      set({
+        ingredients: response.data.ingredients,
+        totalPages: 1,
+        currentPage: 1,
+        totalItems: response.data.totalItems,
+        isLoading: false,
+        message: "Success fetch all ingredients",
+      });
+    } catch (error) {
+      set({
+        error:
+          error.response?.data?.message || "Error fetching all ingredients",
+        isLoading: false,
+      });
+    }
+  },
   addNewIngredient: async (name, unit) => {
     set({ isLoading: true, error: null, message: null });
     try {
